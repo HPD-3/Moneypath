@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import { getAuth } from "firebase/auth";
 
-export default function Dashboard() {
+export default function Profile() {
     const [profile, setProfile] = useState(null);
 
     useEffect(() => {
         const fetchProfile = async () => {
             const auth = getAuth();
-            const token = await auth.currentUser.getIdToken();
+            const token = await auth.currentUser.getIdToken(); // get Firebase token
 
             const res = await fetch("http://localhost:3000/auth/profile", {
                 headers: {

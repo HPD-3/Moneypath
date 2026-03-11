@@ -1,64 +1,95 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { auth, googleProvider } from "../firebase";
+import { auth, googleProvider, db } from "../firebase";
 import {
-    createUserWithEmailAndPassword,
     signInWithEmailAndPassword,
     signInWithPopup
 } from "firebase/auth";
 
-function App() {
+import { doc, setDoc } from "firebase/firestore";
+import { useNavigate } from "react-router-dom";
+
+function Login() {
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
 
     const navigate = useNavigate();
 
-    const register = async () => {
-        await createUserWithEmailAndPassword(auth, email, password);
-        alert("Registered");
-    };
-
     const login = async () => {
-        const user = await signInWithEmailAndPassword(auth, email, password);
-        console.log(user);
 
-        // redirect after login
-        navigate("/dashboard");
+        if (!email || !password) {
+            alert("Email and password required");
+            return;
+        }
+
+        try {
+
+            const result = await signInWithEmailAndPassword(
+                auth,
+                email,
+                password
+            );
+
+            const user = result.user;
+
+            await setDoc(doc(db, "users", user.uid), {
+                email: user.email,
+                createdAt: new Date()
+            }, { merge: true });
+
+            navigate("/dashboard");
+
+        } catch (error) {
+            console.log(error.message);
+            alert(error.message);
+        }
     };
 
     const googleLogin = async () => {
-        const result = await signInWithPopup(auth, googleProvider);
-        console.log(result.user);
 
-        // redirect after login
+        const result = await signInWithPopup(auth, googleProvider);
+
+        const user = result.user;
+
+        await setDoc(doc(db, "users", user.uid), {
+            name: user.displayName,
+            email: user.email,
+            createdAt: new Date()
+        }, { merge: true });
+        console.log("LOGIN SUCCESS");
         navigate("/dashboard");
     };
 
     return (
+
         <div>
 
-            <h2>Firebase Auth</h2>
+            <h2>Login</h2>
 
             <input
-                placeholder="email"
+                placeholder="Email"
                 onChange={(e) => setEmail(e.target.value)}
             />
 
             <input
                 type="password"
-                placeholder="password"
+                placeholder="Password"
                 onChange={(e) => setPassword(e.target.value)}
             />
 
             <br /><br />
 
-            <button onClick={register}>Register</button>
-            <button onClick={login}>Login</button>
-            <button onClick={googleLogin}>Login with Google</button>
+            <button onClick={login}>
+                Login
+            </button>
+
+            <button onClick={googleLogin}>
+                Login with Google
+            </button>
 
         </div>
+
     );
 }
 
-export default App;
+export default Login;
