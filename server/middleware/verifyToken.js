@@ -1,4 +1,4 @@
-import admin from "../firebaseAdmin.js";
+import { auth } from "../firebaseAdmin.js";
 
 export const verifyToken = async (req, res, next) => {
     const authHeader = req.headers.authorization;
@@ -10,11 +10,11 @@ export const verifyToken = async (req, res, next) => {
     const token = authHeader.split(" ")[1];
 
     try {
-        const decoded = await admin.auth().verifyIdToken(token);
+        const decoded = await auth.verifyIdToken(token);
         req.user = decoded;
         next();
     } catch (error) {
-        console.error("Token verification failed:", error.message); // 👈 add this
+        console.error("Token verification failed:", error.message);
         res.status(401).json({ error: "Invalid token" });
     }
 };

@@ -1,37 +1,48 @@
 import { useEffect, useState } from "react";
-import { getAuth } from "firebase/auth";
+import { useNavigate } from "react-router-dom";
+import API from "../services/api.js";
 
 export default function Dashboard() {
     const [profile, setProfile] = useState(null);
+    const [error, setError] = useState(null);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchProfile = async () => {
-            const auth = getAuth();
-            const token = await auth.currentUser.getIdToken();
-
-            const res = await fetch("http://localhost:3000/auth/profile", {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            });
-
-            const data = await res.json();
-            setProfile(data);
+            try {
+                const res = await API.get("/auth/profile");
+                setProfile(res.data);
+            } catch (err) {
+                setError(err.message);
+            }
         };
 
         fetchProfile();
     }, []);
 
+    useEffect(() => {
+        if (!profile) return;
+
+        const checkPersonalDocument = async () => {
+            try {
+                await API.get("/personal/profile");
+            } catch (err) {
+                if (err.response?.status === 404) {
+                    navigate("/personal");
+                }
+            }
+        };
+
+        checkPersonalDocument();
+    }, [profile]);
+
+    if (error) return <p>Error: {error}</p>;
+    if (!profile) return <p>Loading...</p>;
+
     return (
         <div>
-            {profile ? (
-                <>
-                    <p>UID: {profile.uid}</p>
-                    <p>Email: {profile.email}</p>
-                </>
-            ) : (
-                <p>Loading...</p>
-            )}
+            <p>UID: {profile.uid}</p>
+            <p>Email: {profile.email}</p>
         </div>
     );
 }

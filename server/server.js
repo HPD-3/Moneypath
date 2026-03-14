@@ -1,14 +1,35 @@
 import express from "express";
-import cors from "cors";
 import authRoutes from "./routes/auth.js";
+import personalRoutes from "./routes/personal.js";
 
 const app = express();
 
-app.use(cors());
-app.use(express.json());
+app.use((req, res, next) => {
+    const allowedOrigins = [
+        "https://moneypath-7777.firebaseapp.com",
+        "https://moneypath-7777.web.app",
+        "http://localhost:5173",
+        "http://localhost:3000"
+    ];
 
-app.use("/auth", authRoutes);
+    const origin = req.headers.origin;
 
-app.listen(3000, () => {
-    console.log("Server running on port 3000");
+    if (allowedOrigins.includes(origin)) {
+        res.setHeader("Access-Control-Allow-Origin", origin);
+    }
+
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+
+    if (req.method === "OPTIONS") {
+        return res.sendStatus(204);
+    }
+
+    next();
 });
+
+app.use(express.json());
+app.use("/auth", authRoutes);
+app.use("/personal", personalRoutes);
+export default app;
