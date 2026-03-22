@@ -1,7 +1,9 @@
 import express from "express";
 import authRoutes from "./routes/auth.js";
 import personalRoutes from "./routes/personal.js";
-
+import balanceRoutes from "./routes/balance.js";
+import adminRoutes from "./routes/admin.js";
+import videoRoutes from "./routes/video.js";
 const app = express();
 
 app.use((req, res, next) => {
@@ -32,4 +34,7 @@ app.use((req, res, next) => {
 app.use(express.json());
 app.use("/auth", authRoutes);
 app.use("/personal", personalRoutes);
+app.use("/balance", balanceRoutes);
+app.use("/admin", adminRoutes);
+app.use("/video", videoRoutes);
 export default app;

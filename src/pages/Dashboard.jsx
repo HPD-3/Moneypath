@@ -43,6 +43,21 @@ export default function Dashboard() {
         <div>
             <p>UID: {profile.uid}</p>
             <p>Email: {profile.email}</p>
+
+            <button onClick={() => navigate("/balance")}>
+                💰 My Balance
+            </button>
+
+            <button onClick={() => navigate("/video")}>
+                Video Edukasi
+            </button>
+
+            {/* Only visible to admins */}
+            {profile.role === "admin" && (
+                <button onClick={() => navigate("/admin")}>
+                    🛠️ Admin Dashboard
+                </button>
+            )}
         </div>
     );
 }
