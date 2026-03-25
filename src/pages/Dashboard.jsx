@@ -4,9 +4,13 @@ import API from "../services/api.js";
 
 export default function Dashboard() {
     const [profile, setProfile] = useState(null);
+    const [personal, setPersonal] = useState(null);
     const [error, setError] = useState(null);
+    const [loadingPersonal, setLoadingPersonal] = useState(true);
+
     const navigate = useNavigate();
 
+    // 🔹 Fetch Auth Profile
     useEffect(() => {
         const fetchProfile = async () => {
             try {
@@ -20,30 +24,53 @@ export default function Dashboard() {
         fetchProfile();
     }, []);
 
+
     useEffect(() => {
         if (!profile) return;
 
-        const checkPersonalDocument = async () => {
+        const fetchPersonal = async () => {
             try {
-                await API.get("/personal/profile");
+                const res = await API.get("/personal/profile");
+                setPersonal(res.data);
             } catch (err) {
                 if (err.response?.status === 404) {
                     navigate("/personal");
+                } else {
+                    console.error(err);
                 }
+            } finally {
+                setLoadingPersonal(false);
             }
         };
 
-        checkPersonalDocument();
-    }, [profile]);
+        fetchPersonal();
+    }, [profile, navigate]);
+
 
     if (error) return <p>Error: {error}</p>;
-    if (!profile) return <p>Loading...</p>;
+    if (!profile || loadingPersonal) return (
+        <div className="flex items-center justify-center h-64">
+            <div className="flex flex-col items-center gap-3">
+                <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+                <p className="text-sm text-gray-500">Memuat data...</p>
+            </div>
+        </div>
+    );
 
     return (
         <div>
-            <p>UID: {profile.uid}</p>
-            <p>Email: {profile.email}</p>
 
+            {personal && (
+                <div>
+                    <p>Nama: {personal.name}</p>
+                    <p>Tanggal Lahir: {personal.dateOfBirth}</p>
+                    <p>No HP: {personal.phoneNumber}</p>
+                    <p>Gender: {personal.gender}</p>
+                    <p>Alamat: {personal.address}</p>
+                </div>
+            )}
+
+            {/* NAVIGATION */}
             <button onClick={() => navigate("/balance")}>
                 💰 My Balance
             </button>
@@ -52,7 +79,14 @@ export default function Dashboard() {
                 Video Edukasi
             </button>
 
-            {/* Only visible to admins */}
+            <button onClick={() => navigate("/learning")}>
+                Learning Path
+            </button>
+
+            <button onClick={() => navigate("/profile")}>
+                Profile
+            </button>
+            {/* ADMIN ONLY */}
             {profile.role === "admin" && (
                 <button onClick={() => navigate("/admin")}>
                     🛠️ Admin Dashboard

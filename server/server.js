@@ -4,6 +4,8 @@ import personalRoutes from "./routes/personal.js";
 import balanceRoutes from "./routes/balance.js";
 import adminRoutes from "./routes/admin.js";
 import videoRoutes from "./routes/video.js";
+import learningPathRoutes from "./routes/learningPath.js";
+
 const app = express();
 
 app.use((req, res, next) => {
@@ -37,4 +39,6 @@ app.use("/personal", personalRoutes);
 app.use("/balance", balanceRoutes);
 app.use("/admin", adminRoutes);
 app.use("/video", videoRoutes);
+app.use("/learningPath", learningPathRoutes);
+
 export default app;
