@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../services/api";
+import formdata from "../assets/formdata.png";
+import logo2 from "../assets/logo2.png";
 
 export default function Personal() {
     const [form, setForm] = useState({
@@ -65,7 +67,7 @@ export default function Personal() {
             {/* NAVBAR */}
             <div className="flex items-center justify-between px-8 py-4 bg-gradient-to-r from-[#0c2b18] to-[#123d23]">
                 <img
-                    src="./src/assets/logo2.png"
+                    src={logo2}
                     alt="MONEYPATH"
                     className="h-10"
                 />
@@ -90,7 +92,7 @@ export default function Personal() {
 
                     {/* LEFT IMAGE */}
                     <div className="hidden md:flex items-center justify-center flex-shrink-0">
-                        <img src="./src/assets/formdata.png" className="w-56 opacity-90" alt="form illustration" />
+                        <img src={formdata} className="w-56 opacity-90" alt="form illustration" />
                     </div>
 
                     {/* FORM */}

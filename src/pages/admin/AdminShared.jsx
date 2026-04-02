@@ -1,3 +1,6 @@
+import logo2 from "/src/assets/logo2.png";
+
+
 // ── Shared Admin Styles ───────────────────────────────────────
 export function AdminStyles() {
     return (
@@ -98,28 +101,49 @@ export function AdminStyles() {
 }
 
 
-export function Sidebar({ active, setActive, onLogout }) {
-    const items = [
-        { id: "beranda",  icon: "🏠", label: "Beranda" },
-        { id: "video",    icon: "▶️",  label: "Vidio Edukasi" },
-        { id: "learning", icon: "📊", label: "Learning Path" },
-        { id: "konten",   icon: "📋", label: "Konten Edukasi" },
+// adminShared.jsx
+export default function Sidebar({ active, setActive, handleLogout }) {
+    const NAV_ITEMS = [
+        { id: "beranda", icon: "mdi:home-outline", label: "Beranda" },
+        { id: "video", icon: "mdi:play-circle", label: "Vidio Edukasi" },
+        { id: "learning", icon: "mdi:chart-timeline-variant", label: "Learning Path" },
+        { id: "dailyquiz", icon: "mdi:brain", label: "Daily Quiz" },
     ];
+
     return (
-        <aside className="sidebar">
-            <div className="sidebar-logo">MONEY<span>PATH</span></div>
-            <nav className="sidebar-nav">
-                {items.map(item => (
-                    <button key={item.id}
-                        className={`nav-item ${active === item.id ? "active" : ""}`}
-                        onClick={() => setActive(item.id)}>
-                        <span>{item.icon}</span>
-                        {item.label}
-                    </button>
-                ))}
-            </nav>
-            <div className="sidebar-logout">
-                <button className="logout-btn" onClick={onLogout}>⬅ Logout</button>
+        <aside className="w-64 h-screen bg-gradient-to-b from-[#0b2a17] to-[#123d23] text-white flex flex-col flex-shrink-0">
+            <div className="px-6 py-4">
+                {/* LOGO */}
+                <img src={logo2} className="h-10 mb-8" alt="Logo" />
+
+                <nav className="space-y-5 text-sm">
+                    {NAV_ITEMS.map((item) => (
+                        <button
+                            key={item.id}
+                            onClick={() => setActive(item.id)}
+                            className={`flex items-center w-full gap-3 px-4 py-2 transition-all duration-200
+                                ${active === item.id
+                                    ? "hover:bg-white/10 text-white border border-white/40"
+                                    : "bg-[#9FF782] text-black font-semibold"}`}
+                        >
+                            <iconify-icon icon={item.icon} className="w-4 h-4"></iconify-icon>
+                            {item.label}
+                        </button>
+                    ))}
+                </nav>
+            </div>
+
+            <div className="flex-1"></div>
+
+            {/* LOGOUT */}
+            <div className="px-6 py-4 border-t border-white/20 flex justify-center">
+                <button
+                    onClick={handleLogout}
+                    className="flex items-center gap-2 text-sm hover:text-red-400 transition-colors"
+                >
+                    <iconify-icon icon="mdi:logout-variant"></iconify-icon>
+                    Logout
+                </button>
             </div>
         </aside>
     );
@@ -143,10 +167,10 @@ export function Topbar({ title, adminEmail }) {
 export function ModuleManager({ title, modules, loading, onRefresh, API }) {
     const { useState } = require("react");
     const EMPTY = { title: "", description: "", category: "budgeting", videoUrl: "", content: "", difficulty: "beginner" };
-    const [form, setForm]         = useState(EMPTY);
-    const [editId, setEditId]     = useState(null);
+    const [form, setForm] = useState(EMPTY);
+    const [editId, setEditId] = useState(null);
     const [showForm, setShowForm] = useState(false);
-    const [saving, setSaving]     = useState(false);
+    const [saving, setSaving] = useState(false);
 
     const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value });
 

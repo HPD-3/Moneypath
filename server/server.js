@@ -5,6 +5,11 @@ import balanceRoutes from "./routes/balance.js";
 import adminRoutes from "./routes/admin.js";
 import videoRoutes from "./routes/video.js";
 import learningPathRoutes from "./routes/learningPath.js";
+import quizRoutes from "./routes/quiz.js";
+import tabunganRoutes from "./routes/tabungan.js";
+import { sendEmailHandler } from "./api/send-email.js";
+import rekapRoutes from "./routes/rekap.js";
+import cronRoutes from "./routes/cron.js";
 
 const app = express();
 
@@ -40,5 +45,10 @@ app.use("/balance", balanceRoutes);
 app.use("/admin", adminRoutes);
 app.use("/video", videoRoutes);
 app.use("/learningPath", learningPathRoutes);
+app.use("/quiz", quizRoutes);
+app.use("/tabungan", tabunganRoutes);
+app.post("/api/send-email", sendEmailHandler);
+app.use("/rekap", rekapRoutes);
+app.use("/cron", cronRoutes);
 
 export default app;

@@ -12,7 +12,7 @@ router.get("/profile", verifyToken, async (req, res) => {
 
         res.json({
             uid: req.user.uid,
-            email: req.user.email,
+            email: req.user .email,
             role
         });
     } catch (err) {
