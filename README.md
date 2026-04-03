@@ -14,8 +14,8 @@
 
 ##  Live Demo
 
-*  Frontend: https://your-app.web.app
-*  API: https://your-backend.vercel.app
+*  Frontend: [Link Here!](https://moneypath-7777.firebaseapp.com/)
+*  API: [link](https://server-side-two-psi.vercel.app/)
 
 \---
 
@@ -23,7 +23,7 @@
 
 ###  Dashboard
 
-!\[Dashboard Screenshot](./screenshots/dashboard.png)
+[!\[Dashboard Screenshot]](/src/assets/logo2.png)
 
 ###  Login
 
