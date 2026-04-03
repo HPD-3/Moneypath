@@ -72,9 +72,6 @@ function App() {
       <Route path="/quiz" element={
         <ProtectedRoute><DailyQuiz /></ProtectedRoute>
       } />
-      <Route path="/sharedbalance/:balanceId" element={
-        <ProtectedRoute><SharedBalanceDetail /></ProtectedRoute>
-      } />
       <Route path="/admin" element={
         <AdminRoute><AdminDashboard /></AdminRoute>
       } />
