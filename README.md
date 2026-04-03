@@ -23,7 +23,7 @@
 
 ###  Dashboard
 
-[!\[Dashboard Screenshot]](/src/assets/logo2.png)
+![Dashboard Screenshot](./src/assets/logo2.png)
 
 ###  Login
 
