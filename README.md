@@ -23,11 +23,11 @@
 
 ###  Dashboard
 
-![Dashboard Screenshot](./src/assets/logo2.png)
+![Dashboard Screenshot](./src/assets/Dashboard.png)
 
 ###  Login
 
-!\[Login Screenshot](./screenshots/login.png)
+![Dashboard Screenshot](./src/assets/Login.png)
 
 \---
 
