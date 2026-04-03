@@ -134,7 +134,4 @@ firebase deploy
 
 \---
 
-## 👨‍💻 Author
-
-Ahmad Hariyanto
 
