@@ -1,570 +1,370 @@
 import { Router } from "express";
 import { db } from "../firebaseAdmin.js";
 import { verifyToken } from "../middleware/verifyToken.js";
+import crypto from "crypto";
 
 const router = Router();
 
-// ── POST create a new shared balance ────────────────────────────────
+// ══════════════════════════════════════════════
+//  SHARED BALANCE ROUTES
+//  Collection: sharedBalances/{groupId}
+//  Members:    sharedBalances/{groupId}/members/{uid}
+//  Txs:        sharedBalances/{groupId}/transactions/{txId}
+// ══════════════════════════════════════════════
+
+// ── GET all shared balances for current user ──────────────────
+router.get("/", verifyToken, async (req, res) => {
+    try {
+        const uid  = req.user.uid;
+        // Find all groups where user is a member
+        const snap = await db.collection("sharedBalances")
+            .where(`members.${uid}.uid`, "==", uid)
+            .get();
+
+        const groups = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        res.json(groups);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ── GET single shared balance ─────────────────────────────────
+router.get("/:groupId", verifyToken, async (req, res) => {
+    try {
+        const uid = req.user.uid;
+        const doc = await db.collection("sharedBalances").doc(req.params.groupId).get();
+        if (!doc.exists) return res.status(404).json({ error: "Group not found" });
+
+        const data = doc.data();
+        // Check if user is a member
+        if (!data.members?.[uid]) {
+            return res.status(403).json({ error: "You are not a member of this group" });
+        }
+
+        // Get transactions
+        const txSnap = await db.collection("sharedBalances")
+            .doc(req.params.groupId)
+            .collection("transactions")
+            .get();
+
+        const transactions = txSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+        transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        res.json({ id: doc.id, ...data, transactions });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ── POST create shared balance ────────────────────────────────
 router.post("/", verifyToken, async (req, res) => {
     try {
         const uid = req.user.uid;
-        const { name, description = "", currency = "IDR" } = req.body;
+        const { name, description, category } = req.body;
+
+        // Get creator's personal info
+        const personalDoc = await db.collection("personalDocuments").doc(uid).get();
+        const creatorName = personalDoc.exists
+            ? personalDoc.data().name
+            : req.user.email?.split("@")[0] || "Unknown";
+
+        // Generate invite code
+        const inviteCode = crypto.randomBytes(4).toString("hex").toUpperCase();
 
         const ref = await db.collection("sharedBalances").add({
             name,
-            description,
-            currency,
-            createdBy: uid,
-            createdAt: new Date().toISOString(),
-            totalBalance: 0,
+            description: description || "",
+            category:    category || "umum",
+            balance:     0,
+            inviteCode,
+            createdBy:   uid,
+            createdAt:   new Date().toISOString(),
             members: {
                 [uid]: {
-                    email: req.user.email,
-                    role: "admin",
-                    joinedAt: new Date().toISOString(),
-                    contribution: 0,
-                },
-            },
+                    uid,
+                    name:        creatorName,
+                    email:       req.user.email,
+                    role:        "admin",      // creator is admin
+                    joinedAt:    new Date().toISOString(),
+                    contributed: 0,
+                }
+            }
         });
 
-        // Initialize user's progress document
-        await db
-            .collection("sharedBalances")
-            .doc(ref.id)
-            .collection("memberProgress")
-            .doc(uid)
-            .set({
-                memberId: uid,
-                email: req.user.email,
-                role: "admin",
-                joinedAt: new Date().toISOString(),
-            });
-
-        res.json({ id: ref.id, name, description, currency });
+        res.json({ id: ref.id, name, inviteCode });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 });
 
-// ── GET all shared balances for user ───────────────────────────────
-router.get("/", verifyToken, async (req, res) => {
+// ── POST join via invite code ─────────────────────────────────
+router.post("/join", verifyToken, async (req, res) => {
     try {
-        const uid = req.user.uid;
-        const snap = await db
-            .collection("sharedBalances")
-            .where(`members.${uid}`, "!=", null)
+        const uid        = req.user.uid;
+        const { inviteCode } = req.body;
+
+        // Find group by invite code
+        const snap = await db.collection("sharedBalances")
+            .where("inviteCode", "==", inviteCode.toUpperCase())
+            .limit(1)
             .get();
 
-        const balances = snap.docs.map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-        }));
+        if (snap.empty) return res.status(404).json({ error: "Kode undangan tidak ditemukan" });
 
-        res.json(balances);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
+        const groupDoc  = snap.docs[0];
+        const groupData = groupDoc.data();
 
-// ── GET specific shared balance details ─────────────────────────────
-router.get("/:balanceId", verifyToken, async (req, res) => {
-    try {
-        const uid = req.user.uid;
-        const { balanceId } = req.params;
-
-        const doc = await db.collection("sharedBalances").doc(balanceId).get();
-
-        if (!doc.exists) {
-            return res.status(404).json({ error: "Balance not found" });
+        // Already a member?
+        if (groupData.members?.[uid]) {
+            return res.status(400).json({ error: "Kamu sudah bergabung di grup ini" });
         }
 
-        const data = doc.data();
+        // Get user's personal info
+        const personalDoc = await db.collection("personalDocuments").doc(uid).get();
+        const userName = personalDoc.exists
+            ? personalDoc.data().name
+            : req.user.email?.split("@")[0] || "Unknown";
 
-        // Check if user is member
-        if (!data.members[uid]) {
-            return res.status(403).json({ error: "Not a member" });
-        }
-
-        res.json({ id: balanceId, ...data });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-// ── POST invite member by email ────────────────────────────────────
-router.post("/:balanceId/invite", verifyToken, async (req, res) => {
-    try {
-        const uid = req.user.uid;
-        const { balanceId } = req.params;
-        const { email, inviteType } = req.body; // inviteType: "email" or "uid"
-
-        const balanceRef = db.collection("sharedBalances").doc(balanceId);
-        const balanceDoc = await balanceRef.get();
-
-        if (!balanceDoc.exists) {
-            return res.status(404).json({ error: "Balance not found" });
-        }
-
-        const data = balanceDoc.data();
-
-        // Check if requester is admin
-        if (data.members[uid]?.role !== "admin") {
-            return res.status(403).json({ error: "Only admins can invite" });
-        }
-
-        // Create invitation (send to admin to approve or auto-add)
-        const inviteRef = await db
-            .collection("sharedBalances")
-            .doc(balanceId)
-            .collection("invitations")
-            .add({
-                email,
-                role: "member",
-                invitedBy: uid,
-                status: "pending", // pending | accepted | rejected
-                createdAt: new Date().toISOString(),
-            });
-
-        res.json({ inviteId: inviteRef.id, email, status: "pending" });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-// ── POST add member directly ───────────────────────────────────────
-router.post("/:balanceId/members", verifyToken, async (req, res) => {
-    try {
-        const uid = req.user.uid;
-        const { balanceId } = req.params;
-        const { memberId, memberEmail, role = "member" } = req.body;
-
-        const balanceRef = db.collection("sharedBalances").doc(balanceId);
-        const balanceDoc = await balanceRef.get();
-
-        if (!balanceDoc.exists) {
-            return res.status(404).json({ error: "Balance not found" });
-        }
-
-        const data = balanceDoc.data();
-
-        // Check if requester is admin
-        if (data.members[uid]?.role !== "admin") {
-            return res.status(403).json({ error: "Only admins can add members" });
-        }
-
-        // Add member
-        await balanceRef.update({
-            [`members.${memberId}`]: {
-                email: memberEmail,
-                role,
-                joinedAt: new Date().toISOString(),
-                contribution: 0,
-            },
-        });
-
-        // Initialize member progress document
-        await balanceRef
-            .collection("memberProgress")
-            .doc(memberId)
-            .set({
-                memberId,
-                email: memberEmail,
-                role,
-                joinedAt: new Date().toISOString(),
-            });
-
-        res.json({ memberId, role, message: "Member added" });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-// ── PATCH update member role ───────────────────────────────────────
-router.patch("/:balanceId/members/:memberId/role", verifyToken, async (req, res) => {
-    try {
-        const uid = req.user.uid;
-        const { balanceId, memberId } = req.params;
-        const { role } = req.body; // admin | member | viewer
-
-        const balanceRef = db.collection("sharedBalances").doc(balanceId);
-        const balanceDoc = await balanceRef.get();
-
-        if (!balanceDoc.exists) {
-            return res.status(404).json({ error: "Balance not found" });
-        }
-
-        const data = balanceDoc.data();
-
-        // Check if requester is admin
-        if (data.members[uid]?.role !== "admin") {
-            return res.status(403).json({ error: "Only admins can change roles" });
-        }
-
-        // Update role
-        const memberData = data.members[memberId];
-        await balanceRef.update({
-            [`members.${memberId}`]: {
-                ...memberData,
-                role,
-            },
-        });
-
-        // Update member progress
-        await balanceRef
-            .collection("memberProgress")
-            .doc(memberId)
-            .update({ role });
-
-        res.json({ memberId, role, message: "Role updated" });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-// ── DELETE remove member ───────────────────────────────────────────
-router.delete("/:balanceId/members/:memberId", verifyToken, async (req, res) => {
-    try {
-        const uid = req.user.uid;
-        const { balanceId, memberId } = req.params;
-
-        const balanceRef = db.collection("sharedBalances").doc(balanceId);
-        const balanceDoc = await balanceRef.get();
-
-        if (!balanceDoc.exists) {
-            return res.status(404).json({ error: "Balance not found" });
-        }
-
-        const data = balanceDoc.data();
-
-        // Check if requester is admin
-        if (data.members[uid]?.role !== "admin") {
-            return res.status(403).json({ error: "Only admins can remove members" });
-        }
-
-        // Remove member
-        const updateObj = {};
-        updateObj[`members.${memberId}`] = db.FieldValue.delete();
-        await balanceRef.update(updateObj);
-
-        res.json({ message: "Member removed" });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-// ── POST add transaction to shared balance ──────────────────────────
-router.post("/:balanceId/transactions", verifyToken, async (req, res) => {
-    try {
-        const uid = req.user.uid;
-        const { balanceId } = req.params;
-        const { amount, paidBy, description, category = "general", items = [] } = req.body;
-
-        const balanceRef = db.collection("sharedBalances").doc(balanceId);
-        const balanceDoc = await balanceRef.get();
-
-        if (!balanceDoc.exists) {
-            return res.status(404).json({ error: "Balance not found" });
-        }
-
-        const data = balanceDoc.data();
-
-        // Check if user is member
-        if (!data.members[uid]) {
-            return res.status(403).json({ error: "Not a member" });
-        }
-
-        // Calculate split (equal split among all members by default)
-        const memberIds = Object.keys(data.members);
-        const perPersonAmount = amount / memberIds.length;
-
-        const split = {};
-        memberIds.forEach((mId) => {
-            split[mId] = {
-                amount: perPersonAmount,
-                settled: mId === paidBy,
-            };
-        });
-
-        // Add transaction
-        const txRef = await balanceRef.collection("transactions").add({
-            amount,
-            paidBy,
-            paidByEmail: data.members[paidBy]?.email,
-            description,
-            category,
-            items,
-            split,
-            date: new Date().toISOString(),
-            createdBy: uid,
-            notes: [],
-            settled: false,
-        });
-
-        // Update member's contribution
-        const paidByContribution = data.members[paidBy]?.contribution || 0;
-        await balanceRef.update({
-            [`members.${paidBy}.contribution`]: paidByContribution + amount,
-            totalBalance: (data.totalBalance || 0) + amount,
-        });
-
-        res.json({
-            id: txRef.id,
-            amount,
-            paidBy,
-            description,
-            split,
-        });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-// ── POST accept invitation ───────────────────────────────────────
-router.post("/:balanceId/invitations/:inviteId/accept", verifyToken, async (req, res) => {
-    try {
-        const uid = req.user.uid;
-        const userEmail = req.user.email;
-        const { balanceId, inviteId } = req.params;
-
-        const balanceRef = db.collection("sharedBalances").doc(balanceId);
-        const inviteRef = balanceRef.collection("invitations").doc(inviteId);
-
-        const [balanceDoc, inviteDoc] = await Promise.all([
-            balanceRef.get(),
-            inviteRef.get(),
-        ]);
-
-        if (!balanceDoc.exists) {
-            return res.status(404).json({ error: "Balance not found" });
-        }
-
-        if (!inviteDoc.exists) {
-            return res.status(404).json({ error: "Invitation not found" });
-        }
-
-        const inviteData = inviteDoc.data();
-
-        // Check email matches
-        if (inviteData.email !== userEmail) {
-            return res.status(403).json({ error: "This invite is not for you" });
-        }
-
-        if (inviteData.status !== "pending") {
-            return res.status(400).json({ error: "Invite already processed" });
-        }
-
-        const balanceData = balanceDoc.data();
-
-        // Add user to members
-        await balanceRef.update({
+        // Add as member
+        await groupDoc.ref.update({
             [`members.${uid}`]: {
-                email: userEmail,
-                role: inviteData.role || "member",
-                joinedAt: new Date().toISOString(),
-                contribution: 0,
-            },
+                uid,
+                name:        userName,
+                email:       req.user.email,
+                role:        "member",
+                joinedAt:    new Date().toISOString(),
+                contributed: 0,
+            }
         });
 
-        // Create member progress
-        await balanceRef
-            .collection("memberProgress")
-            .doc(uid)
-            .set({
-                memberId: uid,
-                email: userEmail,
-                role: inviteData.role || "member",
-                joinedAt: new Date().toISOString(),
-            });
-
-        // Update invitation status
-        await inviteRef.update({
-            status: "accepted",
-            acceptedAt: new Date().toISOString(),
-        });
-
-        res.json({ message: "Invitation accepted", balanceId });
-
+        res.json({ id: groupDoc.id, name: groupData.name });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 });
 
-// ── GET invitations for current user ─────────────────────────────
-router.get("/invitations/me", verifyToken, async (req, res) => {
+// ── POST invite by email ──────────────────────────────────────
+router.post("/:groupId/invite", verifyToken, async (req, res) => {
     try {
-        const userEmail = req.user.email;
+        const uid   = req.user.uid;
+        const { email } = req.body;
 
-        const balancesSnap = await db.collection("sharedBalances").get();
+        const groupDoc = await db.collection("sharedBalances").doc(req.params.groupId).get();
+        if (!groupDoc.exists) return res.status(404).json({ error: "Group not found" });
 
-        let invites = [];
-
-        for (const doc of balancesSnap.docs) {
-            const invSnap = await doc.ref
-                .collection("invitations")
-                .where("email", "==", userEmail)
-                .where("status", "==", "pending")
-                .get();
-
-            invSnap.forEach((inv) => {
-                invites.push({
-                    id: inv.id,
-                    balanceId: doc.id,
-                    ...inv.data(),
-                });
-            });
+        // Only admin can invite
+        const groupData = groupDoc.data();
+        if (groupData.members?.[uid]?.role !== "admin") {
+            return res.status(403).json({ error: "Hanya admin yang bisa mengundang" });
         }
 
+        // Find user by email in users collection
+        const userSnap = await db.collection("users")
+            .where("email", "==", email)
+            .limit(1)
+            .get();
+
+        if (userSnap.empty) {
+            return res.status(404).json({ error: "Pengguna dengan email tersebut tidak ditemukan" });
+        }
+
+        const invitedUser = userSnap.docs[0];
+        const invitedUid  = invitedUser.id;
+
+        if (groupData.members?.[invitedUid]) {
+            return res.status(400).json({ error: "Pengguna ini sudah bergabung" });
+        }
+
+        // Store pending invite
+        await db.collection("sharedBalances").doc(req.params.groupId)
+            .collection("invites").doc(invitedUid).set({
+                email,
+                invitedBy: uid,
+                invitedAt: new Date().toISOString(),
+                status:    "pending",
+                groupName: groupData.name,
+            });
+
+        // Also store on user's side for notification
+        await db.collection("users").doc(invitedUid)
+            .collection("invites").doc(req.params.groupId).set({
+                groupId:   req.params.groupId,
+                groupName: groupData.name,
+                invitedBy: uid,
+                inviteCode: groupData.inviteCode,
+                invitedAt: new Date().toISOString(),
+                status:    "pending",
+            });
+
+        res.json({ message: `Undangan dikirim ke ${email}` });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ── GET my pending invites ────────────────────────────────────
+router.get("/invites/pending", verifyToken, async (req, res) => {
+    try {
+        const uid  = req.user.uid;
+        const snap = await db.collection("users").doc(uid)
+            .collection("invites")
+            .where("status", "==", "pending")
+            .get();
+
+        const invites = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         res.json(invites);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 });
-// ── GET transactions for shared balance ────────────────────────────
-router.get("/:balanceId/transactions", verifyToken, async (req, res) => {
+
+// ── POST accept invite ────────────────────────────────────────
+router.post("/invites/:groupId/accept", verifyToken, async (req, res) => {
     try {
-        const uid = req.user.uid;
-        const { balanceId } = req.params;
+        const uid      = req.user.uid;
+        const groupDoc = await db.collection("sharedBalances").doc(req.params.groupId).get();
+        if (!groupDoc.exists) return res.status(404).json({ error: "Group not found" });
 
-        const balanceRef = db.collection("sharedBalances").doc(balanceId);
-        const balanceDoc = await balanceRef.get();
+        const personalDoc = await db.collection("personalDocuments").doc(uid).get();
+        const userName    = personalDoc.exists
+            ? personalDoc.data().name
+            : req.user.email?.split("@")[0] || "Unknown";
 
-        if (!balanceDoc.exists) {
-            return res.status(404).json({ error: "Balance not found" });
-        }
-
-        const data = balanceDoc.data();
-
-        // Check if user is member
-        if (!data.members[uid]) {
-            return res.status(403).json({ error: "Not a member" });
-        }
-
-        // Get transactions
-        const txSnap = await balanceRef
-            .collection("transactions")
-            .orderBy("date", "desc")
-            .get();
-
-        const transactions = txSnap.docs.map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-        }));
-
-        res.json(transactions);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-// ── POST add note to transaction ───────────────────────────────────
-router.post("/:balanceId/transactions/:txId/notes", verifyToken, async (req, res) => {
-    try {
-        const uid = req.user.uid;
-        const { balanceId, txId } = req.params;
-        const { note } = req.body;
-
-        const txRef = db
-            .collection("sharedBalances")
-            .doc(balanceId)
-            .collection("transactions")
-            .doc(txId);
-
-        const txDoc = await txRef.get();
-        if (!txDoc.exists) {
-            return res.status(404).json({ error: "Transaction not found" });
-        }
-
-        const notes = txDoc.data().notes || [];
-        notes.push({
-            text: note,
-            by: uid,
-            date: new Date().toISOString(),
-        });
-
-        await txRef.update({ notes });
-
-        res.json({ message: "Note added", notes });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-// ── GET settlement summary ────────────────────────────────────────
-router.get("/:balanceId/settlement", verifyToken, async (req, res) => {
-    try {
-        const uid = req.user.uid;
-        const { balanceId } = req.params;
-
-        const balanceRef = db.collection("sharedBalances").doc(balanceId);
-        const balanceDoc = await balanceRef.get();
-
-        if (!balanceDoc.exists) {
-            return res.status(404).json({ error: "Balance not found" });
-        }
-
-        const data = balanceDoc.data();
-
-        // Check if user is member
-        if (!data.members[uid]) {
-            return res.status(403).json({ error: "Not a member" });
-        }
-
-        // Get transactions
-        const txSnap = await balanceRef.collection("transactions").get();
-        const transactions = txSnap.docs.map((doc) => doc.data());
-
-        // Calculate who owes whom
-        const balances = {};
-        const members = Object.keys(data.members);
-
-        members.forEach((mId) => {
-            balances[mId] = 0;
-        });
-
-        // Calculate each member's balance
-        transactions.forEach((tx) => {
-            members.forEach((mId) => {
-                if (mId === tx.paidBy) {
-                    balances[mId] += tx.amount; // They paid
-                } else {
-                    balances[mId] -= tx.split[mId]?.amount || 0; // They owe
-                }
-            });
-        });
-
-        // Create settlement transactions
-        const settlements = [];
-        const processed = new Set();
-
-        members.forEach((mId) => {
-            if (balances[mId] > 0.01) {
-                // This person is owed
-                members.forEach((otherId) => {
-                    if (otherId !== mId && balances[otherId] < -0.01) {
-                        // This person owes
-                        const key = [mId, otherId].sort().join("-");
-                        if (!processed.has(key)) {
-                            const amount = Math.min(balances[mId], -balances[otherId]);
-                            settlements.push({
-                                from: otherId,
-                                fromEmail: data.members[otherId].email,
-                                to: mId,
-                                toEmail: data.members[mId].email,
-                                amount: Math.round(amount * 100) / 100,
-                            });
-                            processed.add(key);
-                            balances[mId] -= amount;
-                            balances[otherId] += amount;
-                        }
-                    }
-                });
+        // Add to members
+        await groupDoc.ref.update({
+            [`members.${uid}`]: {
+                uid,
+                name:        userName,
+                email:       req.user.email,
+                role:        "member",
+                joinedAt:    new Date().toISOString(),
+                contributed: 0,
             }
         });
 
-        res.json({
-            balances,
-            settlements,
-            totalAmount: Object.values(data.members).reduce((sum, m) => sum + (m.contribution || 0), 0),
+        // Update invite status
+        await db.collection("users").doc(uid)
+            .collection("invites").doc(req.params.groupId)
+            .update({ status: "accepted" });
+
+        res.json({ message: "Berhasil bergabung!", groupName: groupDoc.data().name });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ── POST add transaction to shared balance ────────────────────
+router.post("/:groupId/transaction", verifyToken, async (req, res) => {
+    try {
+        const uid   = req.user.uid;
+        const { amount, type, description, note } = req.body;
+
+        const groupRef = db.collection("sharedBalances").doc(req.params.groupId);
+        const groupDoc = await groupRef.get();
+        if (!groupDoc.exists) return res.status(404).json({ error: "Group not found" });
+
+        const groupData = groupDoc.data();
+
+        // Check member
+        if (!groupData.members?.[uid]) {
+            return res.status(403).json({ error: "Kamu bukan anggota grup ini" });
+        }
+
+        // Only admin can add transactions (or all members — configurable)
+        // Current: all members can add
+        const memberName = groupData.members[uid].name;
+
+        const newBalance = type === "income"
+            ? (groupData.balance || 0) + amount
+            : (groupData.balance || 0) - amount;
+
+        if (newBalance < 0 && type === "expense") {
+            return res.status(400).json({ error: "Saldo grup tidak mencukupi" });
+        }
+
+        // Add transaction
+        const txRef = await groupRef.collection("transactions").add({
+            amount,
+            type,
+            description,
+            note:       note || "",
+            addedBy:    uid,
+            addedByName: memberName,
+            date:       new Date().toISOString(),
         });
+
+        // Update group balance & member contribution
+        await groupRef.update({
+            balance: newBalance,
+            [`members.${uid}.contributed`]:
+                (groupData.members[uid].contributed || 0) + (type === "income" ? amount : 0),
+        });
+
+        res.json({ newBalance, txId: txRef.id });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ── DELETE member (admin only) ────────────────────────────────
+router.delete("/:groupId/members/:memberId", verifyToken, async (req, res) => {
+    try {
+        const uid      = req.user.uid;
+        const groupDoc = await db.collection("sharedBalances").doc(req.params.groupId).get();
+        if (!groupDoc.exists) return res.status(404).json({ error: "Group not found" });
+
+        const groupData = groupDoc.data();
+        if (groupData.members?.[uid]?.role !== "admin") {
+            return res.status(403).json({ error: "Hanya admin yang bisa mengeluarkan anggota" });
+        }
+
+        // Can't remove self if admin
+        if (req.params.memberId === uid) {
+            return res.status(400).json({ error: "Admin tidak bisa mengeluarkan diri sendiri" });
+        }
+
+        const updatedMembers = { ...groupData.members };
+        delete updatedMembers[req.params.memberId];
+
+        await groupDoc.ref.update({ members: updatedMembers });
+        res.json({ message: "Anggota dihapus" });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ── DELETE group (admin only) ─────────────────────────────────
+router.delete("/:groupId", verifyToken, async (req, res) => {
+    try {
+        const uid      = req.user.uid;
+        const groupDoc = await db.collection("sharedBalances").doc(req.params.groupId).get();
+        if (!groupDoc.exists) return res.status(404).json({ error: "Group not found" });
+
+        if (groupDoc.data().createdBy !== uid) {
+            return res.status(403).json({ error: "Hanya pembuat grup yang bisa menghapus" });
+        }
+
+        await groupDoc.ref.delete();
+        res.json({ message: "Grup dihapus" });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ── POST regenerate invite code ───────────────────────────────
+router.post("/:groupId/regenerate-code", verifyToken, async (req, res) => {
+    try {
+        const uid      = req.user.uid;
+        const groupDoc = await db.collection("sharedBalances").doc(req.params.groupId).get();
+        if (!groupDoc.exists) return res.status(404).json({ error: "Group not found" });
+
+        if (groupDoc.data().members?.[uid]?.role !== "admin") {
+            return res.status(403).json({ error: "Hanya admin yang bisa generate ulang kode" });
+        }
+
+        const newCode = crypto.randomBytes(4).toString("hex").toUpperCase();
+        await groupDoc.ref.update({ inviteCode: newCode });
+        res.json({ inviteCode: newCode });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

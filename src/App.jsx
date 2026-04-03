@@ -16,8 +16,7 @@ import DailyQuiz from "./pages/DailyQuiz.jsx";
 import Tabungan from "./pages/Tabungan.jsx";
 import Email from "./pages/send.jsx";
 import RekapBulanan from "./pages/RekapBulanan.jsx";
-import SharedBalanceList from "./pages/SharedBalanceList.jsx";
-import SharedBalanceDetail from "./pages/SharedBalanceDetail.jsx";
+import SharedBalance from "./pages/SharedBalance.jsx";
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
@@ -73,16 +72,13 @@ function App() {
       <Route path="/quiz" element={
         <ProtectedRoute><DailyQuiz /></ProtectedRoute>
       } />
-      <Route path="/sharedbalance" element={
-        <ProtectedRoute><SharedBalanceList /></ProtectedRoute>
-      } />
       <Route path="/sharedbalance/:balanceId" element={
         <ProtectedRoute><SharedBalanceDetail /></ProtectedRoute>
       } />
       <Route path="/admin" element={
         <AdminRoute><AdminDashboard /></AdminRoute>
       } />
-
+      <Route path="/shared-balance" element={<ProtectedRoute><SharedBalance /></ProtectedRoute>} />
       <Route path="/video" element={
         <ProtectedRoute><VideoEdukasi /></ProtectedRoute>
       } />
