@@ -1,17 +1,138 @@
-# React + Vite
+#  Moneypath
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+!\[Status](https://img.shields.io/badge/status-active-success)
+!\[Frontend](https://img.shields.io/badge/frontend-Firebase-orange)
+!\[Backend](https://img.shields.io/badge/backend-Vercel-black)
+!\[Auth](https://img.shields.io/badge/auth-Firebase-blue)
+!\[License](https://img.shields.io/badge/license-MIT-green)
 
-Currently, two official plugins are available:
+> A fullstack finance tracking web app using Firebase + Vercel serverless architecture.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+\---
 
-## React Compiler
+##  Live Demo
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+*  Frontend: https://your-app.web.app
+*  API: https://your-backend.vercel.app
 
-## Expanding the ESLint configuration
+\---
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
-"# Moneypath" 
+##  Screenshots
+
+###  Dashboard
+
+!\[Dashboard Screenshot](./screenshots/dashboard.png)
+
+###  Login
+
+!\[Login Screenshot](./screenshots/login.png)
+
+\---
+
+##  Architecture
+
+User → Firebase Hosting → Axios → Vercel API → Database
+
+\---
+
+##  Project Structure
+
+front-end/
+├── src/
+├── public/
+├── .env
+├── firebase.json
+└── server/
+├── controllers/
+├── middleware/
+├── routes/
+├── server.js
+├── package.json
+└── vercel.json
+
+\---
+
+##  Tech Stack
+
+Frontend: React (Vite), Firebase Hosting, Axios  
+Backend: Node.js, Express, Vercel  
+Auth: Firebase Auth, Firebase Admin SDK
+
+\---
+
+##  Getting Started
+
+### Clone
+
+git clone <your-repo>
+cd front-end
+
+### Frontend
+
+npm install
+
+Create .env:
+VITE\_API\_URL=https://your-backend.vercel.app
+
+Run:
+npm run dev
+
+### Backend
+
+cd server
+npm install
+vercel --prod
+
+\---
+
+## 🔌 API Docs
+
+### POST /auth/register
+
+Request:
+{
+"email": "user@example.com",
+"password": "123456"
+}
+
+Response:
+{
+"message": "User created"
+}
+
+### POST /auth/login
+
+Response:
+{
+"token": "..."
+}
+
+### GET /auth/profile
+
+Header:
+Authorization: Bearer <token>
+
+Response:
+{
+"uid": "123",
+"email": "user@example.com"
+}
+
+\---
+
+##  Deployment
+
+Backend:
+cd server
+vercel --prod
+
+Frontend:
+npm run build
+firebase deploy
+
+\---
+
+## 👨‍💻 Author
+
+Ahmad Hariyanto
+
