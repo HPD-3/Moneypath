@@ -1,10 +1,12 @@
 #  Moneypath
 
-!\[Status](https://img.shields.io/badge/status-active-success)
-!\[Frontend](https://img.shields.io/badge/frontend-Firebase-orange)
-!\[Backend](https://img.shields.io/badge/backend-Vercel-black)
-!\[Auth](https://img.shields.io/badge/auth-Firebase-blue)
-!\[License](https://img.shields.io/badge/license-MIT-green)
+<p align="center">
+  <img src="https://img.shields.io/badge/status-active-success"/>
+  <img src="https://img.shields.io/badge/frontend-Firebase-orange"/>
+  <img src="https://img.shields.io/badge/backend-Vercel-black"/>
+  <img src="https://img.shields.io/badge/auth-Firebase-blue"/>
+  <img src="https://img.shields.io/badge/license-MIT-green"/>
+</p>
 
 > A fullstack finance tracking web app using Firebase + Vercel serverless architecture.
 
