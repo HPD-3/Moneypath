@@ -18,8 +18,8 @@ function RoleBadge({ role }) {
 
 // ── Group Card ────────────────────────────────────────────────
 function GroupCard({ group, uid, onClick }) {
-    const members     = Object.values(group.members || {});
-    const myRole      = group.members?.[uid]?.role;
+    const members = Object.values(group.members || {});
+    const myRole = group.members?.[uid]?.role;
     const [hov, setHov] = useState(false);
 
     return (
@@ -102,9 +102,9 @@ function CreateModal({ onClose, onCreate }) {
 
 // ── Join Group Modal ──────────────────────────────────────────
 function JoinModal({ onClose, onJoin }) {
-    const [code, setCode]   = useState("");
+    const [code, setCode] = useState("");
     const [saving, setSaving] = useState(false);
-    const [error, setError]   = useState(null);
+    const [error, setError] = useState(null);
 
     const handleSubmit = async e => {
         e.preventDefault();
@@ -140,18 +140,18 @@ function JoinModal({ onClose, onJoin }) {
 }
 
 // ── Group Detail Modal ────────────────────────────────────────
-function GroupDetail({ group, uid, onClose, onRefresh }) {
-    const [tab, setTab]           = useState("transaksi");
-    const [txForm, setTxForm]     = useState({ amount: "", type: "income", description: "", note: "" });
+function GroupDetail({ group, uid, onClose, onRefresh, balanceCategories = [] }) {
+    const [tab, setTab] = useState("transaksi");
+    const [txForm, setTxForm] = useState({ amount: "", type: "income", description: "", note: "", personalBalanceCategory: null });
     const [inviteEmail, setInviteEmail] = useState("");
-    const [saving, setSaving]     = useState(false);
-    const [copied, setCopied]     = useState(false);
-    const [error, setError]       = useState(null);
-    const [success, setSuccess]   = useState(null);
+    const [saving, setSaving] = useState(false);
+    const [copied, setCopied] = useState(false);
+    const [error, setError] = useState(null);
+    const [success, setSuccess] = useState(null);
 
-    const members  = Object.values(group.members || {});
-    const myRole   = group.members?.[uid]?.role;
-    const isAdmin  = myRole === "admin";
+    const members = Object.values(group.members || {});
+    const myRole = group.members?.[uid]?.role;
+    const isAdmin = myRole === "admin";
 
     const handleCopyCode = () => {
         navigator.clipboard.writeText(group.inviteCode);
@@ -162,16 +162,39 @@ function GroupDetail({ group, uid, onClose, onRefresh }) {
     const handleTransaction = async e => {
         e.preventDefault();
         setError(null);
+
+        const amount = parseFloat(txForm.amount);
+        if (isNaN(amount)) {
+            setError("Jumlah tidak valid");
+            return;
+        }
+
         setSaving(true);
         try {
             await API.post(`/shared-balance/${group.id}/transaction`, {
-                ...txForm, amount: parseFloat(txForm.amount)
+                amount,
+                type: txForm.type,
+                description: txForm.description,
+                note: txForm.note,
+                personalBalanceId: txForm.personalBalanceCategory,
+                userId: uid
             });
-            setTxForm({ amount: "", type: "income", description: "", note: "" });
+
+            setTxForm({
+                amount: "",
+                type: "income",
+                description: "",
+                note: "",
+                personalBalanceCategory: null
+            });
+
             onRefresh(group.id);
         } catch (err) {
+            console.log(err.response?.data);
             setError(err.response?.data?.error || err.message);
-        } finally { setSaving(false); }
+        } finally {
+            setSaving(false);
+        }
     };
 
     const handleInvite = async e => {
@@ -260,7 +283,7 @@ function GroupDetail({ group, uid, onClose, onRefresh }) {
 
                 <div style={{ padding: "0 16px 24px" }}>
                     {/* Alerts */}
-                    {error   && <div style={{ background: "#fee2e2", border: "1px solid #fca5a5", borderRadius: 8, padding: "10px 14px", fontSize: 12, color: "#991b1b", marginBottom: 12 }}>⚠️ {error}</div>}
+                    {error && <div style={{ background: "#fee2e2", border: "1px solid #fca5a5", borderRadius: 8, padding: "10px 14px", fontSize: 12, color: "#991b1b", marginBottom: 12 }}>⚠️ {error}</div>}
                     {success && <div style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 8, padding: "10px 14px", fontSize: 12, color: "#166534", marginBottom: 12 }}>✅ {success}</div>}
 
                     {/* Tabs */}
@@ -295,6 +318,20 @@ function GroupDetail({ group, uid, onClose, onRefresh }) {
                                     placeholder="Keterangan transaksi..." style={{ width: "100%", border: "1px solid #d1d5db", borderRadius: 8, padding: "9px 10px", fontSize: 12, outline: "none", fontFamily: "Plus Jakarta Sans, sans-serif", marginBottom: 8 }} />
                                 <input value={txForm.note} onChange={e => setTxForm({ ...txForm, note: e.target.value })}
                                     placeholder="Catatan (opsional)..." style={{ width: "100%", border: "1px solid #d1d5db", borderRadius: 8, padding: "9px 10px", fontSize: 12, outline: "none", fontFamily: "Plus Jakarta Sans, sans-serif", marginBottom: 10 }} />
+
+                                {/* NEW: Personal Balance Category Selector */}
+                                <div style={{ marginBottom: 10 }}>
+                                    <label style={{ fontSize: 11, fontWeight: 600, color: "#4b5563", display: "block", marginBottom: 4 }}>Kategori Saldo Pribadi (opsional)</label>
+                                    <select value={txForm.personalBalanceCategory || ""} onChange={e => setTxForm({ ...txForm, personalBalanceCategory: e.target.value || null })}
+                                        style={{ width: "100%", border: "1px solid #d1d5db", borderRadius: 8, padding: "9px 10px", fontSize: 12, outline: "none", fontFamily: "Plus Jakarta Sans, sans-serif" }}>
+                                        <option value="">-- Tidak ada (grup saja) --</option>
+                                        {balanceCategories.map(cat => (
+                                            <option key={cat.id} value={cat.id}>{cat.name}</option>
+                                        ))}
+                                    </select>
+                                    <p style={{ fontSize: 10, color: "#9ca3af", marginTop: 3 }}>💡 Pilih untuk sinkronisasi ke saldo pribadi Anda</p>
+                                </div>
+
                                 <button type="submit" disabled={saving}
                                     style={{ width: "100%", background: "#1a3a1f", color: "#9FF782", border: "none", borderRadius: 8, padding: "10px", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "Plus Jakarta Sans, sans-serif" }}>
                                     {saving ? "Menyimpan..." : "Simpan Transaksi"}
@@ -302,24 +339,82 @@ function GroupDetail({ group, uid, onClose, onRefresh }) {
                             </form>
 
                             {/* Transaction List */}
-                            {(group.transactions || []).length === 0 ? (
-                                <p style={{ textAlign: "center", color: "#9ca3af", fontSize: 13, padding: "20px 0" }}>Belum ada transaksi</p>
-                            ) : (group.transactions || []).map((tx, i) => (
+                            {(group.transactions || []).map((tx, i) => (
                                 <div key={tx.id} style={{ padding: "12px 0", borderBottom: "1px solid #f3f4f6" }}>
                                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+
+                                        {/* LEFT */}
                                         <div style={{ flex: 1 }}>
-                                            <p style={{ fontSize: 13, fontWeight: 600, color: "#374151" }}>{tx.description}</p>
+                                            <div>
+                                                <p>{tx.description}</p>
+
+                                                {tx.personalBalanceName && (
+                                                    <p style={{ fontSize: "12px", color: "#888" }}>
+                                                        Sumber dana: {tx.personalBalanceName}
+                                                    </p>
+                                                )}
+                                            </div>
+
+                                            {/* 🔥 CATEGORY BADGE */}
+                                            {tx.personalBalanceCategory && (
+                                                <span style={{
+                                                    display: "inline-block",
+                                                    marginTop: 4,
+                                                    fontSize: 10,
+                                                    fontWeight: 600,
+                                                    padding: "2px 8px",
+                                                    borderRadius: 20,
+                                                    background: "#e0f2fe",
+                                                    color: "#0369a1"
+                                                }}>
+                                                    {tx.personalBalanceCategory}
+                                                </span>
+                                            )}
+
+                                            {/* META */}
                                             <div style={{ display: "flex", gap: 8, marginTop: 3 }}>
-                                                <p style={{ fontSize: 11, color: "#9ca3af" }}>oleh {tx.addedByName}</p>
                                                 <p style={{ fontSize: 11, color: "#9ca3af" }}>
-                                                    {tx.date ? new Date(tx.date).toLocaleDateString("id-ID", { day: "2-digit", month: "short" }) : ""}
+                                                    oleh {tx.addedByName}
+                                                </p>
+                                                <p style={{ fontSize: 11, color: "#9ca3af" }}>
+                                                    {tx.date
+                                                        ? new Date(tx.date).toLocaleDateString("id-ID", {
+                                                            day: "2-digit",
+                                                            month: "short"
+                                                        })
+                                                        : ""}
                                                 </p>
                                             </div>
-                                            {tx.note && <p style={{ fontSize: 11, color: "#9ca3af", marginTop: 2, fontStyle: "italic" }}>📝 {tx.note}</p>}
+
+                                            {tx.note && (
+                                                <p style={{ fontSize: 11, color: "#9ca3af", marginTop: 2, fontStyle: "italic" }}>
+                                                    📝 {tx.note}
+                                                </p>
+                                            )}
+
+                                            {tx.personalBalanceCategory && (
+                                                <p style={{ fontSize: 11, color: "#3b82f6", marginTop: 2 }}>
+                                                    💳 Sumber dana: {tx.personalBalanceCategory}
+                                                </p>
+                                            )}
+
+                                            {tx.linkedPersonalTxId && (
+                                                <p style={{ fontSize: 10, color: "#10b981", marginTop: 2, fontWeight: 600 }}>
+                                                    ✅ Tersinkronisasi ke saldo pribadi
+                                                </p>
+                                            )}
                                         </div>
-                                        <p style={{ fontSize: 14, fontWeight: 700, color: tx.type === "income" ? "#166534" : "#991b1b" }}>
-                                            {tx.type === "income" ? "+" : "−"}{fmt(tx.amount)}
+
+                                        {/* RIGHT (AMOUNT) */}
+                                        <p style={{
+                                            fontSize: 14,
+                                            fontWeight: 700,
+                                            color: tx.type === "income" ? "#166534" : "#991b1b"
+                                        }}>
+                                            {tx.type === "income" ? "+" : "−"}
+                                            {fmt(tx.amount)}
                                         </p>
+
                                     </div>
                                 </div>
                             ))}
@@ -398,14 +493,15 @@ function GroupDetail({ group, uid, onClose, onRefresh }) {
 
 // ── Main Shared Balance Page ──────────────────────────────────
 export default function SharedBalance() {
-    const navigate                      = useNavigate();
-    const [groups, setGroups]           = useState([]);
-    const [invites, setInvites]         = useState([]);
-    const [loading, setLoading]         = useState(true);
-    const [selected, setSelected]       = useState(null);
-    const [showCreate, setShowCreate]   = useState(false);
-    const [showJoin, setShowJoin]       = useState(false);
-    const [uid, setUid]                 = useState(null);
+    const navigate = useNavigate();
+    const [groups, setGroups] = useState([]);
+    const [invites, setInvites] = useState([]);
+    const [balances, setBalances] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [selected, setSelected] = useState(null);
+    const [showCreate, setShowCreate] = useState(false);
+    const [showJoin, setShowJoin] = useState(false);
+    const [uid, setUid] = useState(null);
 
     useEffect(() => { fetchAll(); }, []);
 
@@ -420,8 +516,22 @@ export default function SharedBalance() {
             setUid(profileRes.data.uid);
             setGroups(groupsRes.data);
             setInvites(invitesRes.data);
-        } catch (err) { console.error(err); }
-        finally { setLoading(false); }
+
+            // NEW: Try to fetch personal balance categories (optional - doesn't block if fails)
+            try {
+                const balancesRes = await API.get("/balance");  // Fetch personal balance categories
+                setBalances(balancesRes.data);
+                console.log("✅ Fetched balance categories:", balancesRes.data);
+            } catch (balanceErr) {
+                console.warn("⚠️ Could not fetch balance categories:", balanceErr.message);
+                setBalances([]);  // Fallback to empty array
+            }
+        } catch (err) {
+            console.error(err);
+        }
+        finally {
+            setLoading(false);
+        }
     };
 
     const handleCreate = async (form) => {
@@ -522,10 +632,10 @@ export default function SharedBalance() {
             </div>
 
             {selected && uid && (
-                <GroupDetail group={selected} uid={uid} onClose={() => setSelected(null)} onRefresh={handleRefreshGroup} />
+                <GroupDetail group={selected} uid={uid} onClose={() => setSelected(null)} onRefresh={handleRefreshGroup} balanceCategories={balances} />
             )}
             {showCreate && <CreateModal onClose={() => setShowCreate(false)} onCreate={handleCreate} />}
-            {showJoin   && <JoinModal   onClose={() => setShowJoin(false)}   onJoin={handleJoin} />}
+            {showJoin && <JoinModal onClose={() => setShowJoin(false)} onJoin={handleJoin} />}
         </div>
     );
 }

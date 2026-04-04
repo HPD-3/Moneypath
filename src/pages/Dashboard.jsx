@@ -236,8 +236,8 @@ export default function Dashboard() {
                     <NavCard icon="🧠" label="Daily Quiz" sub={quizStats?.completedToday ? "✓ Selesai hari ini" : "Belum dimainkan"} onClick={() => navigate("/quiz")} />
                     <NavCard icon="🐷" label="Tabungan" sub="Kelola target menabung" onClick={() => navigate("/tabungan")} />
                     <NavCard icon="📊" label="Rekap" sub="Rekap Bulanan" onClick={() => navigate("/rekap")} />
-                    <NavCard icon="👥" label="Shared Balance" sub="Shared Balance" onClick={() => navigate("/sharedbalance")} />
                     <NavCard icon="🤝" label="Saldo Bersama" sub="Kelola keuangan bareng" onClick={() => navigate("/shared-balance")} />
+                    <NavCard icon="🤝" label="Tabungan Bersama" sub="Nabung bareng teman" onClick={() => navigate("/shared-tabungan")} />
                 </div>
 
                 {/* ── QUICK STATS ───────────────────────── */}

@@ -11,6 +11,7 @@ import { sendEmailHandler } from "./api/send-email.js";
 import rekapRoutes from "./routes/rekap.js";
 import cronRoutes from "./routes/cron.js";
 import sharedBalanceRoutes from "./routes/sharedbalance.js";
+import sharedTabunganRoutes from "./routes/sharedTabungan.js";
 
 
 const app = express();
@@ -53,4 +54,6 @@ app.post("/api/send-email", sendEmailHandler);
 app.use("/rekap", rekapRoutes);
 app.use("/cron", cronRoutes);
 app.use("/shared-balance", sharedBalanceRoutes);
+app.use("/shared-tabungan", sharedTabunganRoutes);
+
 export default app;

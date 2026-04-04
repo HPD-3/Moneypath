@@ -207,7 +207,7 @@ router.get("/transactions", verifyToken, async (req, res) => {
 
         res.json(transactions);
     } catch (err) {
-        console.error("🔥 TRANSACTION ERROR:", err); // IMPORTANT
+        console.error("🔥 TRANSACTION ERROR:", err);
         res.status(500).json({ error: err.message });
     }
 });

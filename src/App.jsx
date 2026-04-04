@@ -17,6 +17,7 @@ import Tabungan from "./pages/Tabungan.jsx";
 import Email from "./pages/send.jsx";
 import RekapBulanan from "./pages/RekapBulanan.jsx";
 import SharedBalance from "./pages/SharedBalance.jsx";
+import SharedTabungan from "./pages/SharedTabungan.jsx";
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
@@ -76,6 +77,7 @@ function App() {
         <AdminRoute><AdminDashboard /></AdminRoute>
       } />
       <Route path="/shared-balance" element={<ProtectedRoute><SharedBalance /></ProtectedRoute>} />
+      <Route path="/shared-tabungan" element={<ProtectedRoute><SharedTabungan /></ProtectedRoute>} />
       <Route path="/video" element={
         <ProtectedRoute><VideoEdukasi /></ProtectedRoute>
       } />
