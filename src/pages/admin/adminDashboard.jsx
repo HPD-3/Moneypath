@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import API from "../services/api.js";
+import API from "../../services/api.js";
 
 // Import Sub-komponen
-import AdminBeranda from "./admin/AdminBeranda.jsx";
-import AdminVideoEdukasi from "./admin/AdminVideoEdukasi.jsx";
-import AdminLearningPath from "./admin/AdminLearningPath.jsx";
-import AdminKontenEdukasi from "./admin/AdminKontenEdukasi.jsx";
-import AdminDailyQuiz from "./admin/AdminDailyQuiz.jsx";
-import Sidebar from "./admin/AdminShared.jsx";
+import AdminBeranda from "./AdminBeranda.jsx";
+import AdminVideoEdukasi from "./AdminVideoEdukasi.jsx";
+import AdminLearningPath from "./AdminLearningPath.jsx";
+import AdminKontenEdukasi from "./AdminKontenEdukasi.jsx";
+import AdminDailyQuiz from "./AdminDailyQuiz.jsx";
+import Sidebar from "./AdminShared.jsx";
 
 export default function AdminDashboard() {
     const navigate = useNavigate();

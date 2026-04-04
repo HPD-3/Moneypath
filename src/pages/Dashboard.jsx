@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getAuth, signOut } from "firebase/auth";
 import API from "../services/api.js";
+//import MagicBento from '../components/MagicBento.jsx'
 
 // ── Helpers ───────────────────────────────────────────────────
 function calcLevel(totalExp = 0) {
@@ -225,7 +226,19 @@ export default function Dashboard() {
                         onClick={() => navigate("/quiz")}
                     />
                 </div>
-
+                {/*<MagicBento
+                    textAutoHide={true}
+                    enableStars
+                    enableSpotlight
+                    enableBorderGlow={true}
+                    enableTilt={false}
+                    enableMagnetism={false}
+                    clickEffect
+                    spotlightRadius={400}
+                    particleCount={12}
+                    glowColor="132, 0, 255"
+                    disableAnimations={false}
+                />*/}
                 {/* ── MENU GRID ─────────────────────────── */}
                 <p style={{ fontSize: 11, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 12 }}>Menu Utama</p>
 

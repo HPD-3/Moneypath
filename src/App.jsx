@@ -8,7 +8,7 @@ import Register from "./pages/Register";
 import Personal from "./pages/Personal.jsx";
 import Profile from "./pages/Profile.jsx";
 import Balance from "./pages/Balance.jsx";
-import AdminDashboard from "./pages/AdminDashboard.jsx";
+import AdminDashboard from "./pages/admin/adminDashboard.jsx";
 import VideoEdukasi from "./pages/VideoEdukasi.jsx";
 import LearningPathList from "./pages/LearningPathList.jsx";
 import LearningPathDetail from "./pages/LearningPathDetail.jsx";

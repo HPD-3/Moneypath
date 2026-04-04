@@ -5,7 +5,7 @@ export default function AdminBeranda({ users, modules, transactions, setActive }
         date: m.createdAt
             ? new Date(m.createdAt).toLocaleDateString("id-ID", {
                 day: "2-digit", month: "2-digit", year: "numeric"
-              }).replace(/\//g, "-")
+            }).replace(/\//g, "-")
             : "—",
     }));
 
@@ -68,9 +68,9 @@ export default function AdminBeranda({ users, modules, transactions, setActive }
             <p className="section-title">Menajemen Fitur Edukasi</p>
             <div style={{ display: "flex", gap: 14, marginBottom: 28, flexWrap: "wrap" }}>
                 {[
-                    { id: "video",    icon: "▶️",  label: "Mengelola Vidio Edukasi" },
+                    { id: "video", icon: "▶️", label: "Mengelola Vidio Edukasi" },
                     { id: "learning", icon: "📊", label: "Mengelola Learning Path" },
-                    { id: "konten",   icon: "📋", label: "Mengelola Konten Edukasi" },
+                    { id: "konten", icon: "📋", label: "Mengelola Konten Edukasi" },
                 ].map(item => (
                     <div key={item.id} style={{ background: "white", borderRadius: 10, padding: 16, width: 170, boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
                         <div style={{ width: 32, height: 32, borderRadius: 6, background: "#e8fce0", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, marginBottom: 8 }}>
