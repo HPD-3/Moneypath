@@ -15,7 +15,7 @@ const router = Router();
 // ── GET all shared tabungan for current user ──────────────────
 router.get("/", verifyToken, async (req, res) => {
     try {
-        const uid  = req.user.uid;
+        const uid = req.user.uid;
         const snap = await db.collection("sharedTabungan")
             .where(`members.${uid}.uid`, "==", uid)
             .get();
@@ -67,23 +67,23 @@ router.post("/", verifyToken, async (req, res) => {
 
         const ref = await db.collection("sharedTabungan").add({
             name,
-            description:  description || "",
+            description: description || "",
             targetAmount: parseFloat(targetAmount),
-            terkumpul:    0,
-            deadline:     deadline || null,
-            imageUrl:     imageUrl || null,
-            category:     category || "umum",
+            terkumpul: 0,
+            deadline: deadline || null,
+            imageUrl: imageUrl || null,
+            category: category || "umum",
             inviteCode,
-            isCompleted:  false,
-            createdBy:    uid,
-            createdAt:    new Date().toISOString(),
+            isCompleted: false,
+            createdBy: uid,
+            createdAt: new Date().toISOString(),
             members: {
                 [uid]: {
                     uid,
-                    name:        creatorName,
-                    email:       req.user.email,
-                    role:        "admin",
-                    joinedAt:    new Date().toISOString(),
+                    name: creatorName,
+                    email: req.user.email,
+                    role: "admin",
+                    joinedAt: new Date().toISOString(),
                     contributed: 0,
                 }
             }
@@ -98,7 +98,7 @@ router.post("/", verifyToken, async (req, res) => {
 // ── POST join via invite code ─────────────────────────────────
 router.post("/join", verifyToken, async (req, res) => {
     try {
-        const uid            = req.user.uid;
+        const uid = req.user.uid;
         const { inviteCode } = req.body;
 
         const snap = await db.collection("sharedTabungan")
@@ -107,7 +107,7 @@ router.post("/join", verifyToken, async (req, res) => {
 
         if (snap.empty) return res.status(404).json({ error: "Kode undangan tidak ditemukan" });
 
-        const groupDoc  = snap.docs[0];
+        const groupDoc = snap.docs[0];
         const groupData = groupDoc.data();
 
         if (groupData.members?.[uid]) {
@@ -122,10 +122,10 @@ router.post("/join", verifyToken, async (req, res) => {
         await groupDoc.ref.update({
             [`members.${uid}`]: {
                 uid,
-                name:        userName,
-                email:       req.user.email,
-                role:        "member",
-                joinedAt:    new Date().toISOString(),
+                name: userName,
+                email: req.user.email,
+                role: "member",
+                joinedAt: new Date().toISOString(),
                 contributed: 0,
             }
         });
@@ -139,7 +139,7 @@ router.post("/join", verifyToken, async (req, res) => {
 // ── POST invite by email ──────────────────────────────────────
 router.post("/:groupId/invite", verifyToken, async (req, res) => {
     try {
-        const uid   = req.user.uid;
+        const uid = req.user.uid;
         const { email } = req.body;
 
         const groupDoc = await db.collection("sharedTabungan").doc(req.params.groupId).get();
@@ -164,13 +164,13 @@ router.post("/:groupId/invite", verifyToken, async (req, res) => {
 
         await db.collection("users").doc(invitedUid)
             .collection("sharedTabunganInvites").doc(req.params.groupId).set({
-                groupId:    req.params.groupId,
-                groupName:  groupData.name,
+                groupId: req.params.groupId,
+                groupName: groupData.name,
                 targetAmount: groupData.targetAmount,
-                invitedBy:  uid,
+                invitedBy: uid,
                 inviteCode: groupData.inviteCode,
-                invitedAt:  new Date().toISOString(),
-                status:     "pending",
+                invitedAt: new Date().toISOString(),
+                status: "pending",
             });
 
         res.json({ message: `Undangan dikirim ke ${email}` });
@@ -182,7 +182,7 @@ router.post("/:groupId/invite", verifyToken, async (req, res) => {
 // ── GET pending invites ───────────────────────────────────────
 router.get("/invites/pending", verifyToken, async (req, res) => {
     try {
-        const uid  = req.user.uid;
+        const uid = req.user.uid;
         const snap = await db.collection("users").doc(uid)
             .collection("sharedTabunganInvites")
             .where("status", "==", "pending").get();
@@ -195,7 +195,7 @@ router.get("/invites/pending", verifyToken, async (req, res) => {
 // ── POST accept invite ────────────────────────────────────────
 router.post("/invites/:groupId/accept", verifyToken, async (req, res) => {
     try {
-        const uid      = req.user.uid;
+        const uid = req.user.uid;
         const groupDoc = await db.collection("sharedTabungan").doc(req.params.groupId).get();
         if (!groupDoc.exists) return res.status(404).json({ error: "Group not found" });
 
@@ -251,7 +251,6 @@ router.post("/:groupId/setor", verifyToken, async (req, res) => {
 
         // ── Deduct from source ────────────────────────────────
         if (sourceType === "shared") {
-            // Deduct from shared balance group
             const balRef = db.collection("sharedBalances").doc(sourceId);
             const balDoc = await balRef.get();
             if (!balDoc.exists) return res.status(404).json({ error: "Saldo bersama tidak ditemukan" });
@@ -266,7 +265,7 @@ router.post("/:groupId/setor", verifyToken, async (req, res) => {
 
             await balRef.update({ balance: (balData.balance || 0) - amount });
 
-            // Log in shared balance transactions
+            // Catat di shared balance transactions
             await balRef.collection("transactions").add({
                 amount, type: "expense",
                 description: `Setor ke tabungan bersama: ${tabData.name}`,
@@ -275,7 +274,20 @@ router.post("/:groupId/setor", verifyToken, async (req, res) => {
                 date: new Date().toISOString(),
             });
 
-        } else if (sourceType === "personal") {
+            // ── UPDATE: Catat juga di riwayat pribadi user ────────────
+            await db.collection("users").doc(uid)
+                .collection("transactions").add({
+                    balanceId: sourceId,
+                    balanceName: `[Bersama] ${sourceName}`,
+                    amount,
+                    type: "expense",
+                    description: `Setor ke tabungan bersama: ${tabData.name}`,
+                    date: new Date().toISOString(),
+                    source: "shared_tabungan",
+                });
+        }
+
+        else if (sourceType === "personal") {
             // Deduct from personal balance
             const balRef = db.collection("users").doc(uid)
                 .collection("balances").doc(sourceId);
@@ -299,10 +311,10 @@ router.post("/:groupId/setor", verifyToken, async (req, res) => {
 
         // ── Update tabungan ───────────────────────────────────
         const newTerkumpul = tabData.terkumpul + amount;
-        const isCompleted  = newTerkumpul >= tabData.targetAmount;
+        const isCompleted = newTerkumpul >= tabData.targetAmount;
 
         await tabRef.update({
-            terkumpul:   newTerkumpul,
+            terkumpul: newTerkumpul,
             isCompleted,
             completedAt: isCompleted ? new Date().toISOString() : null,
             [`members.${uid}.contributed`]:
@@ -312,9 +324,9 @@ router.post("/:groupId/setor", verifyToken, async (req, res) => {
         // Log setoran
         await tabRef.collection("setoran").add({
             amount, sourceType, sourceId, sourceName,
-            addedBy:     uid,
+            addedBy: uid,
             addedByName: tabData.members[uid].name,
-            date:        new Date().toISOString(),
+            date: new Date().toISOString(),
         });
 
         res.json({ newTerkumpul, isCompleted });
@@ -323,10 +335,13 @@ router.post("/:groupId/setor", verifyToken, async (req, res) => {
     }
 });
 
+
+
+
 // ── PUT update target info ────────────────────────────────────
 router.put("/:groupId", verifyToken, async (req, res) => {
     try {
-        const uid      = req.user.uid;
+        const uid = req.user.uid;
         const groupDoc = await db.collection("sharedTabungan").doc(req.params.groupId).get();
         if (!groupDoc.exists) return res.status(404).json({ error: "Not found" });
         if (groupDoc.data().members?.[uid]?.role !== "admin") {
@@ -346,7 +361,7 @@ router.put("/:groupId", verifyToken, async (req, res) => {
 // ── DELETE group ──────────────────────────────────────────────
 router.delete("/:groupId", verifyToken, async (req, res) => {
     try {
-        const uid      = req.user.uid;
+        const uid = req.user.uid;
         const groupDoc = await db.collection("sharedTabungan").doc(req.params.groupId).get();
         if (!groupDoc.exists) return res.status(404).json({ error: "Not found" });
         if (groupDoc.data().createdBy !== uid) {

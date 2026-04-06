@@ -2,36 +2,50 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../services/api.js";
 
-const fmt    = (n) => `Rp ${(n || 0).toLocaleString("id-ID")}`;
+const fmt = (n) => `Rp ${(n || 0).toLocaleString("id-ID")}`;
 const MONTHS = ["", "Januari", "Februari", "Maret", "April", "Mei",
-                "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+    "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
 
 export default function RekapBulanan() {
-    const navigate          = useNavigate();
-    const now               = new Date();
-    const [year, setYear]   = useState(now.getFullYear());
+    const navigate = useNavigate();
+    const now = new Date();
+    const [year, setYear] = useState(now.getFullYear());
     const [month, setMonth] = useState(now.getMonth() + 1);
-    const [data, setData]   = useState(null);
-    const [loading, setLoading]   = useState(true);
-    const [sending, setSending]   = useState(false);
-    const [sent, setSent]         = useState(false);
-    const [error, setError]       = useState(null);
+    const [data, setData] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [sending, setSending] = useState(false);
+    const [sent, setSent] = useState(false);
+    const [error, setError] = useState(null);
+    const [ready, setReady] = useState(false);
 
     useEffect(() => {
-        fetchRekap();
-    }, [year, month]);
+        const unsub = onAuthStateChanged(auth, (user) => {
+            if (user) {
+                setReady(true); // ✅ tandai siap
+            } else {
+                setReady(false);
+            }
+        });
+
+        return () => unsub(); // cleanup
+    }, []);
+
+    useEffect(() => {
+        if (ready) {
+            fetchRekap();
+        }
+    }, [ready, year, month]);
 
     const fetchRekap = async () => {
-        setLoading(true);
-        setData(null);
-        try {
-            const res = await API.get(`/rekap?year=${year}&month=${month}`);
-            setData(res.data);
-        } catch (err) {
-            setError(err.message);
-        } finally {
-            setLoading(false);
+        const user = auth.currentUser;
+
+        if (!user) {
+            console.warn("User belum ready");
+            return;
         }
+
+        const res = await API.get(`/rekap?year=${year}&month=${month}`);
+        setData(res.data);
     };
 
     const handleSend = async () => {

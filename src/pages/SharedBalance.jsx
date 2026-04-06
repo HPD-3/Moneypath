@@ -374,15 +374,16 @@ function GroupDetail({ group, uid, onClose, onRefresh, balanceCategories = [] })
                                             {/* META */}
                                             <div style={{ display: "flex", gap: 8, marginTop: 3 }}>
                                                 <p style={{ fontSize: 11, color: "#9ca3af" }}>
-                                                    oleh {tx.addedByName}
+                                                    oleh {(tx.addedByName && tx.addedByName.trim()) || "Unknown"}
                                                 </p>
                                                 <p style={{ fontSize: 11, color: "#9ca3af" }}>
                                                     {tx.date
                                                         ? new Date(tx.date).toLocaleDateString("id-ID", {
                                                             day: "2-digit",
-                                                            month: "short"
+                                                            month: "short",
+                                                            year: "numeric"
                                                         })
-                                                        : ""}
+                                                        : "-"}
                                                 </p>
                                             </div>
 

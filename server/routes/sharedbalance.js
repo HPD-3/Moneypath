@@ -165,6 +165,10 @@ router.post("/", verifyToken, async (req, res) => {
 
         const inviteCode = crypto.randomBytes(4).toString("hex").toUpperCase();
 
+
+        const userDoc = await db.collection("users").doc(uid).get();
+        const userData = userDoc.data() || {};
+
         const ref = await db.collection("sharedBalances").add({
             name,
             description: description || "",
@@ -176,6 +180,7 @@ router.post("/", verifyToken, async (req, res) => {
                 [uid]: {
                     uid,
                     role: "admin",
+                    name: userData.name ?? "Unknown", // ✅ FIX
                     joinedAt: new Date().toISOString(),
                     contributed: 0
                 }
@@ -205,10 +210,13 @@ router.post("/join", verifyToken, async (req, res) => {
         }
 
         const groupDoc = snap.docs[0];
+        const userDoc = await db.collection("users").doc(uid).get();
+        const userData = userDoc.data() || {};
 
         await groupDoc.ref.update({
             [`members.${uid}`]: {
                 uid,
+                name: userData.name ?? req.user.email?.split("@")[0] ?? "Unknown",
                 role: "member",
                 joinedAt: new Date().toISOString(),
                 contributed: 0
@@ -255,11 +263,17 @@ router.get("/invites/pending", verifyToken, async (req, res) => {
 // TRANSACTIONS
 // ══════════════════════════════════════════════════════════════
 
-// ADD transaction
 router.post("/:groupId/transaction", verifyToken, async (req, res) => {
     try {
         const uid = req.user.uid;
-        const { amount, type, description, personalBalanceId } = req.body;
+
+        // ✅ Ambil semua dari body
+        const { amount, type, description, note, personalBalanceId } = req.body;
+
+        // ✅ Validasi basic
+        if (!amount || amount <= 0) {
+            return res.status(400).json({ error: "Jumlah tidak valid" });
+        }
 
         const groupRef = db.collection("sharedBalances").doc(req.params.groupId);
         const groupDoc = await groupRef.get();
@@ -270,37 +284,89 @@ router.post("/:groupId/transaction", verifyToken, async (req, res) => {
 
         const groupData = groupDoc.data();
 
-        const newBalance = type === "income"
-            ? groupData.balance + amount
-            : groupData.balance - amount;
+        if (!groupData.members?.[uid]) {
+            return res.status(403).json({ error: "Kamu bukan anggota grup ini" });
+        }
 
+        // ✅ Ambil nama user
+        const personalDoc = await db.collection("personalDocuments").doc(uid).get();
+        const memberName = personalDoc.exists
+            ? personalDoc.data().name
+            : req.user.email?.split("@")[0] || "Unknown";
+
+        // ✅ Hitung saldo grup
+        const newBalance = type === "income"
+            ? (groupData.balance || 0) + amount
+            : (groupData.balance || 0) - amount;
+
+        if (newBalance < 0 && type === "expense") {
+            return res.status(400).json({ error: "Saldo grup tidak mencukupi" });
+        }
+
+        // ════════════════════════════════
+        // ✅ SYNC PERSONAL (FIX LOGIC)
+        // ════════════════════════════════
+        let personalTx = null;
+
+        if (personalBalanceId && type === "income") {
+            // 💡 Setor ke grup = uang keluar dari pribadi
+            personalTx = await updateUserBalance(
+                uid,
+                amount,
+                "expense", // ✅ FIX: bukan type langsung
+                `${description} (Setor ke ${groupData.name})`,
+                personalBalanceId
+            );
+        }
+
+        // ════════════════════════════════
+        // ✅ SIMPAN KE GROUP
+        // ════════════════════════════════
         const txRef = await groupRef.collection("transactions").add({
             amount,
             type,
             description,
-            personalBalanceId,
+            note: note || "",
             addedBy: uid,
-            date: new Date().toISOString()
+            addedByName: memberName,
+            date: new Date().toISOString(),
+
+            // ✅ LINK
+            linkedPersonalTxId: personalTx?.txId || null,
+            personalBalanceId: personalBalanceId || null
         });
 
-        await groupRef.update({ balance: newBalance });
+        // ✅ Update saldo grup
+        await groupRef.update({
+            balance: newBalance,
+            [`members.${uid}.contributed`]:
+                (groupData.members[uid].contributed || 0) +
+                (type === "income" ? amount : 0)
+        });
 
-        const { txId } = await updateUserBalance(
-            uid,
-            amount,
-            type,
-            `[${groupData.name}] ${description}`,
-            personalBalanceId
-        );
+        res.json({
+            newBalance,
+            txId: txRef.id
+        });
+        // ── UPDATE: Catat juga di riwayat pribadi user ────────
 
-        await txRef.update({ linkedPersonalTxId: txId });
+        // Update group balance
+        await groupRef.update({
+            balance: newBalance,
+            [`members.${uid}.contributed`]:
+                (groupData.members[uid].contributed || 0) + (type === "income" ? amount : 0),
+        });
 
-        res.json({ success: true });
-
+        res.json({ newBalance, txId: txRef.id });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
+
 });
+
+
+
+
 
 // DELETE transaction
 router.delete("/:groupId/transaction/:txId", verifyToken, async (req, res) => {
