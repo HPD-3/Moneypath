@@ -1,5 +1,21 @@
 import { useEffect, useState, useCallback } from "react";
 import API from "../services/api";
+import {
+    fetchBalances,
+    fetchTransactions,
+    fetchSummary,
+    addBalanceCategory,
+    deleteBalanceCategory,
+    addTransaction,
+    deleteTransaction,
+    updateBudgetLimit,
+    formatRupiah,
+    getCurrentMonth
+} from "../services/balance";
+import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement } from 'chart.js';
+import { Pie, Bar } from 'react-chartjs-2';
+
+ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement);
 
 const CATEGORY_TYPES = [
     { value: "cash",       label: "Cash",       emoji: "💵" },
@@ -19,12 +35,9 @@ const MONTHS = Array.from({ length: 12 }, (_, i) => {
     };
 });
 
-const currentMonth = () => {
-    const now = new Date();
-    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
-};
+const currentMonth = getCurrentMonth;
 
-const formatRp = (n) => `Rp ${(n || 0).toLocaleString("id-ID")}`;
+const formatRp = formatRupiah;
 
 function BudgetBar({ spent, limit }) {
     if (!limit || limit <= 0) return null;
@@ -123,6 +136,7 @@ export default function Balance() {
     const [loading, setLoading]           = useState(true);
     const [activeTab, setActiveTab]       = useState("overview");
     const [selectedMonth, setSelectedMonth] = useState(currentMonth());
+    const [selectedBalanceFilter, setSelectedBalanceFilter] = useState("all");
     const [toast, setToast]               = useState(null);
 
     // Modals
@@ -142,13 +156,13 @@ export default function Balance() {
     const fetchAll = useCallback(async () => {
         try {
             const [balRes, txRes, sumRes] = await Promise.all([
-                API.get("/balance"),
-                API.get(`/balance/transactions?month=${selectedMonth}`),
-                API.get(`/balance/summary?month=${selectedMonth}`)
+                fetchBalances(),
+                fetchTransactions(selectedMonth),
+                fetchSummary(selectedMonth)
             ]);
-            setBalances(balRes.data);
-            setTransactions(txRes.data);
-            setSummary(sumRes.data);
+            setBalances(balRes);
+            setTransactions(txRes);
+            setSummary(sumRes);
         } catch (err) {
             showToast("Gagal memuat data", "error");
         } finally {
@@ -173,13 +187,13 @@ export default function Balance() {
         if (!validateCategory()) return;
         setSubmitting(true);
         try {
-            const res = await API.post("/balance", {
-                name: newCategory.name.trim(),
-                type: newCategory.type,
-                balance: parseFloat(newCategory.balance) || 0,
-                budgetLimit: parseFloat(newCategory.budgetLimit) || 0
-            });
-            setBalances(prev => [...prev, res.data]);
+            const res = await addBalanceCategory(
+                newCategory.name.trim(),
+                newCategory.type,
+                newCategory.balance,
+                newCategory.budgetLimit
+            );
+            setBalances(prev => [...prev, res]);
             setNewCategory({ name: "", type: "cash", balance: "", budgetLimit: "" });
             setShowAddCategory(false);
             showToast("Kategori berhasil ditambahkan");
@@ -190,15 +204,15 @@ export default function Balance() {
         }
     };
 
-    // ── Delete Category ───────────────────────────────────────────
-    const handleDeleteCategory = async (id) => {
-        if (!window.confirm("Hapus kategori ini?")) return;
-        try {
-            await API.delete(`/balance/${id}`);
-            setBalances(prev => prev.filter(b => b.id !== id));
-            showToast("Kategori dihapus");
-        } catch (err) {
-            showToast("Gagal menghapus kategori", "error");
+     // ── Delete Category ───────────────────────────────────────────
+     const handleDeleteCategory = async (id) => {
+         if (!window.confirm("Hapus kategori ini?")) return;
+         try {
+             await deleteBalanceCategory(id);
+             setBalances(prev => prev.filter(b => b.id !== id));
+             showToast("Kategori dihapus");
+         } catch (err) {
+             showToast("Gagal menghapus kategori", "error");
         }
     };
 
@@ -218,11 +232,12 @@ export default function Balance() {
         if (!validateTx()) return;
         setSubmitting(true);
         try {
-            await API.post(`/balance/${txForm.balanceId}/transaction`, {
-                amount: parseFloat(txForm.amount),
-                type: txForm.type,
-                description: txForm.description.trim()
-            });
+            await addTransaction(
+                txForm.balanceId,
+                txForm.amount,
+                txForm.type,
+                txForm.description.trim()
+            );
             setTxForm({ balanceId: "", amount: "", type: "expense", description: "" });
             setShowAddTx(false);
             showToast("Transaksi berhasil ditambahkan");
@@ -238,7 +253,7 @@ export default function Balance() {
     const handleDeleteTx = async (tx) => {
         if (!window.confirm("Hapus transaksi ini?")) return;
         try {
-            await API.delete(`/balance/${tx.balanceId}/transaction/${tx.id}`);
+            await deleteTransaction(tx.balanceId, tx.id);
             setTransactions(prev => prev.filter(t => t.id !== tx.id));
             showToast("Transaksi dihapus");
             fetchAll();
@@ -254,7 +269,7 @@ export default function Balance() {
             return;
         }
         try {
-            await API.patch(`/balance/${id}/limit`, { budgetLimit: parseFloat(limitValue) });
+            await updateBudgetLimit(id, limitValue);
             setBalances(prev => prev.map(b =>
                 b.id === id ? { ...b, budgetLimit: parseFloat(limitValue) } : b
             ));
@@ -322,7 +337,7 @@ export default function Balance() {
 
             {/* Tabs */}
             <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 rounded-xl p-1 mb-6">
-                {["overview", "history"].map(tab => (
+                {["overview", "history", "rekap"].map(tab => (
                     <button
                         key={tab}
                         onClick={() => setActiveTab(tab)}
@@ -332,7 +347,7 @@ export default function Balance() {
                                 : "text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
                         }`}
                     >
-                        {tab === "overview" ? "Ringkasan" : "Riwayat"}
+                        {tab === "overview" ? "Ringkasan" : tab === "history" ? "Riwayat" : "Rekap"}
                     </button>
                 ))}
             </div>
@@ -428,7 +443,7 @@ export default function Balance() {
                             onClick={() => { setShowAddCategory(true); setFormErrors({}); }}
                             className="flex-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:border-emerald-400 py-3 rounded-2xl font-semibold text-sm transition"
                         >
-                            + Kategori
+                            + Sumber Dana
                         </button>
                     </div>
                 </div>
@@ -437,45 +452,245 @@ export default function Balance() {
             {/* ── HISTORY ── */}
             {activeTab === "history" && (
                 <div>
-                    {transactions.length === 0 ? (
-                        <div className="text-center py-16 text-gray-400">
-                            <div className="text-5xl mb-3">📭</div>
-                            <p className="font-medium text-gray-600 dark:text-gray-300 mb-1">Belum ada transaksi</p>
-                            <p className="text-sm">Transaksi yang kamu catat akan muncul di sini</p>
-                        </div>
-                    ) : (
-                        <div className="space-y-2">
-                            {transactions.map(tx => (
-                                <div
-                                    key={tx.id}
-                                    className="flex items-center justify-between bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl px-4 py-3 shadow-sm group"
+                    {/* Filter by Balance Category */}
+                    <div className="mb-4 pb-4 border-b border-gray-100 dark:border-gray-800">
+                        <p className="text-xs font-semibold text-gray-600 dark:text-gray-400 mb-3 uppercase tracking-wide">Filter Sumber Dana</p>
+                        <div className="flex gap-2 overflow-x-auto pb-2">
+                            <button
+                                onClick={() => setSelectedBalanceFilter("all")}
+                                className={`px-4 py-2 rounded-xl whitespace-nowrap font-medium text-sm transition ${
+                                    selectedBalanceFilter === "all"
+                                        ? "bg-emerald-500 text-white"
+                                        : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
+                                }`}
+                            >
+                                Semua
+                            </button>
+                            {balances.map(balance => (
+                                <button
+                                    key={balance.id}
+                                    onClick={() => setSelectedBalanceFilter(balance.id)}
+                                    className={`px-4 py-2 rounded-xl whitespace-nowrap font-medium text-sm transition ${
+                                        selectedBalanceFilter === balance.id
+                                            ? "bg-emerald-500 text-white"
+                                            : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
+                                    }`}
                                 >
-                                    <div className="flex items-center gap-3">
-                                        <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-lg
-                                            ${tx.type === "income" ? "bg-emerald-50 dark:bg-emerald-900/30" : "bg-red-50 dark:bg-red-900/30"}`}>
-                                            {tx.type === "income" ? "💰" : "💸"}
-                                        </div>
-                                        <div>
-                                            <p className="text-sm font-medium text-gray-900 dark:text-gray-100 leading-tight">{tx.description}</p>
-                                            <p className="text-xs text-gray-400">
-                                                {tx.balanceName} · {new Date(tx.date).toLocaleDateString("id-ID", { day: "numeric", month: "short" })}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-3">
-                                        <span className={`font-bold text-sm ${tx.type === "income" ? "text-emerald-600" : "text-red-500"}`}>
-                                            {tx.type === "income" ? "+" : "-"}{formatRp(tx.amount)}
-                                        </span>
-                                        <button
-                                            onClick={() => handleDeleteTx(tx)}
-                                            className="text-gray-300 hover:text-red-400 opacity-0 group-hover:opacity-100 transition text-lg leading-none"
-                                            title="Hapus"
-                                        >×</button>
-                                    </div>
-                                </div>
+                                    {balance.name}
+                                </button>
                             ))}
                         </div>
-                    )}
+                    </div>
+
+                    {/* Transactions List */}
+                    {(() => {
+                        const filteredTx = selectedBalanceFilter === "all" 
+                            ? transactions 
+                            : transactions.filter(tx => tx.balanceId === selectedBalanceFilter);
+
+                        return filteredTx.length === 0 ? (
+                            <div className="text-center py-16 text-gray-400">
+                                <div className="text-5xl mb-3">📭</div>
+                                <p className="font-medium text-gray-600 dark:text-gray-300 mb-1">Belum ada transaksi</p>
+                                <p className="text-sm">Transaksi yang kamu catat akan muncul di sini</p>
+                            </div>
+                        ) : (
+                            <div className="space-y-2">
+                                {filteredTx.map(tx => (
+                                    <div
+                                        key={tx.id}
+                                        className="flex items-center justify-between bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl px-4 py-3 shadow-sm group"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-lg
+                                                ${tx.type === "income" ? "bg-emerald-50 dark:bg-emerald-900/30" : "bg-red-50 dark:bg-red-900/30"}`}>
+                                                {tx.type === "income" ? "💰" : "💸"}
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-medium text-gray-900 dark:text-gray-100 leading-tight">{tx.description}</p>
+                                                <p className="text-xs text-gray-400">
+                                                    {tx.balanceName} · {new Date(tx.date).toLocaleDateString("id-ID", { day: "numeric", month: "short" })}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            <span className={`font-bold text-sm ${tx.type === "income" ? "text-emerald-600" : "text-red-500"}`}>
+                                                {tx.type === "income" ? "+" : "-"}{formatRp(tx.amount)}
+                                            </span>
+                                            <button
+                                                onClick={() => handleDeleteTx(tx)}
+                                                className="text-gray-300 hover:text-red-400 opacity-0 group-hover:opacity-100 transition text-lg leading-none"
+                                                title="Hapus"
+                                            >×</button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        );
+                    })()}
+                </div>
+            )}
+
+            {/* ── REKAP (Summary/Chart) ── */}
+            {activeTab === "rekap" && (
+                <div className="space-y-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        {/* Pie Chart - Spending by Category */}
+                        <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl p-6 shadow-sm">
+                            <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-4">Pengeluaran per Kategori</h3>
+                            {(() => {
+                                const categorySpending = balances.map(b => ({
+                                    name: b.name,
+                                    spent: b.totalSpent || 0,
+                                    color: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4'][balances.indexOf(b) % 7]
+                                })).filter(c => c.spent > 0);
+
+                                if (categorySpending.length === 0) {
+                                    return (
+                                        <div className="text-center py-8 text-gray-400">
+                                            <div className="text-3xl mb-2">📊</div>
+                                            <p className="text-sm">Belum ada data pengeluaran</p>
+                                        </div>
+                                    );
+                                }
+
+                                const pieData = {
+                                    labels: categorySpending.map(c => c.name),
+                                    datasets: [{
+                                        data: categorySpending.map(c => c.spent),
+                                        backgroundColor: categorySpending.map(c => c.color),
+                                        borderColor: 'rgba(255, 255, 255, 0.1)',
+                                        borderWidth: 2
+                                    }]
+                                };
+
+                                return (
+                                    <Pie 
+                                        data={pieData}
+                                        options={{
+                                            responsive: true,
+                                            maintainAspectRatio: true,
+                                            plugins: {
+                                                legend: {
+                                                    position: 'bottom',
+                                                    labels: {
+                                                        color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151',
+                                                        padding: 15,
+                                                        font: { size: 12 }
+                                                    }
+                                                },
+                                                tooltip: {
+                                                    callbacks: {
+                                                        label: function(context) {
+                                                            const label = context.label || '';
+                                                            const value = formatRp(context.parsed);
+                                                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                                            const percentage = ((context.parsed / total) * 100).toFixed(1);
+                                                            return `${label}: ${value} (${percentage}%)`;
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }}
+                                    />
+                                );
+                            })()}
+                        </div>
+
+                        {/* Bar Chart - Category Spending */}
+                        <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl p-6 shadow-sm">
+                            <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-4">Rincian Pengeluaran</h3>
+                            {(() => {
+                                const categorySpending = balances.map(b => ({
+                                    name: b.name,
+                                    spent: b.totalSpent || 0,
+                                    color: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4'][balances.indexOf(b) % 7]
+                                })).filter(c => c.spent > 0).sort((a, b) => b.spent - a.spent);
+
+                                if (categorySpending.length === 0) {
+                                    return (
+                                        <div className="text-center py-8 text-gray-400">
+                                            <div className="text-3xl mb-2">📊</div>
+                                            <p className="text-sm">Belum ada data pengeluaran</p>
+                                        </div>
+                                    );
+                                }
+
+                                const barData = {
+                                    labels: categorySpending.map(c => c.name),
+                                    datasets: [{
+                                        label: 'Pengeluaran',
+                                        data: categorySpending.map(c => c.spent),
+                                        backgroundColor: categorySpending.map(c => c.color),
+                                        borderRadius: 8,
+                                        borderSkipped: false
+                                    }]
+                                };
+
+                                return (
+                                    <Bar 
+                                        data={barData}
+                                        options={{
+                                            indexAxis: 'y',
+                                            responsive: true,
+                                            maintainAspectRatio: true,
+                                            plugins: {
+                                                legend: {
+                                                    display: false
+                                                },
+                                                tooltip: {
+                                                    callbacks: {
+                                                        label: function(context) {
+                                                            return formatRp(context.parsed.x);
+                                                        }
+                                                    }
+                                                }
+                                            },
+                                            scales: {
+                                                x: {
+                                                    ticks: {
+                                                        color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'
+                                                    },
+                                                    grid: {
+                                                        color: document.documentElement.classList.contains('dark') ? 'rgba(107, 114, 128, 0.1)' : 'rgba(209, 213, 219, 0.5)'
+                                                    }
+                                                },
+                                                y: {
+                                                    ticks: {
+                                                        color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#374151'
+                                                    },
+                                                    grid: {
+                                                        display: false
+                                                    }
+                                                }
+                                            }
+                                        }}
+                                    />
+                                );
+                            })()}
+                        </div>
+                    </div>
+
+                    {/* Summary Stats */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {(() => {
+                            const totalIncome = transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
+                            const totalExpense = transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+                            const netFlow = totalIncome - totalExpense;
+
+                            return [
+                                { label: 'Pemasukan', value: totalIncome, color: 'bg-emerald-50 dark:bg-emerald-900/30', textColor: 'text-emerald-600 dark:text-emerald-400' },
+                                { label: 'Pengeluaran', value: totalExpense, color: 'bg-red-50 dark:bg-red-900/30', textColor: 'text-red-600 dark:text-red-400' },
+                                { label: 'Arus Bersih', value: netFlow, color: netFlow >= 0 ? 'bg-blue-50 dark:bg-blue-900/30' : 'bg-orange-50 dark:bg-orange-900/30', textColor: netFlow >= 0 ? 'text-blue-600 dark:text-blue-400' : 'text-orange-600 dark:text-orange-400' },
+                                { label: 'Total Saldo', value: balances.reduce((sum, b) => sum + (b.balance || 0), 0), color: 'bg-purple-50 dark:bg-purple-900/30', textColor: 'text-purple-600 dark:text-purple-400' }
+                            ].map((stat, idx) => (
+                                <div key={idx} className={`${stat.color} border border-gray-100 dark:border-gray-800 rounded-2xl p-4`}>
+                                    <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">{stat.label}</p>
+                                    <p className={`font-bold text-lg ${stat.textColor}`}>{formatRp(stat.value)}</p>
+                                </div>
+                            ));
+                        })()}
+                    </div>
                 </div>
             )}
 
@@ -484,11 +699,11 @@ export default function Balance() {
                 <Modal title="Tambah Transaksi" onClose={() => { setShowAddTx(false); setFormErrors({}); }}>
                     <form onSubmit={handleTransaction} className="space-y-4">
                         <SelectField
-                            label="Kategori"
+                            label="Sumber Dana"
                             value={txForm.balanceId}
                             onChange={e => setTxForm({ ...txForm, balanceId: e.target.value })}
                         >
-                            <option value="">Pilih kategori...</option>
+                            <option value="">Pilih sumber dana...</option>
                             {balances.map(b => (
                                 <option key={b.id} value={b.id}>{b.name}</option>
                             ))}
@@ -533,10 +748,10 @@ export default function Balance() {
 
             {/* ── MODAL: Add Category ── */}
             {showAddCategory && (
-                <Modal title="Tambah Kategori" onClose={() => { setShowAddCategory(false); setFormErrors({}); }}>
+                <Modal title="Tambah Sumber Dana" onClose={() => { setShowAddCategory(false); setFormErrors({}); }}>
                     <form onSubmit={handleAddCategory} className="space-y-4">
                         <InputField
-                            label="Nama Kategori"
+                            label="Nama Sumber Dana"
                             placeholder="Contoh: BCA, GoPay, Dana"
                             value={newCategory.name}
                             onChange={e => setNewCategory({ ...newCategory, name: e.target.value })}
@@ -572,7 +787,7 @@ export default function Balance() {
                             disabled={submitting}
                             className="w-full bg-emerald-500 hover:bg-emerald-600 disabled:opacity-60 text-white py-3 rounded-xl font-semibold text-sm transition"
                         >
-                            {submitting ? "Menyimpan..." : "Buat Kategori"}
+                            {submitting ? "Menyimpan..." : "Buat Sumber Dana"}
                         </button>
                     </form>
                 </Modal>

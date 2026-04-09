@@ -275,6 +275,7 @@ router.post("/:groupId/setor", verifyToken, async (req, res) => {
             });
 
             // ── UPDATE: Catat juga di riwayat pribadi user ────────────
+            const now = new Date();
             await db.collection("users").doc(uid)
                 .collection("transactions").add({
                     balanceId: sourceId,
@@ -282,7 +283,9 @@ router.post("/:groupId/setor", verifyToken, async (req, res) => {
                     amount,
                     type: "expense",
                     description: `Setor ke tabungan bersama: ${tabData.name}`,
-                    date: new Date().toISOString(),
+                    date: now.toISOString(),
+                    month: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`,
+                    category: "shared_tabungan",
                     source: "shared_tabungan",
                 });
         }
@@ -301,11 +304,16 @@ router.post("/:groupId/setor", verifyToken, async (req, res) => {
             await balRef.update({ balance: (balDoc.data().balance || 0) - amount });
 
             // Log in personal transactions
+            const now = new Date();
             await db.collection("users").doc(uid).collection("transactions").add({
-                balanceId: sourceId, balanceName: sourceName, amount,
+                balanceId: sourceId, 
+                balanceName: sourceName, 
+                amount,
                 type: "expense",
                 description: `Setor ke tabungan bersama: ${tabData.name}`,
-                date: new Date().toISOString(),
+                date: now.toISOString(),
+                month: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`,
+                category: "shared_tabungan"
             });
         }
 

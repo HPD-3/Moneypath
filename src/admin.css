@@ -1,0 +1,239 @@
+/* ── MODERN CLEAN ADMIN DASHBOARD ── */
+@layer components {
+  /* ── Base ── */
+  .page {
+    @apply bg-white;
+  }
+
+  /* ── Cards & Containers ── */
+  .panel {
+    @apply bg-white rounded-2xl border-2 border-gray-200 shadow-md hover:shadow-lg transition-all overflow-hidden;
+  }
+
+  .panel-header {
+    @apply bg-gradient-to-r from-gray-50 to-gray-100 border-b-2 border-gray-300 px-8 py-6 flex justify-between items-center;
+  }
+
+  /* ── Typography ── */
+  .section-title {
+    @apply text-2xl font-bold text-gray-900 tracking-tight;
+  }
+
+  /* ── Forms ── */
+  .form-grid {
+    @apply grid grid-cols-2 gap-8 p-8;
+  }
+
+  .form-group {
+    @apply flex flex-col space-y-3;
+  }
+
+  .form-group.full {
+    @apply col-span-2;
+  }
+
+  .form-label {
+    @apply text-sm font-bold text-gray-900 uppercase tracking-widest;
+  }
+
+  .form-input,
+  .form-textarea {
+    @apply w-full px-5 py-3 border-2 border-gray-300 rounded-xl text-gray-900 bg-white placeholder-gray-400 focus:outline-none focus:border-green-600 focus:ring-4 focus:ring-green-300/50 transition-all duration-300;
+  }
+
+  .form-textarea {
+    @apply resize-vertical min-h-28;
+  }
+
+  .form-actions {
+    @apply flex justify-end gap-5 mt-10 pt-8 px-8 pb-8 border-t-2 border-gray-300;
+  }
+
+  /* ── Buttons ── */
+  .btn-add,
+  .btn-save,
+  .btn-cancel,
+  .btn-delete,
+  .btn-edit {
+    @apply px-6 py-3 rounded-lg font-bold text-base transition-all duration-200 transform hover:scale-105 active:scale-95 shadow-md hover:shadow-lg border-2;
+  }
+
+  .btn-add {
+    @apply bg-green-600 hover:bg-green-700 text-white border-green-700;
+  }
+
+  .btn-save {
+    @apply bg-green-600 hover:bg-green-700 text-white border-green-700 disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100;
+  }
+
+  .btn-cancel {
+    @apply bg-gray-300 hover:bg-gray-400 text-gray-900 font-bold border-gray-400;
+  }
+
+  .btn-delete {
+    @apply bg-red-500 hover:bg-red-600 text-white border-red-700 shadow-lg;
+  }
+
+  .btn-edit {
+    @apply bg-blue-500 hover:bg-blue-600 text-white border-blue-700 shadow-lg;
+  }
+
+  /* ── Badges ── */
+  .badge {
+    @apply inline-block px-4 py-2 text-xs font-bold rounded-full bg-green-200 text-green-900 uppercase tracking-widest border-2 border-green-600;
+  }
+
+  /* ── Cards ── */
+  .admin-card {
+    @apply bg-white border-2 border-gray-300 rounded-2xl p-7 shadow-md hover:shadow-xl hover:border-green-400 transition-all duration-300 hover:scale-105;
+  }
+
+  /* ── Stat Cards ── */
+  .stat-card {
+    @apply bg-gradient-to-br from-white to-gray-50 border-2 border-green-600 rounded-2xl p-8 min-w-max shadow-lg hover:shadow-2xl hover:from-green-50 transition-all duration-300;
+  }
+
+  .stat-number {
+    @apply text-6xl font-black text-green-700;
+  }
+
+  .stat-label {
+    @apply text-base font-bold text-gray-800 mt-3 uppercase tracking-wide;
+  }
+
+  /* ── Tables ── */
+  .admin-table {
+    @apply w-full border-collapse;
+  }
+
+  .admin-table thead tr {
+    @apply bg-gray-900 border-b-2 border-gray-700;
+  }
+
+  .admin-table thead th {
+    @apply px-7 py-5 text-left text-xs font-bold text-white uppercase tracking-widest;
+  }
+
+  .admin-table tbody tr {
+    @apply border-b-2 border-gray-200 hover:bg-gray-100 transition-colors duration-150;
+  }
+
+  .admin-table tbody td {
+    @apply px-7 py-4 text-sm text-gray-800 font-medium;
+  }
+
+  /* ── Messages ── */
+  .error-message {
+    @apply bg-red-50 border-l-4 border-red-600 text-red-900 rounded-lg p-5 text-sm font-bold;
+  }
+
+  .success-message {
+    @apply bg-green-50 border-l-4 border-green-600 text-green-900 rounded-lg p-5 text-sm font-bold;
+  }
+
+  /* ── Empty State ── */
+  .empty-state {
+    @apply flex flex-col items-center justify-center py-24 text-center;
+  }
+
+  .empty-state-icon {
+    @apply text-7xl mb-6 opacity-70;
+  }
+
+  .empty-state-text {
+    @apply text-gray-900 font-bold text-xl;
+  }
+
+  /* ── Loading ── */
+  .loading-spinner {
+    @apply inline-block animate-spin text-green-700;
+  }
+
+  /* ── Modal ── */
+  .modal-overlay {
+    @apply fixed inset-0 bg-black/50 backdrop-blur-md z-50 flex items-center justify-center transition-all duration-200;
+  }
+
+  .modal-content {
+    @apply bg-white rounded-3xl shadow-2xl p-10 max-w-2xl w-full mx-4 border-2 border-gray-300;
+  }
+
+  /* ── Video Grid ── */
+  .video-grid {
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-7;
+  }
+
+  .video-card {
+    @apply bg-white rounded-2xl overflow-hidden border-2 border-gray-300 hover:border-green-500 shadow-md hover:shadow-2xl transition-all duration-300 hover:scale-105;
+  }
+
+  .video-thumbnail {
+    @apply relative w-full aspect-video overflow-hidden bg-gray-300;
+  }
+
+  .video-thumbnail img {
+    @apply w-full h-full object-cover transition-transform duration-300 hover:scale-110;
+  }
+
+  .video-info {
+    @apply p-6 space-y-3 bg-white;
+  }
+
+  .video-title {
+    @apply font-bold text-gray-900 line-clamp-2 text-base;
+  }
+
+  .video-description {
+    @apply text-sm text-gray-700 line-clamp-2 font-medium;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 768px) {
+    .form-grid {
+      @apply grid-cols-1 gap-6 p-6;
+    }
+
+    .form-group.full {
+      @apply col-span-1;
+    }
+
+    .panel-header {
+      @apply flex-col items-start gap-4 px-6 py-4;
+    }
+
+    .video-grid {
+      @apply grid-cols-1;
+    }
+
+    .admin-card {
+      @apply hover:scale-100;
+    }
+
+    .form-actions {
+      @apply px-6 pb-6;
+    }
+  }
+
+  /* ── Animations ── */
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateY(15px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .panel,
+  .admin-card,
+  .modal-content {
+    animation: slideIn 0.3s ease-out;
+  }
+
+  /* ── Focus States ── */
+  .focus-ring {
+    @apply focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-green-400 focus-visible:ring-offset-2;
+  }
+}

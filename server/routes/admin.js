@@ -101,4 +101,60 @@ router.delete("/learning/:id", verifyAdmin, async (req, res) => {
     }
 });
 
+// ── GET all activities ───────────────────────────────────────
+router.get("/activities", verifyAdmin, async (req, res) => {
+    try {
+        const activities = [];
+
+        // Fetch all videos
+        const videosSnap = await db.collection("videos").orderBy("createdAt", "desc").get();
+        videosSnap.docs.forEach(doc => {
+            const data = doc.data();
+            activities.push({
+                id: `video-${doc.id}`,
+                type: "video",
+                action: "Admin menambahkan video edukasi",
+                title: data.title,
+                date: data.createdAt || new Date().toISOString(),
+                details: data
+            });
+        });
+
+        // Fetch all learning paths
+        const pathsSnap = await db.collection("learningPaths").orderBy("createdAt", "desc").get();
+        pathsSnap.docs.forEach(doc => {
+            const data = doc.data();
+            activities.push({
+                id: `path-${doc.id}`,
+                type: "path",
+                action: "Admin menambahkan learning path",
+                title: data.title,
+                date: data.createdAt || new Date().toISOString(),
+                details: data
+            });
+        });
+
+        // Fetch all learning modules
+        const modulesSnap = await db.collection("learningModules").orderBy("createdAt", "desc").get();
+        modulesSnap.docs.forEach(doc => {
+            const data = doc.data();
+            activities.push({
+                id: `module-${doc.id}`,
+                type: "module",
+                action: "Admin menambahkan konten edukasi",
+                title: data.title,
+                date: data.createdAt || new Date().toISOString(),
+                details: data
+            });
+        });
+
+        // Sort by date descending
+        activities.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        res.json(activities);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 export default router;

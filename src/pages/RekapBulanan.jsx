@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "../firebase.js";
 import API from "../services/api.js";
 
 const fmt = (n) => `Rp ${(n || 0).toLocaleString("id-ID")}`;
@@ -37,15 +39,26 @@ export default function RekapBulanan() {
     }, [ready, year, month]);
 
     const fetchRekap = async () => {
-        const user = auth.currentUser;
+        setLoading(true);
+        try {
+            const user = auth.currentUser;
 
-        if (!user) {
-            console.warn("User belum ready");
-            return;
+            if (!user) {
+                console.warn("User belum ready");
+                setLoading(false);
+                return;
+            }
+
+            const res = await API.get(`/rekap?year=${year}&month=${month}`);
+            setData(res.data);
+            setError(null);
+        } catch (err) {
+            console.error("Error fetching rekap:", err);
+            setError(err.response?.data?.error || err.message);
+            setData(null);
+        } finally {
+            setLoading(false);
         }
-
-        const res = await API.get(`/rekap?year=${year}&month=${month}`);
-        setData(res.data);
     };
 
     const handleSend = async () => {

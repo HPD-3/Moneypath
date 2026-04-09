@@ -1,0 +1,296 @@
+/* PROFILE LAYOUT */
+.container {
+  display: flex;
+  min-height: 100vh;
+  background: #f2f2f2;
+}
+
+/* MAIN */
+.main {
+  flex: 1;
+  padding: 20px;
+}
+
+/* TOPBAR */
+.topbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 20px;
+}
+
+.user-box {
+  background: white;
+  padding: 10px 15px;
+  border-radius: 20px;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* PROFILE CARD */
+.profile-card {
+  background: linear-gradient(to right, #0b2d1f, #103d2c);
+  color: white;
+  border-radius: 20px;
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.profile-left {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+.avatar {
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #8aff80, #5ade60);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.profile-left h2 {
+  margin: 0 0 5px 0;
+  font-size: 18px;
+}
+
+.profile-left p {
+  margin: 0;
+  color: rgba(255,255,255,0.8);
+  font-size: 14px;
+}
+
+.level {
+  font-size: 12px;
+  color: #8aff80;
+  display: block;
+  margin-top: 5px;
+}
+
+.profile-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.profile-buttons button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 20px;
+  background: #8aff80;
+  color: #0a1f10;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.profile-buttons button:hover {
+  background: #6fff60;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(138, 255, 128, 0.3);
+}
+
+/* CONTENT */
+.content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.card {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.card h3 {
+  margin: 0 0 15px 0;
+  color: #1a3a1f;
+  font-size: 16px;
+  border-bottom: 2px solid #f0f0f0;
+  padding-bottom: 10px;
+}
+
+.card.info p,
+.card.activity p {
+  margin: 8px 0;
+  color: #4b5563;
+  font-size: 14px;
+  padding: 8px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.card.info p:last-child,
+.card.activity p:last-child {
+  border-bottom: none;
+}
+
+/* STAT */
+.stat-box {
+  background: #f8fdf8;
+  color: #1a3a1f;
+  padding: 12px;
+  margin: 8px 0;
+  border-radius: 8px;
+  border-left: 4px solid #8aff80;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.progress {
+  height: 8px;
+  background: #e0e0e0;
+  border-radius: 10px;
+  margin-top: 15px;
+  overflow: hidden;
+}
+
+.bar {
+  width: 30%;
+  height: 100%;
+  background: linear-gradient(90deg, #1a3a1f, #8aff80);
+  border-radius: 10px;
+  transition: width 0.5s ease;
+}
+
+/* ACTIVITY */
+.see-all {
+  display: block;
+  margin-top: 12px;
+  cursor: pointer;
+  color: #0b8d1f;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.see-all:hover {
+  color: #1a3a1f;
+  text-decoration: underline;
+}
+
+/* MODAL */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.modal-box {
+  background: white;
+  padding: 30px;
+  border-radius: 15px;
+  width: 100%;
+  max-width: 350px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.modal-box h3 {
+  margin: 0 0 20px 0;
+  color: #1a3a1f;
+  font-size: 18px;
+}
+
+.modal-box input {
+  width: 100%;
+  padding: 12px;
+  margin: 10px 0;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  transition: all 0.2s ease;
+}
+
+.modal-box input:focus {
+  outline: none;
+  border-color: #8aff80;
+  box-shadow: 0 0 8px rgba(138, 255, 128, 0.2);
+}
+
+.modal-box button {
+  width: 100%;
+  margin-top: 20px;
+  padding: 12px;
+  background: #1a3a1f;
+  color: #8aff80;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.modal-box button:hover {
+  background: #0f2a18;
+  box-shadow: 0 4px 12px rgba(26, 58, 31, 0.3);
+}
+
+/* RESPONSIVE */
+@media (max-width: 1024px) {
+  .content {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-card {
+    flex-direction: column;
+    text-align: center;
+    gap: 15px;
+  }
+
+  .profile-left {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .profile-buttons {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .profile-buttons button {
+    flex: 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .main {
+    padding: 15px;
+  }
+
+  .profile-card {
+    padding: 15px;
+  }
+
+  .card {
+    padding: 15px;
+  }
+
+  .card h3 {
+    font-size: 14px;
+  }
+
+  .card.info p,
+  .card.activity p {
+    font-size: 13px;
+  }
+
+  .modal-box {
+    margin: 20px;
+    max-width: none;
+  }
+}

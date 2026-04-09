@@ -55,9 +55,23 @@ export default function VideoEdukasi() {
         const fetchVideos = async () => {
             try {
                 const res = await API.get("/video");
-                setVideos(res.data);
+                console.log("Full response:", res);
+                console.log("Response data:", res.data);
+                
+                // Handle both array and object responses
+                let videoArray = [];
+                if (Array.isArray(res.data)) {
+                    videoArray = res.data;
+                } else if (res.data && typeof res.data === 'object') {
+                    // If data is an object, check for a videos property
+                    videoArray = res.data.videos || [];
+                }
+                
+                console.log("Final video array:", videoArray);
+                setVideos(videoArray);
             } catch (err) {
-                console.error(err);
+                console.error("Error fetching videos:", err);
+                setVideos([]);
             } finally {
                 setLoading(false);
             }
@@ -66,9 +80,10 @@ export default function VideoEdukasi() {
     }, []);
 
     const filtered = videos.filter(v => {
-        const matchCat   = activeCategory === "semua" || v.category === activeCategory;
-        const matchSearch = v.title?.toLowerCase().includes(search.toLowerCase()) ||
-                            v.description?.toLowerCase().includes(search.toLowerCase());
+        const matchCat   = activeCategory === "semua" || (v && v.category === activeCategory);
+        const matchSearch = !search || 
+                           (v && v.title && v.title.toLowerCase().includes(search.toLowerCase())) ||
+                           (v && v.description && v.description.toLowerCase().includes(search.toLowerCase()));
         return matchCat && matchSearch;
     });
 
@@ -123,7 +138,7 @@ export default function VideoEdukasi() {
                     </button>
                 ))}
                 <span style={{ marginLeft: "auto", fontSize: 12, color: "#9ca3af", alignSelf: "center", whiteSpace: "nowrap" }}>
-                    {filtered.length} video
+                    {filtered.length} {filtered.length === 1 ? 'video' : 'video'}
                 </span>
             </div>
 

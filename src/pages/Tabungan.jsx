@@ -58,11 +58,13 @@ function TargetCard({ target, onClick }) {
 }
 
 // ── Detail / Alokasi Modal ────────────────────────────────────
-function DetailModal({ target, balances, onClose, onAlokasi, onDelete }) {
+function DetailModal({ target, balances, onClose, onAlokasi, onDelete, onCheckout }) {
     const [amount, setAmount]   = useState("");
     const [balId, setBalId]     = useState(balances[0]?.id || "");
+    const [checkoutBalId, setCheckoutBalId] = useState(balances[0]?.id || "");
     const [riwayat, setRiwayat] = useState([]);
     const [saving, setSaving]   = useState(false);
+    const [checkingOut, setCheckingOut] = useState(false);
     const [error, setError]     = useState(null);
     const [tab, setTab]         = useState("detail"); // detail | riwayat
 
@@ -95,6 +97,23 @@ function DetailModal({ target, balances, onClose, onAlokasi, onDelete }) {
             setError(err.response?.data?.error || err.message);
         } finally {
             setSaving(false);
+        }
+    };
+
+    const handleCheckout = async () => {
+        setError(null);
+        if (!checkoutBalId) return setError("Pilih balance untuk menerima dana");
+        
+        setCheckingOut(true);
+        try {
+            await onCheckout(target.id, checkoutBalId);
+            // Refresh riwayat
+            const res = await API.get(`/tabungan/${target.id}/riwayat`);
+            setRiwayat(res.data);
+        } catch (err) {
+            setError(err.response?.data?.error || err.message);
+        } finally {
+            setCheckingOut(false);
         }
     };
 
@@ -218,7 +237,42 @@ function DetailModal({ target, balances, onClose, onAlokasi, onDelete }) {
                         <div style={{ textAlign: "center", padding: "20px 0" }}>
                             <p style={{ fontSize: 40, marginBottom: 10 }}>🎉</p>
                             <p style={{ fontWeight: 700, color: "#166534", fontSize: 16 }}>Target Tercapai!</p>
-                            <p style={{ fontSize: 12, color: "#9ca3af", marginTop: 6 }}>Selamat! Kamu berhasil mencapai target tabungan ini.</p>
+                            <p style={{ fontSize: 12, color: "#9ca3af", marginTop: 6, marginBottom: 20 }}>Selamat! Kamu berhasil mencapai target tabungan ini.</p>
+                            
+                            {!target.isWithdrawn ? (
+                                <>
+                                    <div style={{ marginBottom: 12, padding: "14px", background: "#f0fdf4", borderRadius: 10, border: "1px solid #c6e8bb" }}>
+                                        <p style={{ fontSize: 12, fontWeight: 600, color: "#166534", marginBottom: 4 }}>Dana Siap Diambil</p>
+                                        <p style={{ fontSize: 18, fontWeight: 800, color: "#166534" }}>{fmt(target.terkumpul)}</p>
+                                    </div>
+
+                                    <div style={{ marginBottom: 12 }}>
+                                        <label style={{ fontSize: 11, fontWeight: 600, color: "#4b5563", display: "block", marginBottom: 4 }}>Terima ke Balance</label>
+                                        <select value={checkoutBalId} onChange={e => setCheckoutBalId(e.target.value)}
+                                            style={{ width: "100%", border: "1px solid #d1d5db", borderRadius: 8, padding: "10px 12px", fontSize: 13, outline: "none", fontFamily: "Plus Jakarta Sans, sans-serif" }}>
+                                            {balances.map(b => (
+                                                <option key={b.id} value={b.id}>
+                                                    {b.name} — {fmt(b.balance)}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    {error && <p style={{ fontSize: 12, color: "#ef4444", marginBottom: 10 }}>⚠️ {error}</p>}
+
+                                    <button onClick={handleCheckout} disabled={checkingOut || balances.length === 0}
+                                        style={{ width: "100%", background: "#166534", color: "white", border: "none", borderRadius: 10, padding: "13px", fontSize: 14, fontWeight: 700, cursor: checkingOut ? "not-allowed" : "pointer", fontFamily: "Plus Jakarta Sans, sans-serif", opacity: checkingOut ? 0.7 : 1 }}>
+                                        {checkingOut ? "Memproses..." : "✓ Ambil Dana ke Balance"}
+                                    </button>
+                                </>
+                            ) : (
+                                <div style={{ padding: "14px", background: "#f3f4f6", borderRadius: 10, border: "1px solid #d1d5db" }}>
+                                    <p style={{ fontSize: 12, fontWeight: 600, color: "#6b7280" }}>✓ Dana telah diambil ke balance</p>
+                                    <p style={{ fontSize: 11, color: "#9ca3af", marginTop: 4 }}>
+                                        Tanggal: {target.withdrawnAt ? new Date(target.withdrawnAt).toLocaleDateString("id-ID", { day: "2-digit", month: "long", year: "numeric" }) : "-"}
+                                    </p>
+                                </div>
+                            )}
                         </div>
                     )}
 
@@ -226,16 +280,20 @@ function DetailModal({ target, balances, onClose, onAlokasi, onDelete }) {
                     {tab === "riwayat" && (
                         <div>
                             {riwayat.length === 0 ? (
-                                <p style={{ textAlign: "center", color: "#9ca3af", padding: "20px 0", fontSize: 13 }}>Belum ada setoran.</p>
+                                <p style={{ textAlign: "center", color: "#9ca3af", padding: "20px 0", fontSize: 13 }}>Belum ada aktivitas.</p>
                             ) : riwayat.map((r, i) => (
                                 <div key={r.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderBottom: i < riwayat.length - 1 ? "1px solid #f3f4f6" : "none" }}>
                                     <div>
-                                        <p style={{ fontSize: 12, fontWeight: 600, color: "#374151" }}>Setoran dari {r.balanceName}</p>
+                                        <p style={{ fontSize: 12, fontWeight: 600, color: "#374151" }}>
+                                            {r.type === "setoran" ? `Setoran dari ${r.balanceName}` : `Penarikan ke ${r.balanceName}`}
+                                        </p>
                                         <p style={{ fontSize: 10, color: "#9ca3af", marginTop: 2 }}>
                                             {new Date(r.date).toLocaleDateString("id-ID", { day: "2-digit", month: "long", year: "numeric" })}
                                         </p>
                                     </div>
-                                    <p style={{ fontSize: 13, fontWeight: 700, color: "#166534" }}>+{fmt(r.amount)}</p>
+                                    <p style={{ fontSize: 13, fontWeight: 700, color: r.type === "setoran" ? "#166534" : "#166534" }}>
+                                        {r.type === "setoran" ? "+" : "-"}{fmt(r.amount)}
+                                    </p>
                                 </div>
                             ))}
                         </div>
@@ -368,6 +426,15 @@ export default function Tabungan() {
         return res.data;
     };
 
+    const handleCheckout = async (tabId, balanceId) => {
+        const res = await API.post(`/tabungan/${tabId}/checkout`, { personalBalanceId: balanceId });
+        await fetchAll();
+        // Update selected target
+        const updated = await API.get(`/tabungan/${tabId}`);
+        setSelected(updated.data);
+        return res.data;
+    };
+
     const handleDelete = async (tabId) => {
         if (!confirm("Hapus target tabungan ini?")) return;
         await API.delete(`/tabungan/${tabId}`);
@@ -487,6 +554,7 @@ export default function Tabungan() {
                     balances={balances}
                     onClose={() => setSelected(null)}
                     onAlokasi={handleAlokasi}
+                    onCheckout={handleCheckout}
                     onDelete={handleDelete}
                 />
             )}

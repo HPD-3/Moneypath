@@ -258,6 +258,214 @@ router.get("/invites/pending", verifyToken, async (req, res) => {
     }
 });
 
+// SEND invite (POST)
+router.post("/:groupId/invite", verifyToken, async (req, res) => {
+    try {
+        const uid = req.user.uid;
+        const { groupId } = req.params;
+        const { email } = req.body;
+
+        if (!email) {
+            return res.status(400).json({ error: "Email required" });
+        }
+
+        const groupRef = db.collection("sharedBalances").doc(groupId);
+        const groupDoc = await groupRef.get();
+
+        if (!groupDoc.exists) {
+            return res.status(404).json({ error: "Group not found" });
+        }
+
+        const groupData = groupDoc.data();
+
+        if (groupData.members?.[uid]?.role !== "admin") {
+            return res.status(403).json({ error: "Only admins can invite" });
+        }
+
+        // Find user by email
+        const userSnap = await db.collection("users")
+            .where("email", "==", email)
+            .limit(1)
+            .get();
+
+        if (userSnap.empty) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        const targetUid = userSnap.docs[0].id;
+
+        if (groupData.members?.[targetUid]) {
+            return res.status(400).json({ error: "Already a member" });
+        }
+
+        await db.collection("users")
+            .doc(targetUid)
+            .collection("invites")
+            .add({
+                groupId,
+                groupName: groupData.name,
+                invitedBy: uid,
+                status: "pending",
+                createdAt: new Date().toISOString()
+            });
+
+        res.json({ message: "Invite sent" });
+
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ACCEPT invite (POST)
+router.post("/invites/:groupId/accept", verifyToken, async (req, res) => {
+    try {
+        const uid = req.user.uid;
+        const { groupId } = req.params;
+
+        const groupRef = db.collection("sharedBalances").doc(groupId);
+        const groupDoc = await groupRef.get();
+
+        if (!groupDoc.exists) {
+            return res.status(404).json({ error: "Group not found" });
+        }
+
+        const groupData = groupDoc.data();
+        const userData = (await db.collection("users").doc(uid).get()).data() || {};
+
+        // Add member to group
+        await groupRef.update({
+            [`members.${uid}`]: {
+                uid,
+                role: "member",
+                name: userData.name ?? "Unknown",
+                joinedAt: new Date().toISOString(),
+                contributed: 0
+            }
+        });
+
+        // Remove invite
+        const inviteSnap = await db.collection("users")
+            .doc(uid)
+            .collection("invites")
+            .where("groupId", "==", groupId)
+            .limit(1)
+            .get();
+
+        if (!inviteSnap.empty) {
+            await inviteSnap.docs[0].ref.delete();
+        }
+
+        res.json({ message: "Joined group" });
+
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// REMOVE member (DELETE)
+router.delete("/:groupId/members/:memberId", verifyToken, async (req, res) => {
+    try {
+        const uid = req.user.uid;
+        const { groupId, memberId } = req.params;
+
+        const groupRef = db.collection("sharedBalances").doc(groupId);
+        const groupDoc = await groupRef.get();
+
+        if (!groupDoc.exists) {
+            return res.status(404).json({ error: "Group not found" });
+        }
+
+        const groupData = groupDoc.data();
+
+        if (groupData.members?.[uid]?.role !== "admin") {
+            return res.status(403).json({ error: "Only admins can remove members" });
+        }
+
+        if (memberId === uid) {
+            return res.status(400).json({ error: "Cannot remove yourself. Delete group instead" });
+        }
+
+        const newMembers = { ...groupData.members };
+        delete newMembers[memberId];
+
+        await groupRef.update({
+            members: newMembers
+        });
+
+        res.json({ message: "Member removed" });
+
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// REGENERATE invite code (POST)
+router.post("/:groupId/regenerate-code", verifyToken, async (req, res) => {
+    try {
+        const uid = req.user.uid;
+        const { groupId } = req.params;
+
+        const groupRef = db.collection("sharedBalances").doc(groupId);
+        const groupDoc = await groupRef.get();
+
+        if (!groupDoc.exists) {
+            return res.status(404).json({ error: "Group not found" });
+        }
+
+        const groupData = groupDoc.data();
+
+        if (groupData.members?.[uid]?.role !== "admin") {
+            return res.status(403).json({ error: "Only admins can regenerate code" });
+        }
+
+        const newCode = crypto.randomBytes(4).toString("hex").toUpperCase();
+
+        await groupRef.update({
+            inviteCode: newCode
+        });
+
+        res.json({ inviteCode: newCode });
+
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// DELETE group (DELETE)
+router.delete("/:groupId", verifyToken, async (req, res) => {
+    try {
+        const uid = req.user.uid;
+        const { groupId } = req.params;
+
+        const groupRef = db.collection("sharedBalances").doc(groupId);
+        const groupDoc = await groupRef.get();
+
+        if (!groupDoc.exists) {
+            return res.status(404).json({ error: "Group not found" });
+        }
+
+        const groupData = groupDoc.data();
+
+        if (groupData.createdBy !== uid) {
+            return res.status(403).json({ error: "Only creator can delete group" });
+        }
+
+        // Delete all transactions in the group
+        const txSnap = await groupRef.collection("transactions").get();
+        for (const doc of txSnap.docs) {
+            await doc.ref.delete();
+        }
+
+        // Delete the group
+        await groupRef.delete();
+
+        res.json({ message: "Group deleted" });
+
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 
 // ══════════════════════════════════════════════════════════════
 // TRANSACTIONS
@@ -310,13 +518,18 @@ router.post("/:groupId/transaction", verifyToken, async (req, res) => {
 
         if (personalBalanceId && type === "income") {
             // 💡 Setor ke grup = uang keluar dari pribadi
-            personalTx = await updateUserBalance(
-                uid,
-                amount,
-                "expense", // ✅ FIX: bukan type langsung
-                `${description} (Setor ke ${groupData.name})`,
-                personalBalanceId
-            );
+            try {
+                personalTx = await updateUserBalance(
+                    uid,
+                    amount,
+                    "expense", // ✅ FIX: bukan type langsung
+                    `${description} (Setor ke ${groupData.name})`,
+                    personalBalanceId
+                );
+            } catch (txErr) {
+                console.error("❌ Failed to create personal transaction:", txErr.message);
+                // Continue anyway - the shared balance transaction is still valid
+            }
         }
 
         // ════════════════════════════════
@@ -346,18 +559,9 @@ router.post("/:groupId/transaction", verifyToken, async (req, res) => {
 
         res.json({
             newBalance,
-            txId: txRef.id
+            txId: txRef.id,
+            personalTxId: personalTx?.txId || null
         });
-        // ── UPDATE: Catat juga di riwayat pribadi user ────────
-
-        // Update group balance
-        await groupRef.update({
-            balance: newBalance,
-            [`members.${uid}.contributed`]:
-                (groupData.members[uid].contributed || 0) + (type === "income" ? amount : 0),
-        });
-
-        res.json({ newBalance, txId: txRef.id });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

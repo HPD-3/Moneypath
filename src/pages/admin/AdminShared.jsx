@@ -108,6 +108,7 @@ export default function Sidebar({ active, setActive, handleLogout }) {
         { id: "video", icon: "mdi:play-circle", label: "Vidio Edukasi" },
         { id: "learning", icon: "mdi:chart-timeline-variant", label: "Learning Path" },
         { id: "dailyquiz", icon: "mdi:brain", label: "Daily Quiz" },
+        { id: "aktivitas", icon: "mdi:history", label: "Aktivitas Terbaru" },
     ];
 
     return (

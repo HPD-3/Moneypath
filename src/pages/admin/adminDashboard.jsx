@@ -8,6 +8,7 @@ import AdminVideoEdukasi from "./AdminVideoEdukasi.jsx";
 import AdminLearningPath from "./AdminLearningPath.jsx";
 import AdminKontenEdukasi from "./AdminKontenEdukasi.jsx";
 import AdminDailyQuiz from "./AdminDailyQuiz.jsx";
+import AdminAktivitas from "./AdminAktivitas.jsx";
 import Sidebar from "./AdminShared.jsx";
 
 export default function AdminDashboard() {
@@ -31,29 +32,42 @@ export default function AdminDashboard() {
     const fetchAll = async () => {
         setLoading(true);
         try {
-            const [uRes, mRes, vRes, pRes, pathRes, qRes] = await Promise.all([
-                API.get("/admin/users"),
-                API.get("/admin/learning"),
-                API.get("/video"),
-                API.get("/auth/profile"),
-                API.get("/learningpath"),
-                API.get("/quiz/questions"),
-            ]);
+            const uRes = await API.get("/admin/users");
+            const mRes = await API.get("/admin/learning");
+            const vRes = await API.get("/video");
+            const pRes = await API.get("/auth/profile");
+            const pathRes = await API.get("/learningpath");
+            
             setUsers(uRes.data);
             setModules(mRes.data);
             setVideos(vRes.data);
             setAdminEmail(pRes.data.email?.split("@")[0] || "Admin");
             setPaths(pathRes.data);
+        } catch (err) {
+            if (err.response?.status === 403) {
+                setDenied(true);
+                setLoading(false);
+                return;
+            }
+            console.error("Error fetching admin data:", err.message);
+        }
+        
+        try {
+            const qRes = await API.get("/quiz/questions");
             setQuizQuestions(qRes.data);
         } catch (err) {
-            if (err.response?.status === 403) setDenied(true);
+            console.error("Error fetching quiz questions:", err.message);
+            setQuizQuestions([]);
         }
+        
         try {
             const tRes = await API.get("/admin/transactions");
             setTransactions(tRes.data);
         } catch (err) {
             setTransactions([]);
+            console.error("Error fetching transactions:", err.message);
         }
+        
         setLoading(false);
     };
 
@@ -76,7 +90,7 @@ export default function AdminDashboard() {
     );
 
     return (
-        <div className="flex h-screen bg-white-100 overflow-hidden" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+        <div className="flex h-screen bg-white overflow-hidden" style={{ fontFamily: "'Open Sans', sans-serif" }}>
             {/* INJECT CUSTOM FONT STYLES */}
             <style>
                 {`
@@ -86,43 +100,57 @@ export default function AdminDashboard() {
             </style>
 
             {/* SIDEBAR */}
-            <aside className="w-64 h-screen bg-gradient-to-b from-[#0b2a17] to-[#123d23] text-white flex flex-col flex-shrink-0">
+            <aside className="w-64 h-screen bg-gradient-to-b from-[#0b7a3a] to-[#0a5f2d] text-white flex flex-col flex-shrink-0">
                 <Sidebar active={active} setActive={setActive} handleLogout={handleLogout} />
             </aside>
 
             {/* MAIN CONTENT AREA */}
-            <main className="flex-1 p-4 overflow-y-auto bg-gray-100">
-                <div className="bg-gray-50 rounded-xl overflow-hidden min-h-full shadow-sm">
+            <main className="flex-1 p-4">
+                <div className="bg-gray-50 rounded-xl overflow-hidden">
 
-                    {/* HEADER / TOPBAR */}
+                    {/* HEADER ATAS */}
                     <div className="bg-white border-b px-6 py-3 flex justify-between items-center shadow-sm">
-                        <h1 className="text-xl heading">
-                            {active === "beranda" ? `Selamat Datang, ${adminEmail}` : active.charAt(0).toUpperCase() + active.slice(1).replace('_', ' ')}
+
+                        <h1 className="text-xl font-bold text-gray-900">
+                            Selamat Datang, Admin
                         </h1>
 
+                        {/* PROFILE DROPDOWN */}
                         <div className="relative">
+
+                            {/* BUTTON */}
                             <div onClick={() => setIsProfileOpen(!isProfileOpen)}
-                                className="flex items-center gap-2 bg-gray-100 px-3 py-1 rounded-full cursor-pointer hover:bg-gray-200 transition-colors">
+                                className="flex items-center gap-2 bg-gray-100 px-3 py-1 rounded-full cursor-pointer">
+
+                                {/* ICON */}
                                 <div className="bg-green-500 text-white rounded-full p-1 flex items-center justify-center">
                                     <iconify-icon icon="mdi:account"></iconify-icon>
                                 </div>
-                                <span className="text-sm font-semibold">{adminEmail}</span>
+
+                                {/* TEXT */}
+                                <span className="text-sm">Admin</span>
+
+                                {/* ARROW */}
                                 <iconify-icon icon="mdi:chevron-down"></iconify-icon>
+
                             </div>
 
+                            {/* DROPDOWN */}
                             {isProfileOpen && (
-                                <div className="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-md border overflow-hidden z-50">
-                                    <button onClick={() => navigate("/profil")} className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2 text-sm">
+                                <div className="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-md overflow-hidden z-50">
+                                    <button onClick={() => navigate("/profil")} className="block w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2 text-gray-900 text-sm">
                                         <iconify-icon icon="mdi:account-cog"></iconify-icon>
                                         Kelola Profil
                                     </button>
                                 </div>
                             )}
+
                         </div>
+
                     </div>
 
-                    {/* DYNAMIC CONTENT */}
-                    <div className="p-6">
+                    {/* CONTENT */}
+                    <div className="overflow-y-auto max-h-[calc(100vh-8rem)]">
                         {active === "beranda" && (
                             <AdminBeranda
                                 users={users}
@@ -145,8 +173,13 @@ export default function AdminDashboard() {
                         {active === "dailyquiz" && (
                             <AdminDailyQuiz questions={quizQuestions} loading={loading} onRefresh={fetchAll} />
                         )}
+                        {active === "aktivitas" && (
+                            <AdminAktivitas />
+                        )}
                     </div>
+
                 </div>
+
             </main>
         </div>
     );
