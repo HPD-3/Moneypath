@@ -10,7 +10,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
     "@fontsource-variable/geist": "^5.2.8",
+    "@mui/material": "^5.18.0",
+    "@mui/x-charts": "^7.29.1",
     "axios": "^1.13.6",
     "chart.js": "^4.5.1",
     "class-variance-authority": "^0.7.1",

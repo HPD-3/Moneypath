@@ -1,8 +1,13 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "../firebase.js";
 import API from "../services/api.js";
+import Sidebar from "../components/Sidebar.jsx";
+import Navbar from "../components/Navbar.jsx";
 
 export default function Profile() {
+    const navigate = useNavigate();
     const [profile, setProfile] = useState(null);
     const [personal, setPersonal] = useState(null);
     const [error, setError] = useState(null);
@@ -13,8 +18,26 @@ export default function Profile() {
     const [balances, setBalances] = useState([]);
     const [transactions, setTransactions] = useState([]);
     const [tabungan, setTabungan] = useState([]);
+    
+    // New state for sidebar and navbar
+    const [activeNav, setActiveNav] = useState("profil");
+    const [isProfileOpen, setIsProfileOpen] = useState(false);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-    const navigate = useNavigate();
+    const handleNavigation = (navId) => {
+        const routes = {
+            beranda: "/dashboard",
+            edukasi: "/video",
+            tabungan: "/tabungan",
+            profil: "/profile",
+        };
+        if (routes[navId]) navigate(routes[navId]);
+    };
+
+    const handleLogout = async () => {
+        await auth.signOut();
+        navigate("/login");
+    };
 
     // 🔹 Fetch Auth Profile
     useEffect(() => {
@@ -103,39 +126,46 @@ export default function Profile() {
     if (error) return <div className="text-center p-5 text-red-600">Error: {error}</div>;
 
     return (
-        <div className="min-h-screen bg-gray-50 p-8">
-            <div className="max-w-7xl mx-auto">
+        <div className="flex h-screen bg-gray-50 font-sans overflow-hidden">
+            <Sidebar active={activeNav} setActive={(navId) => { setActiveNav(navId); handleNavigation(navId); }} handleLogout={handleLogout} isOpen={isSidebarOpen} setOpen={setIsSidebarOpen} />
+            
+            <div className="flex-1 flex flex-col overflow-hidden w-full">
+                <Navbar profile={profile} personal={personal} isOpen={isProfileOpen} setOpen={setIsProfileOpen} isSidebarOpen={isSidebarOpen} setSidebarOpen={setIsSidebarOpen} />
+                
+                <div className="flex-1 overflow-y-auto">
+                    <div className="min-h-screen bg-gray-50 p-4 md:p-8 pt-20 md:pt-8">
+                        <div className="max-w-7xl mx-auto">
 
                 {/* PROFILE HEADER CARD */}
                 {profile && (
-                    <div className="bg-gradient-to-r from-green-900 to-green-800 text-white rounded-3xl p-8 mb-8 flex justify-between items-center shadow-lg">
-                        <div className="flex gap-6 items-center">
+                    <div className="bg-gradient-to-r from-green-900 to-green-800 text-white rounded-3xl p-4 md:p-8 mb-8 flex flex-col md:flex-row md:justify-between md:items-center gap-4 shadow-lg">
+                        <div className="flex gap-4 md:gap-6 items-center flex-col sm:flex-row">
                             {/* Avatar */}
-                            <div className="w-24 h-24 bg-gradient-to-br from-orange-300 to-orange-400 rounded-full flex-shrink-0 flex items-center justify-center text-4xl font-bold">
+                            <div className="w-20 h-20 md:w-24 md:h-24 bg-gradient-to-br from-orange-300 to-orange-400 rounded-full flex-shrink-0 flex items-center justify-center text-3xl md:text-4xl font-bold">
                                 👤
                             </div>
 
-                            <div>
-                                <h2 className="text-2xl font-bold m-0">{personal?.name || "Full Name User"}</h2>
-                                <p className="text-gray-200 m-0 text-base">{profile.email}</p>
-                                <div className="flex items-center gap-2 mt-2">
+                            <div className="text-center sm:text-left">
+                                <h2 className="text-xl md:text-2xl font-bold m-0">{personal?.name || "Full Name User"}</h2>
+                                <p className="text-gray-200 m-0 text-sm md:text-base">{profile.email}</p>
+                                <div className="flex items-center gap-2 mt-2 justify-center sm:justify-start">
                                     <span className="inline-block w-2 h-2 bg-green-400 rounded-full"></span>
-                                    <span className="text-sm text-green-200">Level 2 - Saving & Budgeting</span>
+                                    <span className="text-xs md:text-sm text-green-200">Level 2 - Saving & Budgeting</span>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="flex flex-col gap-3">
+                        <div className="flex flex-row md:flex-col gap-2 md:gap-3 w-full sm:w-auto">
                             <button 
                                 onClick={() => setShowEdit(true)}
-                                className="px-4 py-2 rounded-full bg-green-400 text-green-900 font-semibold hover:bg-green-300 transition-all text-sm flex items-center gap-2"
+                                className="flex-1 md:flex-none px-3 md:px-4 py-2 rounded-full bg-green-400 text-green-900 font-semibold hover:bg-green-300 transition-all text-xs md:text-sm flex items-center gap-2 justify-center"
                             >
                                 ✏️ Edit Profil
                             </button>
 
                             <button 
                                 onClick={() => setShowPassword(true)}
-                                className="px-4 py-2 rounded-full bg-green-400 text-green-900 font-semibold hover:bg-green-300 transition-all text-sm flex items-center gap-2"
+                                className="flex-1 md:flex-none px-3 md:px-4 py-2 rounded-full bg-green-400 text-green-900 font-semibold hover:bg-green-300 transition-all text-xs md:text-sm flex items-center gap-2 justify-center"
                             >
                                 🔒 Ubah Password
                             </button>
@@ -144,7 +174,7 @@ export default function Profile() {
                 )}
 
                 {/* THREE COLUMN LAYOUT */}
-                <div className="grid grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
 
                     {/* LEFT: INFORMASI PRIBADI */}
                     {personal && (
@@ -322,6 +352,9 @@ export default function Profile() {
                 </div>
             )}
 
+                    </div>
+                </div>
+            </div>
         </div>
     );
 }

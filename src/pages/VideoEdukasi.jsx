@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "../firebase.js";
 import API from "../services/api.js";
+import Sidebar from "../components/Sidebar.jsx";
+import Navbar from "../components/Navbar.jsx";
 
 const CATEGORIES = ["semua", "budgeting", "investing", "saving", "debt"];
 
@@ -50,6 +54,43 @@ export default function VideoEdukasi() {
     const [activeCategory, setActive] = useState("semua");
     const [playing, setPlaying]       = useState(null);
     const [search, setSearch]         = useState("");
+    
+    // New state for sidebar and navbar
+    const [profile, setProfile]         = useState(null);
+    const [personal, setPersonal]       = useState(null);
+    const [activeNav, setActiveNav]     = useState("edukasi");
+    const [isProfileOpen, setIsProfileOpen] = useState(false);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+    useEffect(() => {
+        const unsub = onAuthStateChanged(auth, (user) => {
+            if (user) {
+                Promise.all([
+                    API.get("/auth/profile"),
+                    API.get("/personal/profile"),
+                ]).then(([pRes, perRes]) => {
+                    setProfile(pRes.data);
+                    setPersonal(perRes.data);
+                }).catch(console.error);
+            }
+        });
+        return () => unsub();
+    }, []);
+
+    const handleNavigation = (navId) => {
+        const routes = {
+            beranda: "/dashboard",
+            edukasi: "/video",
+            tabungan: "/tabungan",
+            profil: "/profile",
+        };
+        if (routes[navId]) navigate(routes[navId]);
+    };
+
+    const handleLogout = async () => {
+        await auth.signOut();
+        navigate("/login");
+    };
 
     useEffect(() => {
         const fetchVideos = async () => {
@@ -88,41 +129,38 @@ export default function VideoEdukasi() {
     });
 
     return (
-        <div style={{ minHeight: "100vh", background: "#f0f4f0", fontFamily: "Plus Jakarta Sans, sans-serif" }}>
+        <div className="flex h-screen bg-gray-50 font-sans overflow-hidden">
+            <Sidebar active={activeNav} setActive={(navId) => { setActiveNav(navId); handleNavigation(navId); }} handleLogout={handleLogout} isOpen={isSidebarOpen} setOpen={setIsSidebarOpen} />
+            
+            <div className="flex-1 flex flex-col overflow-hidden w-full">
+                <Navbar profile={profile} personal={personal} isOpen={isProfileOpen} setOpen={setIsProfileOpen} isSidebarOpen={isSidebarOpen} setSidebarOpen={setIsSidebarOpen} />
+                
+                <div className="flex-1 overflow-y-auto bg-gray-100">
+                    <div style={{ minHeight: "100vh", background: "#f0f4f0", fontFamily: "Plus Jakarta Sans, sans-serif", paddingTop: "60px" }}>
 
-            {/* Import font */}
-            <style>{`@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');`}</style>
+                        {/* Import font */}
+                        <style>{`@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');`}</style>
 
-            {/* Navbar */}
-            <nav style={{ background: "linear-gradient(90deg, #1a3a1f, #0f2a18)", padding: "12px 24px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ fontWeight: 700, color: "#9FF782", fontSize: 18 }}>MoneyPath</span>
-                <button
-                    onClick={() => navigate("/dashboard")}
-                    style={{ background: "#9FF782", color: "#0a1f10", border: "none", borderRadius: 8, padding: "7px 16px", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "Plus Jakarta Sans, sans-serif" }}>
-                    ← Dashboard
-                </button>
-            </nav>
+                        {/* Hero */}
+                        <div style={{ background: "linear-gradient(135deg, #1a3a1f, #0f2a18)", padding: "36px 24px", textAlign: "center" }}>
+                            <h1 style={{ color: "#9FF782", fontSize: 28, fontWeight: 700, marginBottom: 8 }}>📹 Vidio Edukasi</h1>
+                            <p style={{ color: "rgba(255,255,255,0.6)", fontSize: 14, marginBottom: 20 }}>
+                                Tingkatkan literasi finansialmu dengan video edukasi pilihan
+                            </p>
+                            {/* Search */}
+                            <div style={{ maxWidth: 400, margin: "0 auto", position: "relative" }}>
+                                <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", fontSize: 14, color: "#9ca3af" }}>🔍</span>
+                                <input
+                                    value={search}
+                                    onChange={e => setSearch(e.target.value)}
+                                    placeholder="Cari video..."
+                                    style={{ width: "100%", padding: "10px 12px 10px 36px", borderRadius: 8, border: "none", fontSize: 14, outline: "none", fontFamily: "Plus Jakarta Sans, sans-serif" }}
+                                />
+                            </div>
+                        </div>
 
-            {/* Hero */}
-            <div style={{ background: "linear-gradient(135deg, #1a3a1f, #0f2a18)", padding: "36px 24px", textAlign: "center" }}>
-                <h1 style={{ color: "#9FF782", fontSize: 28, fontWeight: 700, marginBottom: 8 }}>📹 Vidio Edukasi</h1>
-                <p style={{ color: "rgba(255,255,255,0.6)", fontSize: 14, marginBottom: 20 }}>
-                    Tingkatkan literasi finansialmu dengan video edukasi pilihan
-                </p>
-                {/* Search */}
-                <div style={{ maxWidth: 400, margin: "0 auto", position: "relative" }}>
-                    <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", fontSize: 14, color: "#9ca3af" }}>🔍</span>
-                    <input
-                        value={search}
-                        onChange={e => setSearch(e.target.value)}
-                        placeholder="Cari video..."
-                        style={{ width: "100%", padding: "10px 12px 10px 36px", borderRadius: 8, border: "none", fontSize: 14, outline: "none", fontFamily: "Plus Jakarta Sans, sans-serif" }}
-                    />
-                </div>
-            </div>
-
-            {/* Category Filter */}
-            <div style={{ padding: "16px 24px", display: "flex", gap: 8, overflowX: "auto", background: "white", borderBottom: "1px solid #f3f4f6" }}>
+                        {/* Category Filter */}
+                        <div style={{ padding: "16px 24px", display: "flex", gap: 8, overflowX: "auto", background: "white", borderBottom: "1px solid #f3f4f6" }}>
                 {CATEGORIES.map(cat => (
                     <button key={cat} onClick={() => setActive(cat)}
                         style={{
@@ -222,6 +260,9 @@ export default function VideoEdukasi() {
                     </div>
                 </div>
             )}
+                    </div>
+                </div>
+            </div>
         </div>
     );
 }

@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "../firebase.js";
 import API from "../services/api.js";
+import Sidebar from "../components/Sidebar.jsx";
+import Navbar from "../components/Navbar.jsx";
 
 const CATEGORIES = ["semua", "budgeting", "investing", "saving", "debt"];
 const DIFF_COLORS = {
@@ -53,6 +57,28 @@ export default function LearningPathList() {
     const [paths, setPaths]           = useState([]);
     const [loading, setLoading]       = useState(true);
     const [activeCategory, setActive] = useState("semua");
+    
+    // New state for sidebar and navbar
+    const [profile, setProfile]         = useState(null);
+    const [personal, setPersonal]       = useState(null);
+    const [activeNav, setActiveNav]     = useState("learning");
+    const [isProfileOpen, setIsProfileOpen] = useState(false);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+    useEffect(() => {
+        const unsub = onAuthStateChanged(auth, (user) => {
+            if (user) {
+                Promise.all([
+                    API.get("/auth/profile"),
+                    API.get("/personal/profile"),
+                ]).then(([pRes, perRes]) => {
+                    setProfile(pRes.data);
+                    setPersonal(perRes.data);
+                }).catch(console.error);
+            }
+        });
+        return () => unsub();
+    }, []);
 
     useEffect(() => {
         const fetchPaths = async () => {
@@ -68,58 +94,64 @@ export default function LearningPathList() {
         fetchPaths();
     }, []);
 
+    const handleNavigation = (navId) => {
+        const routes = {
+            beranda: "/dashboard",
+            edukasi: "/video",
+            tabungan: "/tabungan",
+            profil: "/profile",
+        };
+        if (routes[navId]) navigate(routes[navId]);
+    };
+
+    const handleLogout = async () => {
+        await auth.signOut();
+        navigate("/login");
+    };
+
     const filtered = paths.filter(p =>
         activeCategory === "semua" || p.category === activeCategory
     );
 
     return (
-        <div style={{ minHeight: "100vh", background: "#f0f4f0", fontFamily: "Plus Jakarta Sans, sans-serif" }}>
-            <style>{`@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');`}</style>
+        <div className="flex h-screen bg-gray-50 font-sans overflow-hidden">
+            <Sidebar active={activeNav} setActive={(navId) => { setActiveNav(navId); handleNavigation(navId); }} handleLogout={handleLogout} isOpen={isSidebarOpen} setOpen={setIsSidebarOpen} />
+            
+            <div className="flex-1 flex flex-col overflow-hidden w-full">
+                <Navbar profile={profile} personal={personal} isOpen={isProfileOpen} setOpen={setIsProfileOpen} isSidebarOpen={isSidebarOpen} setSidebarOpen={setIsSidebarOpen} />
+                
+                <div className="flex-1 overflow-y-auto bg-gray-100">
+                    <div style={{ minHeight: "100vh", background: "#f0f4f0", fontFamily: "Plus Jakarta Sans, sans-serif", paddingTop: "60px" }}>
+                        <style>{`@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');`}</style>
+                        <div style={{ padding: "16px 24px", display: "flex", gap: 8, overflowX: "auto", background: "white", borderBottom: "1px solid #f3f4f6" }}>
+                            {CATEGORIES.map(cat => (
+                                <button key={cat} onClick={() => setActive(cat)}
+                                    style={{ padding: "6px 16px", borderRadius: 20, border: "none", fontSize: 13, fontWeight: 500, cursor: "pointer", textTransform: "capitalize", whiteSpace: "nowrap", fontFamily: "Plus Jakarta Sans, sans-serif", background: activeCategory === cat ? "#1a3a1f" : "#f3f4f6", color: activeCategory === cat ? "#9FF782" : "#6b7280", transition: "all 0.2s" }}>
+                                    {cat}
+                                </button>
+                            ))}
+                            <span style={{ marginLeft: "auto", fontSize: 12, color: "#9ca3af", alignSelf: "center", whiteSpace: "nowrap" }}>
+                                {filtered.length} path
+                            </span>
+                        </div>
 
-            {/* Navbar */}
-            <nav style={{ background: "linear-gradient(90deg, #1a3a1f, #0f2a18)", padding: "12px 24px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ fontWeight: 700, color: "#9FF782", fontSize: 18 }}>MoneyPath</span>
-                <button onClick={() => navigate("/dashboard")}
-                    style={{ background: "#9FF782", color: "#0a1f10", border: "none", borderRadius: 8, padding: "7px 16px", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "Plus Jakarta Sans, sans-serif" }}>
-                    ← Dashboard
-                </button>
-            </nav>
-
-            {/* Hero */}
-            <div style={{ background: "linear-gradient(135deg, #1a3a1f, #0f2a18)", padding: "36px 24px", textAlign: "center" }}>
-                <h1 style={{ color: "#9FF782", fontSize: 28, fontWeight: 700, marginBottom: 8 }}>📚 Learning Path</h1>
-                <p style={{ color: "rgba(255,255,255,0.6)", fontSize: 14 }}>
-                    Belajar finansial secara terstruktur seperti kursus profesional
-                </p>
-            </div>
-
-            {/* Category Filter */}
-            <div style={{ padding: "16px 24px", display: "flex", gap: 8, overflowX: "auto", background: "white", borderBottom: "1px solid #f3f4f6" }}>
-                {CATEGORIES.map(cat => (
-                    <button key={cat} onClick={() => setActive(cat)}
-                        style={{ padding: "6px 16px", borderRadius: 20, border: "none", fontSize: 13, fontWeight: 500, cursor: "pointer", textTransform: "capitalize", whiteSpace: "nowrap", fontFamily: "Plus Jakarta Sans, sans-serif", background: activeCategory === cat ? "#1a3a1f" : "#f3f4f6", color: activeCategory === cat ? "#9FF782" : "#6b7280", transition: "all 0.2s" }}>
-                        {cat}
-                    </button>
-                ))}
-                <span style={{ marginLeft: "auto", fontSize: 12, color: "#9ca3af", alignSelf: "center", whiteSpace: "nowrap" }}>
-                    {filtered.length} path
-                </span>
-            </div>
-
-            {/* Grid */}
-            <div style={{ padding: 24 }}>
-                {loading ? (
-                    <div style={{ textAlign: "center", padding: 60, color: "#9ca3af" }}>Loading...</div>
-                ) : filtered.length === 0 ? (
-                    <div style={{ textAlign: "center", padding: 60, color: "#9ca3af" }}>
-                        <p style={{ fontSize: 40, marginBottom: 10 }}>📚</p>
-                        <p>Belum ada learning path tersedia.</p>
+                        {/* Grid */}
+                        <div style={{ padding: 24 }}>
+                            {loading ? (
+                                <div style={{ textAlign: "center", padding: 60, color: "#9ca3af" }}>Loading...</div>
+                            ) : filtered.length === 0 ? (
+                                <div style={{ textAlign: "center", padding: 60, color: "#9ca3af" }}>
+                                    <p style={{ fontSize: 40, marginBottom: 10 }}>📚</p>
+                                    <p>Belum ada learning path tersedia.</p>
+                                </div>
+                            ) : (
+                                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 16 }}>
+                                    {filtered.map(p => <PathCard key={p.id} path={p} onClick={id => navigate(`/learning/${id}`)} />)}
+                                </div>
+                            )}
+                        </div>
                     </div>
-                ) : (
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 16 }}>
-                        {filtered.map(p => <PathCard key={p.id} path={p} onClick={id => navigate(`/learning/${id}`)} />)}
-                    </div>
-                )}
+                </div>
             </div>
         </div>
     );

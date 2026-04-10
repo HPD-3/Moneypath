@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getAuth, signOut } from "firebase/auth";
 import API from "../services/api.js";
-//import MagicBento from '../components/MagicBento.jsx'
+import Sidebar from "../components/Sidebar.jsx";
+import Navbar from "../components/Navbar.jsx";
 
 // ── Helpers ───────────────────────────────────────────────────
 function calcLevel(totalExp = 0) {
@@ -18,101 +19,6 @@ function greeting() {
     return "Selamat Malam";
 }
 
-// ── Nav Card ──────────────────────────────────────────────────
-function NavCard({ icon, label, sub, onClick, accent = "#9FF782", dark = false }) {
-    const [hovered, setHovered] = useState(false);
-    return (
-        <div
-            onClick={onClick}
-            onMouseEnter={() => setHovered(true)}
-            onMouseLeave={() => setHovered(false)}
-            style={{
-                background: dark
-                    ? `linear-gradient(135deg, #1a3a1f, #0f2a18)`
-                    : "white",
-                borderRadius: 16,
-                padding: "18px 20px",
-                cursor: "pointer",
-                border: dark ? "none" : "1px solid #f0f0f0",
-                boxShadow: hovered
-                    ? "0 8px 24px rgba(15,42,24,0.15)"
-                    : "0 2px 8px rgba(0,0,0,0.05)",
-                transform: hovered ? "translateY(-3px)" : "none",
-                transition: "all 0.2s ease",
-                display: "flex",
-                flexDirection: "column",
-                gap: 12,
-                minHeight: 110,
-            }}>
-            <span style={{ fontSize: 26 }}>{icon}</span>
-            <div>
-                <p style={{ fontWeight: 700, fontSize: 14, color: dark ? "#9FF782" : "#1a3a1f", marginBottom: 2 }}>{label}</p>
-                {sub && <p style={{ fontSize: 11, color: dark ? "rgba(255,255,255,0.5)" : "#9ca3af" }}>{sub}</p>}
-            </div>
-        </div>
-    );
-}
-
-// ── EXP Bar ───────────────────────────────────────────────────
-function ExpBar({ totalExp = 0, level, streak = 0 }) {
-    const { currentExp, expToNext, progress } = calcLevel(totalExp);
-    return (
-        <div style={{ background: "linear-gradient(135deg, #1a3a1f 0%, #0f2a18 100%)", borderRadius: 20, padding: "20px 24px", color: "white", position: "relative", overflow: "hidden" }}>
-            {/* Decorative circle */}
-            <div style={{ position: "absolute", right: -30, top: -30, width: 120, height: 120, borderRadius: "50%", background: "rgba(159,247,130,0.07)" }} />
-            <div style={{ position: "absolute", right: 20, top: 20, width: 60, height: 60, borderRadius: "50%", background: "rgba(159,247,130,0.05)" }} />
-
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16, position: "relative" }}>
-                <div>
-                    <p style={{ fontSize: 11, color: "rgba(255,255,255,0.45)", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 4 }}>Level kamu</p>
-                    <p style={{ fontSize: 40, fontWeight: 800, color: "#9FF782", lineHeight: 1 }}>Lv.{level}</p>
-                    <p style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", marginTop: 4 }}>{totalExp} total EXP</p>
-                </div>
-                <div style={{ textAlign: "center", background: "rgba(255,255,255,0.06)", borderRadius: 12, padding: "10px 14px" }}>
-                    <p style={{ fontSize: 22 }}>🔥</p>
-                    <p style={{ fontSize: 18, fontWeight: 700, color: "#9FF782", lineHeight: 1.1 }}>{streak}</p>
-                    <p style={{ fontSize: 10, color: "rgba(255,255,255,0.4)" }}>Streak</p>
-                </div>
-            </div>
-
-            <div>
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "rgba(255,255,255,0.4)", marginBottom: 6 }}>
-                    <span>{currentExp} / {expToNext} EXP</span>
-                    <span>Level {level + 1}</span>
-                </div>
-                <div style={{ background: "rgba(255,255,255,0.1)", borderRadius: 6, height: 8, overflow: "hidden" }}>
-                    <div style={{ width: `${progress}%`, height: "100%", borderRadius: 6, background: "linear-gradient(90deg, #9FF782, #5dd672)", transition: "width 0.8s ease" }} />
-                </div>
-            </div>
-        </div>
-    );
-}
-
-// ── Daily Quiz Banner ─────────────────────────────────────────
-function DailyQuizBanner({ completed, score, onClick }) {
-    return (
-        <div onClick={onClick} style={{ background: completed ? "#f0fdf4" : "linear-gradient(135deg, #fef9c3, #fef3c7)", borderRadius: 14, padding: "14px 18px", border: completed ? "1px solid #bbf7d0" : "1px solid #fde68a", cursor: "pointer", display: "flex", alignItems: "center", gap: 14, transition: "transform 0.2s" }}
-            onMouseEnter={e => e.currentTarget.style.transform = "scale(1.01)"}
-            onMouseLeave={e => e.currentTarget.style.transform = "none"}>
-            <span style={{ fontSize: 28, flexShrink: 0 }}>{completed ? "✅" : "🧠"}</span>
-            <div style={{ flex: 1 }}>
-                <p style={{ fontWeight: 700, fontSize: 13, color: completed ? "#166534" : "#92400e", marginBottom: 2 }}>
-                    {completed ? "Daily Quiz Selesai!" : "Daily Quiz Tersedia!"}
-                </p>
-                <p style={{ fontSize: 11, color: completed ? "#4ade80" : "#b45309" }}>
-                    {completed ? `Nilai hari ini: ${score} • Kembali besok` : "Dapatkan +50 EXP + Streak bonus"}
-                </p>
-            </div>
-            {!completed && (
-                <div style={{ background: "#1a3a1f", color: "#9FF782", borderRadius: 8, padding: "6px 14px", fontSize: 12, fontWeight: 600, flexShrink: 0 }}>
-                    Mulai →
-                </div>
-            )}
-        </div>
-    );
-}
-
-// ── Main Dashboard ────────────────────────────────────────────
 export default function Dashboard() {
     const navigate = useNavigate();
     const [profile, setProfile] = useState(null);
@@ -120,6 +26,9 @@ export default function Dashboard() {
     const [quizStats, setQuizStats] = useState(null);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [activeNav, setActiveNav] = useState("beranda");
+    const [isProfileOpen, setIsProfileOpen] = useState(false);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     useEffect(() => {
         const fetchAll = async () => {
@@ -152,8 +61,23 @@ export default function Dashboard() {
     }, [navigate]);
 
     const handleLogout = async () => {
-        await signOut(getAuth());
-        navigate("/");
+        try {
+            await signOut(getAuth());
+            navigate("/");
+        } catch (err) {
+            console.error("Logout error:", err);
+        }
+    };
+
+    const handleNavigation = (navId) => {
+        setActiveNav(navId);
+        const routes = {
+            beranda: "/dashboard",
+            edukasi: "/video",
+            tabungan: "/tabungan",
+            profil: "/profile",
+        };
+        navigate(routes[navId] || "/dashboard");
     };
 
     if (error) return (
@@ -175,135 +99,254 @@ export default function Dashboard() {
     const { level, currentExp, expToNext, progress } = calcLevel(quizStats?.totalExp || 0);
 
     return (
-        <div style={{ minHeight: "100vh", background: "#f0f4f0", fontFamily: "Plus Jakarta Sans, sans-serif" }}>
+        <div className="flex h-screen bg-white overflow-hidden w-full" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
             <style>{`
                 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Lilita+One&display=swap');
-                * { box-sizing: border-box; margin: 0; padding: 0; }
-                body { background: #f0f4f0; }
             `}</style>
 
-            {/* ── NAVBAR ──────────────────────────────────── */}
-            <nav style={{ background: "linear-gradient(90deg, #1a3a1f, #0f2a18)", padding: "12px 24px", display: "flex", justifyContent: "space-between", alignItems: "center", position: "sticky", top: 0, zIndex: 50 }}>
-                <span style={{ fontFamily: "Lilita One, cursive", color: "#9FF782", fontSize: 20, letterSpacing: 1 }}>MoneyPath</span>
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    {profile?.role === "admin" && (
-                        <button onClick={() => navigate("/admin")}
-                            style={{ background: "rgba(159,247,130,0.15)", color: "#9FF782", border: "1px solid rgba(159,247,130,0.3)", borderRadius: 8, padding: "6px 14px", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "Plus Jakarta Sans, sans-serif" }}>
-                            🛠 Admin
-                        </button>
-                    )}
-                    <button onClick={() => navigate("/profile")}
-                        style={{ width: 34, height: 34, borderRadius: "50%", background: "#9FF782", color: "#0a1f10", border: "none", cursor: "pointer", fontWeight: 700, fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                        {(personal?.name || profile?.email || "U")[0].toUpperCase()}
-                    </button>
-                </div>
-            </nav>
+            {/* ── SIDEBAR ──────────────────────────────────── */}
+            <Sidebar active={activeNav} setActive={handleNavigation} handleLogout={handleLogout} isOpen={isSidebarOpen} setOpen={setIsSidebarOpen} />
 
-            <div style={{ maxWidth: 480, margin: "0 auto", padding: "20px 16px 40px" }}>
+            {/* ── MAIN CONTENT AREA ──────────────────────────────────── */}
+            <main className="flex-1 flex flex-col h-screen overflow-hidden w-full">
+                {/* ── NAVBAR/HEADER ──────────────────────────────────── */}
+                <Navbar profile={profile} personal={personal} isOpen={isProfileOpen} setOpen={setIsProfileOpen} isSidebarOpen={isSidebarOpen} setSidebarOpen={setIsSidebarOpen} />
 
-                {/* ── GREETING ──────────────────────────── */}
-                <div style={{ marginBottom: 20 }}>
-                    <p style={{ fontSize: 13, color: "#9ca3af", marginBottom: 2 }}>{greeting()},</p>
-                    <h1 style={{ fontSize: 24, fontWeight: 800, color: "#1a3a1f" }}>
-                        {personal?.name?.split(" ")[0] || "Pengguna"} 👋
-                    </h1>
-                </div>
+                {/* ── MAIN CONTENT ──────────────────────────────────── */}
+                <div className="flex-1 overflow-y-auto bg-gray-50">
+                    <div style={{ maxWidth: 1400, margin: "0 auto", padding: "24px 16px 40px", paddingTop: "80px" }}>
 
-                {/* ── EXP / LEVEL CARD ──────────────────── */}
-                <div style={{ marginBottom: 16 }}>
-                    <ExpBar
-                        totalExp={quizStats?.totalExp || 0}
-                        level={quizStats?.level || 1}
-                        streak={quizStats?.streak || 0}
-                    />
-                </div>
+                        {/* ── TOP SECTION: Level Card ──────────────────────── */}
+                        <div style={{ background: "linear-gradient(135deg, #1a3a1f 0%, #0f2a18 100%)", borderRadius: 20, padding: "24px", color: "white", position: "relative", overflow: "hidden", marginBottom: 24 }}>
+                            <div style={{ position: "absolute", right: -30, top: -30, width: 120, height: 120, borderRadius: "50%", background: "rgba(159,247,130,0.07)" }} />
+                            <div style={{ position: "absolute", right: 20, top: 20, width: 60, height: 60, borderRadius: "50%", background: "rgba(159,247,130,0.05)" }} />
 
-                {/* ── DAILY QUIZ BANNER ─────────────────── */}
-                <div style={{ marginBottom: 24 }}>
-                    <DailyQuizBanner
-                        completed={quizStats?.completedToday}
-                        score={quizStats?.todayScore}
-                        onClick={() => navigate("/quiz")}
-                    />
-                </div>
-                {/*<MagicBento
-                    textAutoHide={true}
-                    enableStars
-                    enableSpotlight
-                    enableBorderGlow={true}
-                    enableTilt={false}
-                    enableMagnetism={false}
-                    clickEffect
-                    spotlightRadius={400}
-                    particleCount={12}
-                    glowColor="132, 0, 255"
-                    disableAnimations={false}
-                />*/}
-                {/* ── MENU GRID ─────────────────────────── */}
-                <p style={{ fontSize: 11, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 12 }}>Menu Utama</p>
-
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 24 }}>
-                    <NavCard icon="💰" label="Saldo Saya" sub="Kelola keuangan" onClick={() => navigate("/balance")} />
-                    <NavCard icon="📹" label="Video Edukasi" sub="Tonton & belajar" onClick={() => navigate("/video")} />
-                    <NavCard icon="📚" label="Learning Path" sub="Belajar terstruktur" onClick={() => navigate("/learning")} dark />
-                    <NavCard icon="🧠" label="Daily Quiz" sub={quizStats?.completedToday ? "✓ Selesai hari ini" : "Belum dimainkan"} onClick={() => navigate("/quiz")} />
-                    <NavCard icon="🐷" label="Tabungan" sub="Kelola target menabung" onClick={() => navigate("/tabungan")} />
-                    <NavCard icon="📊" label="Rekap" sub="Rekap Bulanan" onClick={() => navigate("/rekap")} />
-                    <NavCard icon="🤝" label="Saldo Bersama" sub="Kelola keuangan bareng" onClick={() => navigate("/shared-balance")} />
-                    <NavCard icon="🤝" label="Tabungan Bersama" sub="Nabung bareng teman" onClick={() => navigate("/shared-tabungan")} />
-                </div>
-
-                {/* ── QUICK STATS ───────────────────────── */}
-                <p style={{ fontSize: 11, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 12 }}>Statistik Kamu</p>
-
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginBottom: 24 }}>
-                    {[
-                        { label: "Level", value: `Lv.${quizStats?.level || 1}`, icon: "⚡" },
-                        { label: "Streak", value: `${quizStats?.streak || 0} hari`, icon: "🔥" },
-                        { label: "Max Streak", value: `${quizStats?.maxStreak || 0} hari`, icon: "🏆" },
-                    ].map((s, i) => (
-                        <div key={i} style={{ background: "white", borderRadius: 12, padding: "14px 12px", textAlign: "center", border: "1px solid #f0f0f0" }}>
-                            <p style={{ fontSize: 18, marginBottom: 4 }}>{s.icon}</p>
-                            <p style={{ fontSize: 16, fontWeight: 800, color: "#1a3a1f" }}>{s.value}</p>
-                            <p style={{ fontSize: 10, color: "#9ca3af", marginTop: 2 }}>{s.label}</p>
-                        </div>
-                    ))}
-                </div>
-
-                {/* ── PROFILE SNIPPET ───────────────────── */}
-                {personal && (
-                    <div style={{ background: "white", borderRadius: 16, padding: "16px 20px", border: "1px solid #f0f0f0", marginBottom: 20 }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-                            <p style={{ fontWeight: 700, fontSize: 13, color: "#1a3a1f" }}>👤 Profil Saya</p>
-                            <button onClick={() => navigate("/profile")}
-                                style={{ fontSize: 11, color: "#9FF782", background: "none", border: "none", cursor: "pointer", fontWeight: 600, fontFamily: "Plus Jakarta Sans, sans-serif" }}>
-                                Edit →
-                            </button>
-                        </div>
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-                            {[
-                                { label: "Nama", value: personal.name },
-                                { label: "Gender", value: personal.gender },
-                                { label: "No HP", value: personal.phoneNumber },
-                                { label: "Alamat", value: personal.address },
-                            ].map((f, i) => (
-                                <div key={i}>
-                                    <p style={{ fontSize: 10, color: "#9ca3af", marginBottom: 2 }}>{f.label}</p>
-                                    <p style={{ fontSize: 12, fontWeight: 600, color: "#374151", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{f.value || "—"}</p>
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", position: "relative" }}>
+                                <div>
+                                    <p style={{ fontSize: 11, color: "rgba(255,255,255,0.45)", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 8 }}>Level Kamu</p>
+                                    <p style={{ fontSize: 48, fontWeight: 800, color: "#9FF782", lineHeight: 1 }}>Lv. {quizStats?.level || 1}</p>
+                                    <p style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", marginTop: 8 }}>{quizStats?.totalExp || 0}/100 xp</p>
                                 </div>
-                            ))}
-                        </div>
-                    </div>
-                )}
+                                <div style={{ textAlign: "center", background: "white", borderRadius: 12, padding: "12px 16px" }}>
+                                    <iconify-icon icon="mdi:fire" style={{ fontSize: 24, color: "#ff6b6b" }}></iconify-icon>
+                                    <p style={{ fontSize: 20, fontWeight: 700, color: "#1a3a1f", lineHeight: 1.1 }}>{quizStats?.streak || 0}</p>
+                                    <p style={{ fontSize: 10, color: "#6b7280" }}>streak</p>
+                                </div>
+                            </div>
 
-                {/* ── LOGOUT ────────────────────────────── */}
-                <button onClick={handleLogout}
-                    style={{ width: "100%", background: "none", border: "1px solid #e5e7eb", borderRadius: 12, padding: "12px", fontSize: 13, fontWeight: 600, color: "#9ca3af", cursor: "pointer", fontFamily: "Plus Jakarta Sans, sans-serif", transition: "all 0.2s" }}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = "#fca5a5"; e.currentTarget.style.color = "#ef4444"; }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = "#e5e7eb"; e.currentTarget.style.color = "#9ca3af"; }}>
-                    ⬅ Logout
-                </button>
-            </div>
+                            <div style={{ marginTop: 16 }}>
+                                <div style={{ background: "rgba(255,255,255,0.1)", borderRadius: 6, height: 8, overflow: "hidden" }}>
+                                    <div style={{ width: `${((quizStats?.totalExp || 0) % 100)}%`, height: "100%", borderRadius: 6, background: "linear-gradient(90deg, #9FF782, #5dd672)", transition: "width 0.8s ease" }} />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* ── DAILY QUIZ & LEARNING PATH CARDS ──────────────────────── */}
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 24 }}>
+                            {/* Daily Quiz Card */}
+                            <div style={{ background: "linear-gradient(135deg, #fef9c3, #fef3c7)", borderRadius: 20, padding: "24px", position: "relative", overflow: "hidden", border: "2px solid #fde68a", transition: "all 0.2s", display: "flex", alignItems: "center", gap: 16 }}
+                                onClick={() => navigate("/quiz")}
+                                onMouseEnter={e => {
+                                    e.currentTarget.style.transform = "translateY(-2px)";
+                                    e.currentTarget.style.boxShadow = "0 8px 20px rgba(253, 230, 138, 0.3)";
+                                }}
+                                onMouseLeave={e => {
+                                    e.currentTarget.style.transform = "none";
+                                    e.currentTarget.style.boxShadow = "none";
+                                }}>
+                                <iconify-icon icon="mdi:lightbulb-outline" style={{ fontSize: 40, color: "#92400e" }}></iconify-icon>
+                                <div style={{ flex: 1 }}>
+                                    <p style={{ fontWeight: 700, fontSize: 18, color: "#92400e", marginBottom: 4 }}>Daily Quiz Tersedia</p>
+                                    <p style={{ fontSize: 12, color: "#b45309" }}>nyalakan streak mu dengan memulai kuis!</p>
+                                </div>
+                                <button style={{ background: "#1a3a1f", color: "#9FF782", borderRadius: 8, padding: "10px 20px", fontSize: 13, fontWeight: 600, flexShrink: 0, border: "none", cursor: "pointer", whiteSpace: "nowrap" }}>
+                                    Mulai
+                                </button>
+                            </div>
+
+                            {/* Learning Path Card */}
+                            <div style={{ background: "linear-gradient(135deg, #fef9c3, #fef3c7)", borderRadius: 20, padding: "24px", position: "relative", overflow: "hidden", border: "2px solid #fde68a", transition: "all 0.2s", display: "flex", alignItems: "center", gap: 16, cursor: "pointer" }}
+                                onClick={() => navigate("/learning")}
+                                onMouseEnter={e => {
+                                    e.currentTarget.style.transform = "translateY(-2px)";
+                                    e.currentTarget.style.boxShadow = "0 8px 20px rgba(253, 230, 138, 0.3)";
+                                }}
+                                onMouseLeave={e => {
+                                    e.currentTarget.style.transform = "none";
+                                    e.currentTarget.style.boxShadow = "none";
+                                }}>
+                                <iconify-icon icon="mdi:chart-box-outline" style={{ fontSize: 40, color: "#92400e" }}></iconify-icon>
+                                <div>
+                                    <p style={{ fontSize: 18, fontWeight: 800, color: "#92400e" }}>Learning</p>
+                                    <p style={{ fontSize: 18, fontWeight: 800, color: "#92400e" }}>path</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* ── MAIN GRID: Features ──────────────────────── */}
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: 16, marginBottom: 24 }}>
+                            {/* Left Column: Video Edukasi */}
+                            <div style={{ background: "white", borderRadius: 16, padding: "20px", border: "2px solid #d1d5db", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12, transition: "all 0.2s", minHeight: 200 }}
+                                onClick={() => navigate("/video")}
+                                onMouseEnter={e => {
+                                    e.currentTarget.style.borderColor = "#9FF782";
+                                    e.currentTarget.style.boxShadow = "0 8px 16px rgba(159, 247, 130, 0.1)";
+                                }}
+                                onMouseLeave={e => {
+                                    e.currentTarget.style.borderColor = "#d1d5db";
+                                    e.currentTarget.style.boxShadow = "none";
+                                }}>
+                                <iconify-icon icon="mdi:play-circle-outline" style={{ fontSize: 56, color: "#1a3a1f" }}></iconify-icon>
+                                <p style={{ fontSize: 16, fontWeight: 800, color: "#1a3a1f" }}>Video Edukasi</p>
+                                <p style={{ fontSize: 12, color: "#9ca3af", textAlign: "center" }}>Tonton dan Belajar</p>
+                                <button style={{ background: "#1a3a1f", color: "white", borderRadius: 8, padding: "6px 12px", fontSize: 11, fontWeight: 600, border: "none", cursor: "pointer", marginTop: 8 }}>
+                                    Tonton Sekarang
+                                </button>
+                            </div>
+
+                            {/* Right Column: Feature Grid */}
+                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                                {/* Saldo Saya */}
+                                <div style={{ background: "white", borderRadius: 16, padding: "16px", border: "2px solid #d1d5db", cursor: "pointer", transition: "all 0.2s" }}
+                                    onClick={() => navigate("/balance")}
+                                    onMouseEnter={e => {
+                                        e.currentTarget.style.borderColor = "#9FF782";
+                                        e.currentTarget.style.boxShadow = "0 8px 16px rgba(159, 247, 130, 0.1)";
+                                    }}
+                                    onMouseLeave={e => {
+                                        e.currentTarget.style.borderColor = "#d1d5db";
+                                        e.currentTarget.style.boxShadow = "none";
+                                    }}>
+                                    <iconify-icon icon="mdi:home-outline" style={{ fontSize: 32, marginBottom: 8, color: "#1a3a1f" }}></iconify-icon>
+                                    <p style={{ fontSize: 14, fontWeight: 800, color: "#1a3a1f", marginBottom: 2 }}>Saldo Saya</p>
+                                    <p style={{ fontSize: 11, color: "#9ca3af", marginBottom: 12 }}>Kelola Keuangan Anda</p>
+                                    <button style={{ background: "#1a3a1f", color: "white", borderRadius: 6, padding: "4px 10px", fontSize: 10, fontWeight: 600, border: "none", cursor: "pointer" }}>
+                                        Click
+                                    </button>
+                                </div>
+
+                                {/* Saldo Bersama */}
+                                <div style={{ background: "white", borderRadius: 16, padding: "16px", border: "2px solid #d1d5db", cursor: "pointer", transition: "all 0.2s" }}
+                                    onClick={() => navigate("/shared-balance")}
+                                    onMouseEnter={e => {
+                                        e.currentTarget.style.borderColor = "#9FF782";
+                                        e.currentTarget.style.boxShadow = "0 8px 16px rgba(159, 247, 130, 0.1)";
+                                    }}
+                                    onMouseLeave={e => {
+                                        e.currentTarget.style.borderColor = "#d1d5db";
+                                        e.currentTarget.style.boxShadow = "none";
+                                    }}>
+                                    <iconify-icon icon="mdi:handshake-outline" style={{ fontSize: 32, marginBottom: 8, color: "#1a3a1f" }}></iconify-icon>
+                                    <p style={{ fontSize: 14, fontWeight: 800, color: "#1a3a1f", marginBottom: 2 }}>Saldo Bersama</p>
+                                    <p style={{ fontSize: 11, color: "#9ca3af", marginBottom: 12 }}>Kelola Bersama</p>
+                                    <button style={{ background: "#1a3a1f", color: "white", borderRadius: 6, padding: "4px 10px", fontSize: 10, fontWeight: 600, border: "none", cursor: "pointer" }}>
+                                        Click
+                                    </button>
+                                </div>
+
+                                {/* Tabungan Bersama */}
+                                <div style={{ background: "white", borderRadius: 16, padding: "16px", border: "2px solid #d1d5db", cursor: "pointer", transition: "all 0.2s" }}
+                                    onClick={() => navigate("/shared-tabungan")}
+                                    onMouseEnter={e => {
+                                        e.currentTarget.style.borderColor = "#9FF782";
+                                        e.currentTarget.style.boxShadow = "0 8px 16px rgba(159, 247, 130, 0.1)";
+                                    }}
+                                    onMouseLeave={e => {
+                                        e.currentTarget.style.borderColor = "#d1d5db";
+                                        e.currentTarget.style.boxShadow = "none";
+                                    }}>
+                                    <iconify-icon icon="mdi:wallet-outline" style={{ fontSize: 32, marginBottom: 8, color: "#1a3a1f" }}></iconify-icon>
+                                    <p style={{ fontSize: 14, fontWeight: 800, color: "#1a3a1f", marginBottom: 2 }}>Tabungan Bersama</p>
+                                    <p style={{ fontSize: 11, color: "#9ca3af", marginBottom: 12 }}>Nabung Bareng</p>
+                                    <button style={{ background: "#1a3a1f", color: "white", borderRadius: 6, padding: "4px 10px", fontSize: 10, fontWeight: 600, border: "none", cursor: "pointer" }}>
+                                        Click
+                                    </button>
+                                </div>
+
+                                {/* Tabungan Target */}
+                                <div style={{ background: "white", borderRadius: 16, padding: "16px", border: "2px solid #d1d5db", cursor: "pointer", transition: "all 0.2s" }}
+                                    onClick={() => navigate("/tabungan")}
+                                    onMouseEnter={e => {
+                                        e.currentTarget.style.borderColor = "#9FF782";
+                                        e.currentTarget.style.boxShadow = "0 8px 16px rgba(159, 247, 130, 0.1)";
+                                    }}
+                                    onMouseLeave={e => {
+                                        e.currentTarget.style.borderColor = "#d1d5db";
+                                        e.currentTarget.style.boxShadow = "none";
+                                    }}>
+                                    <iconify-icon icon="mdi:bullseye" style={{ fontSize: 32, marginBottom: 8, color: "#1a3a1f" }}></iconify-icon>
+                                    <p style={{ fontSize: 14, fontWeight: 800, color: "#1a3a1f", marginBottom: 2 }}>Tabungan Bersama</p>
+                                    <p style={{ fontSize: 11, color: "#9ca3af", marginBottom: 12 }}>Kelola Target</p>
+                                    <button style={{ background: "#1a3a1f", color: "white", borderRadius: 6, padding: "4px 10px", fontSize: 10, fontWeight: 600, border: "none", cursor: "pointer" }}>
+                                        Click
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* ── BOTTOM GRID: Recap + Other Features ──────────────────────── */}
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 24 }}>
+                            {/* Recap Card */}
+                            <div style={{ background: "white", borderRadius: 16, padding: "20px", border: "2px solid #d1d5db", cursor: "pointer", transition: "all 0.2s" }}
+                                onClick={() => navigate("/rekap")}
+                                onMouseEnter={e => {
+                                    e.currentTarget.style.borderColor = "#9FF782";
+                                    e.currentTarget.style.boxShadow = "0 8px 16px rgba(159, 247, 130, 0.1)";
+                                }}
+                                onMouseLeave={e => {
+                                    e.currentTarget.style.borderColor = "#d1d5db";
+                                    e.currentTarget.style.boxShadow = "none";
+                                }}>
+                                <iconify-icon icon="mdi:chart-box-outline" style={{ fontSize: 40, marginBottom: 12, color: "#1a3a1f" }}></iconify-icon>
+                                <p style={{ fontSize: 16, fontWeight: 800, color: "#1a3a1f", marginBottom: 4 }}>Rekap</p>
+                                <p style={{ fontSize: 12, color: "#9ca3af", marginBottom: 14 }}>Lihat Rekap Bulanan</p>
+                                <button style={{ background: "#1a3a1f", color: "white", borderRadius: 8, padding: "6px 14px", fontSize: 11, fontWeight: 600, border: "none", cursor: "pointer" }}>
+                                    Click
+                                </button>
+                            </div>
+
+                            {/* Stats Section */}
+                            <div style={{ display: "grid", gridTemplateRows: "1fr 1fr", gap: 16 }}>
+                                {/* Daily Quiz Stats */}
+                                <div style={{ background: "#fff8e6", borderRadius: 16, padding: "16px", border: "2px solid #fde68a", cursor: "pointer", transition: "all 0.2s" }}>
+                                    <iconify-icon icon="mdi:bullseye" style={{ fontSize: 32, marginBottom: 8, color: "#92400e" }}></iconify-icon>
+                                    <p style={{ fontSize: 11, color: "#b45309" }}>Target: 50 XP</p>
+                                </div>
+
+                                {/* Target Stats */}
+                                <div style={{ background: "#f0f9ff", borderRadius: 16, padding: "16px", border: "2px solid #bfdbfe", cursor: "pointer", transition: "all 0.2s" }}>
+                                    <iconify-icon icon="mdi:trending-up" style={{ fontSize: 32, marginBottom: 8, color: "#0c4a6e" }}></iconify-icon>
+                                    <p style={{ fontSize: 14, fontWeight: 800, color: "#0c4a6e" }}>Target Target</p>
+                                    <p style={{ fontSize: 11, color: "#0284c7" }}>Kelola Target</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* ── STATISTICS SECTION ──────────────────────── */}
+                        <div style={{ marginBottom: 24 }}>
+                            <p style={{ fontSize: 11, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 12 }}>STATISTIK</p>
+                            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
+                                <div style={{ background: "white", borderRadius: 12, padding: "16px", textAlign: "center", border: "2px solid #fed7aa" }}>
+                                    <iconify-icon icon="mdi:lightning-bolt" style={{ fontSize: 24, marginBottom: 8, color: "#1a3a1f" }}></iconify-icon>
+                                    <p style={{ fontSize: 16, fontWeight: 800, color: "#1a3a1f" }}>Level {quizStats?.level || 1}</p>
+                                    <p style={{ fontSize: 11, color: "#9ca3af" }}>level</p>
+                                </div>
+                                <div style={{ background: "white", borderRadius: 12, padding: "16px", textAlign: "center", border: "2px solid #fed7aa" }}>
+                                    <iconify-icon icon="mdi:fire" style={{ fontSize: 24, marginBottom: 8, color: "#1a3a1f" }}></iconify-icon>
+                                    <p style={{ fontSize: 16, fontWeight: 800, color: "#1a3a1f" }}>{quizStats?.streak || 0} hari</p>
+                                    <p style={{ fontSize: 11, color: "#9ca3af" }}>streak</p>
+                                </div>
+                                <div style={{ background: "white", borderRadius: 12, padding: "16px", textAlign: "center", border: "2px solid #fed7aa" }}>
+                                    <iconify-icon icon="mdi:trophy-outline" style={{ fontSize: 24, marginBottom: 8, color: "#1a3a1f" }}></iconify-icon>
+                                    <p style={{ fontSize: 16, fontWeight: 800, color: "#1a3a1f" }}>{quizStats?.maxStreak || 0}</p>
+                                    <p style={{ fontSize: 11, color: "#9ca3af" }}>champion</p>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </main>
         </div>
     );
 }

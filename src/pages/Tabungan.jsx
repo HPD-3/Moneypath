@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "../firebase.js";
 import API from "../services/api.js";
+import Sidebar from "../components/Sidebar.jsx";
+import Navbar from "../components/Navbar.jsx";
 
 // ── Helpers ───────────────────────────────────────────────────
 const fmt = (n) => `Rp ${(n || 0).toLocaleString("id-ID")}`;
@@ -393,6 +397,43 @@ export default function Tabungan() {
     const [selected, setSelected]       = useState(null);
     const [showCreate, setShowCreate]   = useState(false);
     const [filterTab, setFilterTab]     = useState("semua"); // semua | aktif | tercapai
+    
+    // New state for sidebar and navbar
+    const [profile, setProfile]         = useState(null);
+    const [personal, setPersonal]       = useState(null);
+    const [activeNav, setActiveNav]     = useState("tabungan");
+    const [isProfileOpen, setIsProfileOpen] = useState(false);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+    useEffect(() => {
+        const unsub = onAuthStateChanged(auth, (user) => {
+            if (user) {
+                Promise.all([
+                    API.get("/auth/profile"),
+                    API.get("/personal/profile"),
+                ]).then(([pRes, perRes]) => {
+                    setProfile(pRes.data);
+                    setPersonal(perRes.data);
+                }).catch(console.error);
+            }
+        });
+        return () => unsub();
+    }, []);
+
+    const handleNavigation = (navId) => {
+        const routes = {
+            beranda: "/dashboard",
+            edukasi: "/video",
+            tabungan: "/tabungan",
+            profil: "/profile",
+        };
+        if (routes[navId]) navigate(routes[navId]);
+    };
+
+    const handleLogout = async () => {
+        await auth.signOut();
+        navigate("/login");
+    };
 
     useEffect(() => {
         fetchAll();
@@ -454,29 +495,23 @@ export default function Tabungan() {
     });
 
     return (
-        <div style={{ minHeight: "100vh", background: "#f0f4f0", fontFamily: "Plus Jakarta Sans, sans-serif" }}>
-            <style>{`@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap'); * { box-sizing: border-box; margin: 0; padding: 0; }`}</style>
+        <div className="flex h-screen bg-gray-50 font-sans overflow-hidden">
+            <Sidebar active={activeNav} setActive={(navId) => { setActiveNav(navId); handleNavigation(navId); }} handleLogout={handleLogout} isOpen={isSidebarOpen} setOpen={setIsSidebarOpen} />
+            
+            <div className="flex-1 flex flex-col overflow-hidden w-full">
+                <Navbar profile={profile} personal={personal} isOpen={isProfileOpen} setOpen={setIsProfileOpen} isSidebarOpen={isSidebarOpen} setSidebarOpen={setIsSidebarOpen} />
+                
+                <div className="flex-1 overflow-y-auto bg-gray-100">
+                    <div style={{ minHeight: "100vh", background: "#f0f4f0", fontFamily: "Plus Jakarta Sans, sans-serif" }}>
+                        <style>{`@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap'); * { box-sizing: border-box; margin: 0; padding: 0; }`}</style>
 
-            {/* Navbar */}
-            <nav style={{ background: "linear-gradient(90deg, #1a3a1f, #0f2a18)", padding: "12px 24px", display: "flex", justifyContent: "space-between", alignItems: "center", position: "sticky", top: 0, zIndex: 40 }}>
-                <button onClick={() => navigate("/dashboard")}
-                    style={{ background: "none", border: "none", color: "#9FF782", fontSize: 14, cursor: "pointer", fontFamily: "Plus Jakarta Sans, sans-serif", fontWeight: 600 }}>
-                    ← Dashboard
-                </button>
-                <span style={{ color: "white", fontWeight: 700, fontSize: 15 }}>Tabungan</span>
-                <button onClick={() => setShowCreate(true)}
-                    style={{ background: "#9FF782", color: "#0a1f10", border: "none", borderRadius: 8, padding: "7px 14px", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "Plus Jakarta Sans, sans-serif" }}>
-                    + Tambah
-                </button>
-            </nav>
+                        <div style={{ maxWidth: 520, margin: "0 auto", padding: "20px 16px 40px", paddingTop: "60px" }}>
 
-            <div style={{ maxWidth: 520, margin: "0 auto", padding: "20px 16px 40px" }}>
-
-                {/* Header */}
-                <div style={{ marginBottom: 20 }}>
-                    <h1 style={{ fontSize: 22, fontWeight: 800, color: "#1a3a1f", marginBottom: 4 }}>Tabungan</h1>
-                    <p style={{ fontSize: 13, color: "#9ca3af" }}>Kelola dan Pantau Progres Menabungmu</p>
-                </div>
+                            {/* Header */}
+                            <div style={{ marginBottom: 20 }}>
+                                <h1 style={{ fontSize: 22, fontWeight: 800, color: "#1a3a1f", marginBottom: 4 }}>Tabungan</h1>
+                                <p style={{ fontSize: 13, color: "#9ca3af" }}>Kelola dan Pantau Progres Menabungmu</p>
+                            </div>
 
                 {/* Stats Cards */}
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginBottom: 24 }}>
@@ -545,27 +580,30 @@ export default function Tabungan() {
                         ))}
                     </div>
                 )}
+
+                            {/* Detail Modal */}
+                            {selected && (
+                                <DetailModal
+                                    target={selected}
+                                    balances={balances}
+                                    onClose={() => setSelected(null)}
+                                    onAlokasi={handleAlokasi}
+                                    onCheckout={handleCheckout}
+                                    onDelete={handleDelete}
+                                />
+                            )}
+
+                            {/* Create Modal */}
+                            {showCreate && (
+                                <CreateModal
+                                    onClose={() => setShowCreate(false)}
+                                    onCreate={handleCreate}
+                                />
+                            )}
+                        </div>
+                    </div>
+                </div>
             </div>
-
-            {/* Detail Modal */}
-            {selected && (
-                <DetailModal
-                    target={selected}
-                    balances={balances}
-                    onClose={() => setSelected(null)}
-                    onAlokasi={handleAlokasi}
-                    onCheckout={handleCheckout}
-                    onDelete={handleDelete}
-                />
-            )}
-
-            {/* Create Modal */}
-            {showCreate && (
-                <CreateModal
-                    onClose={() => setShowCreate(false)}
-                    onCreate={handleCreate}
-                />
-            )}
         </div>
     );
 }
