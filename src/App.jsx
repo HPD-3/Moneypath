@@ -1,5 +1,4 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-import { getAuth } from "firebase/auth";
 import { lazy, Suspense } from "react";
 import { useAuth } from "./context/AuthContext.jsx";
 
@@ -52,6 +51,15 @@ function ProtectedRoute({ children }) {
   return children;
 }
 
+function PublicRoute({ children }) {
+  const { user, loading } = useAuth();
+
+  if (loading) return null;
+  if (user) return <Navigate to="/dashboard" />;
+
+  return children;
+}
+
 function AdminRoute({ children }) {
   const { user, loading } = useAuth();
   if (loading) return null;
@@ -66,8 +74,8 @@ function App() {
       <Routes>
 
         <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+        <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+        <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
         <Route path="/send" element={<Email />} />
 
         <Route path="/dashboard" element={

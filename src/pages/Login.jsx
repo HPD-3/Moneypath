@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { auth, googleProvider, db } from "../firebase";
-import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
+import { signInWithEmailAndPassword, signInWithRedirect } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 import { useNavigate, Link } from "react-router-dom";
 import loginImg from "../assets/image.jpg";
@@ -27,13 +27,7 @@ export default function Login() {
 
     const googleLogin = async () => {
         try {
-            const result = await signInWithPopup(auth, googleProvider);
-            await setDoc(doc(db, "users", result.user.uid), {
-                name: result.user.displayName,
-                email: result.user.email,
-                lastLogin: new Date(),
-            }, { merge: true });
-            navigate("/dashboard");
+            await signInWithRedirect(auth, googleProvider);
         } catch (error) {
             alert(error.message);
         }

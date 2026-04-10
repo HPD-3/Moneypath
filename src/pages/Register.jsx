@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { auth, googleProvider, db } from "../firebase";
-import { createUserWithEmailAndPassword, signInWithPopup } from "firebase/auth";
+import { createUserWithEmailAndPassword, signInWithRedirect } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 import { useNavigate, Link } from "react-router-dom";
 
@@ -29,14 +29,7 @@ export default function Register() {
 
     const googleRegister = async () => {
         try {
-            const result = await signInWithPopup(auth, googleProvider);
-            const user = result.user;
-            await setDoc(doc(db, "users", user.uid), {
-                name: user.displayName,
-                email: user.email,
-                createdAt: new Date(),
-            }, { merge: true });
-            navigate("/dashboard");
+            await signInWithRedirect(auth, googleProvider);
         } catch (error) {
             alert(error.message);
         }
