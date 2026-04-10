@@ -23,7 +23,7 @@
 
 ###  Dashboard
 
-![Dashboard Screenshot](./src/assets/Dashboard.png)
+![Dashboard Screenshot](./src/assets/21.png)
 
 ###  Login
 
