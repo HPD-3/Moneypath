@@ -56,9 +56,55 @@ front-end/
 
 ##  Tech Stack
 
-Frontend: React (Vite), Firebase Hosting, Axios  
-Backend: Node.js, Express, Vercel  
-Auth: Firebase Auth, Firebase Admin SDK
+Frontend: React (Vite), Firebase Hosting, Axios, Tailwind CSS  
+Backend: Node.js, Express, Vercel, Firebase Admin SDK  
+Auth: Firebase Auth, Firebase Admin SDK  
+Database: Firestore
+
+\---
+
+##  Dependencies
+
+### Frontend Dependencies
+
+| Package | Version | Purpose |
+|---------|---------|---------|
+| **React** | ^19.2.0 | UI library |
+| **React DOM** | ^19.2.0 | React DOM binding |
+| **React Router DOM** | ^7.13.1 | Client-side routing |
+| **Firebase** | ^12.10.0 | Authentication & Firestore |
+| **Axios** | ^1.13.6 | HTTP client |
+| **Vite** | ^7.3.1 | Build tool & dev server |
+| **Tailwind CSS** | ^3.4.4 | Utility-first CSS framework |
+| **@mui/material** | ^5.18.0 | Material Design components |
+| **@mui/x-charts** | ^7.29.1 | Chart components |
+| **Chart.js** | ^4.5.1 | Charting library |
+| **React Chart.js 2** | ^5.2.0 | React wrapper for Chart.js |
+| **GSAP** | ^3.14.2 | Animation library |
+| **Lucide React** | ^1.7.0 | Icon library |
+| **Class Variance Authority** | ^0.7.1 | CSS class utilities |
+| **clsx** | ^2.1.1 | Conditional classnames |
+| **Radix UI** | ^1.4.3 | Unstyled accessible components |
+| **Emotion** | ^11.14.0+ | CSS-in-JS library |
+| **Tailwind Merge** | ^3.5.0 | Merge Tailwind classes |
+
+### Frontend Dev Dependencies
+
+| Package | Version | Purpose |
+|---------|---------|---------|
+| **ESLint** | ^9.39.1 | Code linting |
+| **@vitejs/plugin-react** | ^5.1.1 | Vite React plugin |
+| **Autoprefixer** | ^10.4.27 | CSS vendor prefixer |
+| **PostCSS** | ^8.5.8 | CSS processing |
+
+### Backend Dependencies
+
+| Package | Version | Purpose |
+|---------|---------|---------|
+| **Express** | ^5.2.1 | Web framework |
+| **Firebase Admin SDK** | ^13.7.0 | Firebase backend access |
+| **CORS** | ^2.8.6 | Cross-origin resource sharing |
+| **Resend** | ^6.10.0 | Email service |
 
 \---
 
