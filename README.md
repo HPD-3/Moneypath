@@ -14,8 +14,8 @@
 
 ##  Live Demo
 
-*  Frontend: [Link Here!](https://moneypath-7777.firebaseapp.com/)
-*  API: [link](https://server-side-two-psi.vercel.app/)
+*  Deployed Version: [Link Here!](https://moneypath-7777.firebaseapp.com/)
+
 
 \---
 
