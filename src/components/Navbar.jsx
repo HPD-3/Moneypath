@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { getAuth, signOut } from "firebase/auth";
+import API from "../services/api.js";
 
 function greeting() {
     const h = new Date().getHours();
@@ -13,6 +14,7 @@ export default function Navbar({ profile, personal, isSidebarOpen, setSidebarOpe
     const navigate = useNavigate();
     const [showDropdown, setShowDropdown] = useState(false);
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+    const [quizStats, setQuizStats] = useState(null);
 
     const handleResize = () => {
         setIsMobile(window.innerWidth < 768);
@@ -21,6 +23,19 @@ export default function Navbar({ profile, personal, isSidebarOpen, setSidebarOpe
     React.useEffect(() => {
         window.addEventListener("resize", handleResize);
         return () => window.removeEventListener("resize", handleResize);
+    }, []);
+
+    // Fetch quiz stats for XP and streak
+    useEffect(() => {
+        const fetchQuizStats = async () => {
+            try {
+                const res = await API.get("/quiz/stats");
+                setQuizStats(res.data);
+            } catch (err) {
+                console.error("Error fetching quiz stats:", err);
+            }
+        };
+        fetchQuizStats();
     }, []);
 
     const handleLogout = async () => {
@@ -35,7 +50,7 @@ export default function Navbar({ profile, personal, isSidebarOpen, setSidebarOpe
     return (
         <nav style={{
             background: "white",
-            padding: "14px 24px",
+            padding: "12px 24px",
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
@@ -44,8 +59,9 @@ export default function Navbar({ profile, personal, isSidebarOpen, setSidebarOpe
             zIndex: 50,
             boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
             borderBottom: "1px solid #e5e7eb",
+            gap: 24,
         }}>
-            {/* Left: Hamburger + Greeting */}
+            {/* Left: Hamburger + Search */}
             <div style={{
                 display: "flex",
                 alignItems: "center",
@@ -99,66 +115,168 @@ export default function Navbar({ profile, personal, isSidebarOpen, setSidebarOpe
                     </span>
                 </button>
 
-                {/* Greeting Text */}
-                <h1 style={{
-                    fontSize: 18,
-                    fontWeight: 700,
-                    color: "#1a3a1f",
-                    margin: 0,
-                    whiteSpace: "nowrap",
+                {/* Search Bar */}
+                <div style={{
+                    position: "relative",
+                    width: isMobile ? "100%" : "400px",
                 }}>
-                    Halo {personal?.name?.split(" ")[0] || "Username"}! {greeting()}
-                </h1>
+                    <input 
+                        type="text"
+                        placeholder="Cari Topik..."
+                        style={{
+                            width: "100%",
+                            border: "1px solid #d1d5db",
+                            borderRadius: 8,
+                            padding: "8px 12px 8px 36px",
+                            fontSize: 13,
+                            color: "#374151",
+                            outline: "none",
+                            transition: "border-color 0.2s",
+                            fontFamily: "Plus Jakarta Sans, sans-serif",
+                        }}
+                        onFocus={e => e.currentTarget.style.borderColor = "#9FF782"}
+                        onBlur={e => e.currentTarget.style.borderColor = "#d1d5db"}
+                    />
+                    <iconify-icon 
+                        icon="mdi:magnify"
+                        style={{
+                            position: "absolute",
+                            left: 12,
+                            top: "50%",
+                            transform: "translateY(-50%)",
+                            fontSize: 18,
+                            color: "#9ca3af",
+                        }}>
+                    </iconify-icon>
+                </div>
             </div>
 
-            {/* Right Actions */}
+            {/* Right: XP + Streak + Profile Menu + Notifications */}
             <div style={{
                 display: "flex",
                 alignItems: "center",
-                gap: 16,
+                gap: 20,
             }}>
-                {/* User Avatar with Dropdown */}
+                {/* Streak Display - Fire Icon */}
+                {quizStats?.streak !== undefined && (
+                    <div style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 8,
+                    }}>
+                        <div style={{
+                            width: 44,
+                            height: 44,
+                            borderRadius: "50%",
+                            border: "2px solid #FFB02E",
+                            background: "white",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+                        }}>
+                            <iconify-icon icon="mdi:fire" style={{
+                                fontSize: 22,
+                                color: "#FF6B00",
+                            }}></iconify-icon>
+                        </div>
+                        <div style={{
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: 2,
+                        }}>
+                            <span style={{
+                                fontWeight: 700,
+                                color: "#374151",
+                                fontSize: 13,
+                            }}>
+                                {quizStats?.streak || 0}
+                            </span>
+                            <span style={{
+                                fontSize: 10,
+                                color: "#9ca3af",
+                            }}>
+                                Streak
+                            </span>
+                        </div>
+                    </div>
+                )}
+
+                {/* XP Display - Lightning Icon */}
+                <div style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                }}>
+                    <div style={{
+                        width: 44,
+                        height: 44,
+                        borderRadius: "50%",
+                        border: "2px solid #10b981",
+                        background: "white",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+                    }}>
+                        <iconify-icon icon="mdi:lightning-bolt" style={{
+                            fontSize: 22,
+                            color: "#059669",
+                        }}></iconify-icon>
+                    </div>
+                    <div style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 2,
+                    }}>
+                        <span style={{
+                            fontWeight: 700,
+                            color: "#374151",
+                            fontSize: 13,
+                        }}>
+                            {quizStats?.totalExp || 0}
+                        </span>
+                        <span style={{
+                            fontSize: 10,
+                            color: "#9ca3af",
+                        }}>
+                            XP
+                        </span>
+                    </div>
+                </div>
+
+                {/* Profile Menu */}
                 <div style={{ position: "relative" }}>
-                    <button onClick={() => setShowDropdown(!showDropdown)}
+                    <button 
+                        onClick={() => setShowDropdown(!showDropdown)}
                         style={{
                             display: "flex",
                             alignItems: "center",
-                            gap: 8,
-                            background: "#f3f4f6",
-                            padding: "6px 12px",
-                            borderRadius: 20,
+                            gap: 4,
+                            background: "none",
                             border: "none",
                             cursor: "pointer",
-                            transition: "background 0.2s",
-                        }}
-                        onMouseEnter={e => e.currentTarget.style.background = "#e5e7eb"}
-                        onMouseLeave={e => e.currentTarget.style.background = "#f3f4f6"}>
+                            padding: 0,
+                        }}>
                         <div style={{
-                            width: 32,
-                            height: 32,
+                            width: 40,
+                            height: 40,
                             borderRadius: "50%",
-                            background: "#9FF782",
-                            color: "#0a1f10",
-                            border: "none",
-                            fontWeight: 700,
-                            fontSize: 13,
+                            border: "2px solid #06b6d4",
+                            background: "white",
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
                         }}>
-                            {(personal?.name || profile?.email || "U")[0].toUpperCase()}
+                            <iconify-icon icon="mdi:account" style={{
+                                fontSize: 20,
+                                color: "#9ca3af",
+                            }}></iconify-icon>
                         </div>
-                        <span style={{
-                            fontSize: 13,
-                            fontWeight: 500,
+                        <iconify-icon icon="mdi:chevron-down" style={{
+                            fontSize: 20,
                             color: "#4b5563",
-                        }}>
-                            {personal?.name?.split(" ")[0] || "User"}
-                        </span>
-                        <span style={{
-                            color: "#9ca3af",
-                            fontSize: 12,
-                        }}>▾</span>
+                        }}></iconify-icon>
                     </button>
 
                     {/* Dropdown Menu */}
@@ -166,15 +284,17 @@ export default function Navbar({ profile, personal, isSidebarOpen, setSidebarOpe
                         <div style={{
                             position: "absolute",
                             right: 0,
-                            top: 44,
+                            top: 48,
                             background: "white",
                             border: "1px solid #e5e7eb",
-                            borderRadius: 10,
+                            borderRadius: 12,
                             boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-                            minWidth: 180,
+                            minWidth: 200,
                             zIndex: 100,
+                            overflow: "hidden",
                         }}>
-                            <button onClick={() => { navigate("/profile"); setShowDropdown(false); }}
+                            <button 
+                                onClick={() => { navigate("/profile"); setShowDropdown(false); }}
                                 style={{
                                     width: "100%",
                                     padding: "12px 16px",
@@ -183,15 +303,19 @@ export default function Navbar({ profile, personal, isSidebarOpen, setSidebarOpe
                                     border: "none",
                                     cursor: "pointer",
                                     fontSize: 13,
-                                    color: "#1a3a1f",
-                                    borderBottom: "1px solid #f0f0f0",
+                                    color: "#374151",
                                     transition: "background 0.2s",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 12,
                                 }}
                                 onMouseEnter={e => e.currentTarget.style.background = "#f9fafb"}
                                 onMouseLeave={e => e.currentTarget.style.background = "none"}>
-                                👤 Profil Saya
+                                <iconify-icon icon="mdi:account" style={{ fontSize: 16 }}></iconify-icon>
+                                Profil
                             </button>
-                            <button onClick={() => { navigate("/settings"); setShowDropdown(false); }}
+                            <button 
+                                onClick={() => { navigate(profile?.role === "admin" ? "/admin" : "/settings"); setShowDropdown(false); }}
                                 style={{
                                     width: "100%",
                                     padding: "12px 16px",
@@ -200,15 +324,19 @@ export default function Navbar({ profile, personal, isSidebarOpen, setSidebarOpe
                                     border: "none",
                                     cursor: "pointer",
                                     fontSize: 13,
-                                    color: "#1a3a1f",
-                                    borderBottom: "1px solid #f0f0f0",
+                                    color: "#374151",
                                     transition: "background 0.2s",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 12,
                                 }}
                                 onMouseEnter={e => e.currentTarget.style.background = "#f9fafb"}
                                 onMouseLeave={e => e.currentTarget.style.background = "none"}>
-                                ⚙️ Pengaturan
+                                <iconify-icon icon={profile?.role === "admin" ? "mdi:shield-admin" : "mdi:cog"} style={{ fontSize: 16 }}></iconify-icon>
+                                {profile?.role === "admin" ? "Admin Dashboard" : "Pengaturan"}
                             </button>
-                            <button onClick={handleLogout}
+                            <button 
+                                onClick={handleLogout}
                                 style={{
                                     width: "100%",
                                     padding: "12px 16px",
@@ -219,14 +347,35 @@ export default function Navbar({ profile, personal, isSidebarOpen, setSidebarOpe
                                     fontSize: 13,
                                     color: "#ef4444",
                                     transition: "background 0.2s",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 12,
                                 }}
                                 onMouseEnter={e => e.currentTarget.style.background = "#fef2f2"}
                                 onMouseLeave={e => e.currentTarget.style.background = "none"}>
-                                ⬅️ Logout
+                                <iconify-icon icon="mdi:logout" style={{ fontSize: 16 }}></iconify-icon>
+                                Logout
                             </button>
                         </div>
                     )}
                 </div>
+
+                {/* Notification Bell */}
+                <button
+                    style={{
+                        background: "none",
+                        border: "none",
+                        cursor: "pointer",
+                        padding: 0,
+                        transition: "transform 0.2s",
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.transform = "scale(1.1)"}
+                    onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}>
+                    <iconify-icon icon="mdi:bell-outline" style={{
+                        fontSize: 28,
+                        color: "#374151",
+                    }}></iconify-icon>
+                </button>
             </div>
         </nav>
     );

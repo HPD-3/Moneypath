@@ -142,7 +142,7 @@ export default function Profile() {
                         <div className="flex gap-4 md:gap-6 items-center flex-col sm:flex-row">
                             {/* Avatar */}
                             <div className="w-20 h-20 md:w-24 md:h-24 bg-gradient-to-br from-orange-300 to-orange-400 rounded-full flex-shrink-0 flex items-center justify-center text-3xl md:text-4xl font-bold">
-                                👤
+                                <iconify-icon icon="mdi:account" className="text-3xl md:text-4xl"></iconify-icon>
                             </div>
 
                             <div className="text-center sm:text-left">
@@ -160,14 +160,14 @@ export default function Profile() {
                                 onClick={() => setShowEdit(true)}
                                 className="flex-1 md:flex-none px-3 md:px-4 py-2 rounded-full bg-green-400 text-green-900 font-semibold hover:bg-green-300 transition-all text-xs md:text-sm flex items-center gap-2 justify-center"
                             >
-                                ✏️ Edit Profil
+                                <iconify-icon icon="mdi:pencil"></iconify-icon> Edit Profil
                             </button>
 
                             <button 
                                 onClick={() => setShowPassword(true)}
                                 className="flex-1 md:flex-none px-3 md:px-4 py-2 rounded-full bg-green-400 text-green-900 font-semibold hover:bg-green-300 transition-all text-xs md:text-sm flex items-center gap-2 justify-center"
                             >
-                                🔒 Ubah Password
+                                <iconify-icon icon="mdi:lock"></iconify-icon> Ubah Password
                             </button>
                         </div>
                     </div>
@@ -183,7 +183,7 @@ export default function Profile() {
                             
                             <div className="space-y-4">
                                 <div className="flex items-center gap-4 pb-4 border-b border-gray-200">
-                                    <span className="text-2xl">👤</span>
+                                    <iconify-icon icon="mdi:account" className="text-2xl"></iconify-icon>
                                     <div>
                                         <p className="text-xs text-gray-500 font-semibold">Nama</p>
                                         <p className="text-gray-900 font-medium">{personal.name || "-"}</p>
@@ -191,7 +191,7 @@ export default function Profile() {
                                 </div>
 
                                 <div className="flex items-center gap-4 pb-4 border-b border-gray-200">
-                                    <span className="text-2xl">📅</span>
+                                    <iconify-icon icon="mdi:calendar" className="text-2xl"></iconify-icon>
                                     <div>
                                         <p className="text-xs text-gray-500 font-semibold">Tanggal Lahir</p>
                                         <p className="text-gray-900 font-medium">{personal.dateOfBirth || "-"}</p>
@@ -199,7 +199,7 @@ export default function Profile() {
                                 </div>
 
                                 <div className="flex items-center gap-4 pb-4 border-b border-gray-200">
-                                    <span className="text-2xl">📞</span>
+                                    <iconify-icon icon="mdi:phone" className="text-2xl"></iconify-icon>
                                     <div>
                                         <p className="text-xs text-gray-500 font-semibold">Nomor HP</p>
                                         <p className="text-gray-900 font-medium">{personal.phoneNumber || "-"}</p>
@@ -207,7 +207,7 @@ export default function Profile() {
                                 </div>
 
                                 <div className="flex items-center gap-4 pb-4 border-b border-gray-200">
-                                    <span className="text-2xl">⚥</span>
+                                    <iconify-icon icon="mdi:gender-female" className="text-2xl"></iconify-icon>
                                     <div>
                                         <p className="text-xs text-gray-500 font-semibold">Jenis Kelamin</p>
                                         <p className="text-gray-900 font-medium">{personal.gender || "-"}</p>
@@ -215,7 +215,7 @@ export default function Profile() {
                                 </div>
 
                                 <div className="flex items-center gap-4">
-                                    <span className="text-2xl">📍</span>
+                                    <iconify-icon icon="mdi:map-marker" className="text-2xl"></iconify-icon>
                                     <div>
                                         <p className="text-xs text-gray-500 font-semibold">Alamat</p>
                                         <p className="text-gray-900 font-medium">{personal.address || "-"}</p>
@@ -235,7 +235,7 @@ export default function Profile() {
                                 <span className="text-xs font-semibold bg-green-400 text-green-900 px-3 py-1 rounded-full w-fit">
                                     Total Tabungan
                                 </span>
-                                <p className="text-lg font-bold">💰 {fmt(totalTabungan)}</p>
+                                <p className="text-lg font-bold"><iconify-icon icon="mdi:wallet" style={{ marginRight: "6px" }}></iconify-icon>{fmt(totalTabungan)}</p>
                             </div>
 
                             {/* Total Pengeluaran */}
@@ -243,7 +243,7 @@ export default function Profile() {
                                 <span className="text-xs font-semibold bg-green-400 text-green-900 px-3 py-1 rounded-full w-fit">
                                     Total Pengeluaran
                                 </span>
-                                <p className="text-lg font-bold">📉 {fmt(totalPengeluaran)}</p>
+                                <p className="text-lg font-bold"><iconify-icon icon="mdi:trending-down" style={{ marginRight: "6px" }}></iconify-icon>{fmt(totalPengeluaran)}</p>
                             </div>
 
                             {/* Total Pemasukan */}
@@ -251,7 +251,7 @@ export default function Profile() {
                                 <span className="text-xs font-semibold bg-green-400 text-green-900 px-3 py-1 rounded-full w-fit">
                                     Total Pemasukan
                                 </span>
-                                <p className="text-lg font-bold">📈 {fmt(totalPemasukan)}</p>
+                                <p className="text-lg font-bold"><iconify-icon icon="mdi:trending-up" style={{ marginRight: "6px" }}></iconify-icon>{fmt(totalPemasukan)}</p>
                             </div>
 
                             {/* Target Keuangan */}
@@ -259,7 +259,7 @@ export default function Profile() {
                                 <span className="text-xs font-semibold bg-green-400 text-green-900 px-3 py-1 rounded-full w-fit">
                                     Target Keuangan
                                 </span>
-                                <p className="text-lg font-bold">🎯 {completedTabungan} Tercapai</p>
+                                <p className="text-lg font-bold"><iconify-icon icon="mdi:target" style={{ marginRight: "6px" }}></iconify-icon>{completedTabungan} Tercapai</p>
                             </div>
                         </div>
 
@@ -281,19 +281,30 @@ export default function Profile() {
                     <div className="bg-white p-6 rounded-2xl shadow-md">
                         <h3 className="text-xl font-bold text-gray-900 mb-6">Aktivitas Terakhir</h3>
 
-                        <div className="space-y-3 mb-4">
-                            {(showAll ? transactions : transactions.slice(0, 4)).map((tx, i) => (
-                                <div key={i} className="pb-3 border-b border-gray-200 last:border-b-0">
-                                    <p className="text-sm text-gray-900 font-medium">
-                                        {fmt(tx.amount)} - {tx.description?.substring(0, 20)}...
-                                    </p>
-                                </div>
-                            ))}
+                        <div className="overflow-y-auto max-h-96">
+                            <table className="w-full text-sm">
+                                <thead className="sticky top-0 bg-gray-50 border-b border-gray-200">
+                                    <tr>
+                                        <th className="text-left font-semibold text-gray-700 py-3 px-4">Deskripsi</th>
+                                        <th className="text-right font-semibold text-gray-700 py-3 px-4">Jumlah</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {(showAll ? transactions : transactions.slice(0, 4)).map((tx, i) => (
+                                        <tr key={i} className="border-b border-gray-100 hover:bg-gray-50 transition">
+                                            <td className="py-3 px-4 text-gray-700">{tx.description || "-"}</td>
+                                            <td className={`py-3 px-4 text-right font-medium ${tx.type === "income" ? "text-green-600" : "text-red-600"}`}>
+                                                {tx.type === "income" ? "+" : "-"}{fmt(tx.amount)}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
                         </div>
 
                         <button
                             onClick={() => setShowAll(!showAll)}
-                            className="text-green-700 font-semibold text-sm hover:text-green-900 transition-all"
+                            className="text-green-700 font-semibold text-sm hover:text-green-900 transition-all mt-4 inline-block"
                         >
                             {showAll ? "Tutup" : "Lihat Semua >"}
                         </button>

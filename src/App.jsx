@@ -19,6 +19,7 @@ const Email = lazy(() => import("./pages/send.jsx"));
 const RekapBulanan = lazy(() => import("./pages/RekapBulanan.jsx"));
 const SharedBalance = lazy(() => import("./pages/SharedBalance.jsx"));
 const SharedTabungan = lazy(() => import("./pages/SharedTabungan.jsx"));
+const AdminProfile = lazy(() => import("./pages/admin/AdminProfile.jsx"));
 
 function LoadingFallback() {
   return (
@@ -98,6 +99,9 @@ function App() {
         } />
         <Route path="/admin" element={
           <AdminRoute><AdminDashboard /></AdminRoute>
+        } />
+        <Route path="/admin/profile" element={
+          <AdminRoute><AdminProfile /></AdminRoute>
         } />
         <Route path="/shared-balance" element={<ProtectedRoute><SharedBalance /></ProtectedRoute>} />
         <Route path="/shared-tabungan" element={<ProtectedRoute><SharedTabungan /></ProtectedRoute>} />

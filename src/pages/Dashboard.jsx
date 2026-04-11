@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getAuth, signOut } from "firebase/auth";
+import { getFirestore, doc, getDoc } from "firebase/firestore";
 import API from "../services/api.js";
 import Sidebar from "../components/Sidebar.jsx";
 import Navbar from "../components/Navbar.jsx";
@@ -19,11 +20,28 @@ function greeting() {
     return "Selamat Malam";
 }
 
+// Fetch module details from Firestore
+async function getModuleDetails(moduleId) {
+    try {
+        const db = getFirestore();
+        const moduleRef = doc(db, "learningPaths", "modules", "modules", moduleId);
+        const moduleSnap = await getDoc(moduleRef);
+        if (moduleSnap.exists()) {
+            return moduleSnap.data();
+        }
+        return null;
+    } catch (error) {
+        console.error("Error fetching module:", error);
+        return null;
+    }
+}
+
 export default function Dashboard() {
     const navigate = useNavigate();
     const [profile, setProfile] = useState(null);
     const [personal, setPersonal] = useState(null);
     const [quizStats, setQuizStats] = useState(null);
+    const [xpHistory, setXpHistory] = useState([]);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
     const [activeNav, setActiveNav] = useState("beranda");
@@ -50,6 +68,43 @@ export default function Dashboard() {
 
                 if (quizRes.status === "fulfilled") {
                     setQuizStats(quizRes.value.data);
+                    // Get XP history from expLog (last 5 entries)
+                    if (quizRes.value.data.expLog && quizRes.value.data.expLog.length > 0) {
+                        const processedHistory = await Promise.all(
+                            quizRes.value.data.expLog
+                                .slice()
+                                .reverse()
+                                .slice(0, 5)
+                                .map(async (log) => {
+                                    let activity = log.reason || "Activity";
+
+                                    // Check if it's a module ID (all caps hex-like string)
+                                    if (activity.match(/^[a-zA-Z0-9]{20,}(\s*\/\s*PATH COMPLETE!)?$/)) {
+                                        // It's just a module ID, fetch its details
+                                        const moduleId = activity.replace(/\s*\/\s*PATH COMPLETE!$/, "");
+                                        const moduleData = await getModuleDetails(moduleId);
+                                        if (moduleData) {
+                                            activity = `📦 ${moduleData.title || "Module"} / ${moduleId}`;
+                                        } else {
+                                            activity = `📦 ${moduleId}`;
+                                        }
+                                        if (log.reason.includes("PATH COMPLETE")) {
+                                            activity = activity.replace("📦", "🏆");
+                                        }
+                                    } else if (activity.includes("Daily quiz")) {
+                                        activity = `🧠 Daily Quiz`;
+                                    } else if (activity.includes("PATH COMPLETE")) {
+                                        activity = `🏆 Full Path Completed`;
+                                    }
+
+                                    return {
+                                        activity,
+                                        xp: log.amount || 0
+                                    };
+                                })
+                        );
+                        setXpHistory(processedHistory);
+                    }
                 }
             } catch (err) {
                 setError(err.message);
@@ -285,7 +340,7 @@ export default function Dashboard() {
                         </div>
 
                         {/* ── BOTTOM GRID: Recap + Other Features ──────────────────────── */}
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 24 }}>
+                        <div style={{ display: "grid", gridTemplateColumns: "0.7fr 1.3fr", gap: 16, marginBottom: 24 }}>
                             {/* Recap Card */}
                             <div style={{ background: "white", borderRadius: 16, padding: "20px", border: "2px solid #d1d5db", cursor: "pointer", transition: "all 0.2s" }}
                                 onClick={() => navigate("/rekap")}
@@ -307,17 +362,50 @@ export default function Dashboard() {
 
                             {/* Stats Section */}
                             <div style={{ display: "grid", gridTemplateRows: "1fr 1fr", gap: 16 }}>
-                                {/* Daily Quiz Stats */}
-                                <div style={{ background: "#fff8e6", borderRadius: 16, padding: "16px", border: "2px solid #fde68a", cursor: "pointer", transition: "all 0.2s" }}>
-                                    <iconify-icon icon="mdi:bullseye" style={{ fontSize: 32, marginBottom: 8, color: "#92400e" }}></iconify-icon>
-                                    <p style={{ fontSize: 11, color: "#b45309" }}>Target: 50 XP</p>
+                                {/* XP History */}
+                                <div style={{ background: "#fff8e6", borderRadius: 16, padding: "16px", border: "2px solid #fde68a", cursor: "pointer", transition: "all 0.2s", minHeight: 180 }}
+                                    onClick={() => navigate("/quiz")}
+                                    onMouseEnter={e => {
+                                        e.currentTarget.style.borderColor = "#f59e0b";
+                                        e.currentTarget.style.boxShadow = "0 8px 16px rgba(245, 158, 11, 0.1)";
+                                    }}
+                                    onMouseLeave={e => {
+                                        e.currentTarget.style.borderColor = "#fde68a";
+                                        e.currentTarget.style.boxShadow = "none";
+                                    }}>
+                                    <p style={{ fontSize: 12, fontWeight: 700, color: "#b45309", marginBottom: 10 }}>📊 Riwayat XP Terakhir</p>
+                                    <div style={{ display: "flex", flexDirection: "column", gap: 6, maxHeight: 180, overflowY: "auto" }}>
+                                        {xpHistory.length > 0 ? (
+                                            xpHistory.slice(0, 5).map((item, idx) => (
+                                                <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "6px 0", borderBottom: "1px solid #fcd34d", gap: 8 }}>
+                                                    <span style={{ fontSize: 10, color: "#92400e", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                                                        {item.activity || "Activity"}
+                                                    </span>
+                                                    <span style={{ fontSize: 10, fontWeight: 700, color: "#f59e0b", flexShrink: 0 }}>
+                                                        +{item.xp} XP
+                                                    </span>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <p style={{ fontSize: 11, color: "#b45309", textAlign: "center", padding: "8px" }}>Belum ada riwayat XP</p>
+                                        )}
+                                    </div>
                                 </div>
 
                                 {/* Target Stats */}
-                                <div style={{ background: "#f0f9ff", borderRadius: 16, padding: "16px", border: "2px solid #bfdbfe", cursor: "pointer", transition: "all 0.2s" }}>
+                                <div style={{ background: "#f0f9ff", borderRadius: 16, padding: "16px", border: "2px solid #bfdbfe", cursor: "pointer", transition: "all 0.2s", minHeight: 180, display: "flex", flexDirection: "column", justifyContent: "center" }}
+                                    onClick={() => navigate("/learning")}
+                                    onMouseEnter={e => {
+                                        e.currentTarget.style.borderColor = "#0284c7";
+                                        e.currentTarget.style.boxShadow = "0 8px 16px rgba(2, 132, 199, 0.1)";
+                                    }}
+                                    onMouseLeave={e => {
+                                        e.currentTarget.style.borderColor = "#bfdbfe";
+                                        e.currentTarget.style.boxShadow = "none";
+                                    }}>
                                     <iconify-icon icon="mdi:trending-up" style={{ fontSize: 32, marginBottom: 8, color: "#0c4a6e" }}></iconify-icon>
-                                    <p style={{ fontSize: 14, fontWeight: 800, color: "#0c4a6e" }}>Target Target</p>
-                                    <p style={{ fontSize: 11, color: "#0284c7" }}>Kelola Target</p>
+                                    <p style={{ fontSize: 14, fontWeight: 800, color: "#0c4a6e" }}>Belajar & Berkembang</p>
+                                    <p style={{ fontSize: 11, color: "#0284c7" }}>Akses Learning Path</p>
                                 </div>
                             </div>
                         </div>

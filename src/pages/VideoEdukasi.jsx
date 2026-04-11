@@ -12,19 +12,21 @@ function VideoCard({ video, onClick }) {
     return (
         <div
             onClick={() => onClick(video)}
-            style={{ background: "white", borderRadius: 12, overflow: "hidden", cursor: "pointer", boxShadow: "0 1px 6px rgba(0,0,0,0.07)", transition: "transform 0.2s, box-shadow 0.2s" }}
+            style={{ background: "white", borderRadius: 12, overflow: "hidden", cursor: "pointer", boxShadow: "0 1px 6px rgba(0,0,0,0.07)", transition: "transform 0.2s, box-shadow 0.2s", display: "flex", gap: 16, padding: 12 }}
             onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 8px 20px rgba(0,0,0,0.1)"; }}
             onMouseLeave={e => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "0 1px 6px rgba(0,0,0,0.07)"; }}>
 
             {/* Thumbnail */}
-            <div style={{ position: "relative" }}>
+            <div style={{ position: "relative", flexShrink: 0, width: 180, height: 110 }}>
                 <img
                     src={video.thumbnail}
                     alt={video.title}
-                    style={{ width: "100%", aspectRatio: "16/9", objectFit: "cover", display: "block" }}
+                    style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 8, display: "block" }}
                 />
-                <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <div style={{ width: 40, height: 40, background: "rgba(255,255,255,0.92)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>▶</div>
+                <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.15)", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 8 }}>
+                    <div style={{ width: 40, height: 40, background: "rgba(255,255,255,0.92)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>
+                        <iconify-icon icon="mdi:play" style={{ color: "black", fontSize: 20 }}></iconify-icon>
+                    </div>
                 </div>
                 {video.duration && (
                     <span style={{ position: "absolute", bottom: 8, right: 8, background: "rgba(0,0,0,0.75)", color: "white", fontSize: 10, padding: "2px 7px", borderRadius: 4, fontWeight: 600 }}>
@@ -34,7 +36,7 @@ function VideoCard({ video, onClick }) {
             </div>
 
             {/* Info */}
-            <div style={{ padding: "12px 14px" }}>
+            <div style={{ flex: 1 }}>
                 <span style={{ fontSize: 10, fontWeight: 600, color: "#166534", background: "#e8fce0", padding: "2px 8px", borderRadius: 20, textTransform: "capitalize", display: "inline-block", marginBottom: 6 }}>
                     {video.category}
                 </span>
@@ -143,13 +145,16 @@ export default function VideoEdukasi() {
 
                         {/* Hero */}
                         <div style={{ background: "linear-gradient(135deg, #1a3a1f, #0f2a18)", padding: "36px 24px", textAlign: "center" }}>
-                            <h1 style={{ color: "#9FF782", fontSize: 28, fontWeight: 700, marginBottom: 8 }}>📹 Vidio Edukasi</h1>
+                            <h1 style={{ color: "#9FF782", fontSize: 28, fontWeight: 700, marginBottom: 8, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+                                <iconify-icon icon="mdi:video-camera" style={{ fontSize: 32 }}></iconify-icon>
+                                Vidio Edukasi
+                            </h1>
                             <p style={{ color: "rgba(255,255,255,0.6)", fontSize: 14, marginBottom: 20 }}>
                                 Tingkatkan literasi finansialmu dengan video edukasi pilihan
                             </p>
                             {/* Search */}
                             <div style={{ maxWidth: 400, margin: "0 auto", position: "relative" }}>
-                                <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", fontSize: 14, color: "#9ca3af" }}>🔍</span>
+                                <iconify-icon icon="mdi:magnify" style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", fontSize: 18, color: "#9ca3af" }}></iconify-icon>
                                 <input
                                     value={search}
                                     onChange={e => setSearch(e.target.value)}
@@ -186,11 +191,11 @@ export default function VideoEdukasi() {
                     <div style={{ textAlign: "center", padding: 60, color: "#9ca3af" }}>Loading video...</div>
                 ) : filtered.length === 0 ? (
                     <div style={{ textAlign: "center", padding: 60, color: "#9ca3af" }}>
-                        <p style={{ fontSize: 40, marginBottom: 10 }}>🎬</p>
+                        <iconify-icon icon="mdi:film-reel" style={{ fontSize: 60, marginBottom: 10, display: "block", color: "#d1d5db" }}></iconify-icon>
                         <p>Tidak ada video ditemukan.</p>
                     </div>
                 ) : (
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 16 }}>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                         {filtered.map(v => (
                             <VideoCard key={v.id} video={v} onClick={setPlaying} />
                         ))}
@@ -228,8 +233,9 @@ export default function VideoEdukasi() {
                                             {playing.category}
                                         </span>
                                         {playing.duration && (
-                                            <span style={{ fontSize: 11, fontWeight: 600, color: "#374151", background: "#f3f4f6", padding: "2px 8px", borderRadius: 20 }}>
-                                                ⏱ {playing.duration}
+                                            <span style={{ fontSize: 11, fontWeight: 600, color: "#374151", background: "#f3f4f6", padding: "2px 8px", borderRadius: 20, display: "flex", alignItems: "center", gap: 4 }}>
+                                                <iconify-icon icon="mdi:clock" style={{ fontSize: 12 }}></iconify-icon>
+                                                {playing.duration}
                                             </span>
                                         )}
                                     </div>
@@ -237,8 +243,8 @@ export default function VideoEdukasi() {
                                 </div>
                                 <button
                                     onClick={() => setPlaying(null)}
-                                    style={{ background: "#f3f4f6", border: "none", borderRadius: "50%", width: 32, height: 32, cursor: "pointer", fontSize: 16, flexShrink: 0, marginLeft: 16 }}>
-                                    ✕
+                                    style={{ background: "#f3f4f6", border: "none", borderRadius: "50%", width: 32, height: 32, cursor: "pointer", fontSize: 16, flexShrink: 0, marginLeft: 16, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                    <iconify-icon icon="mdi:close" style={{ fontSize: 18, color: "#6b7280" }}></iconify-icon>
                                 </button>
                             </div>
 

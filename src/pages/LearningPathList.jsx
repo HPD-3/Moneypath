@@ -8,9 +8,9 @@ import Navbar from "../components/Navbar.jsx";
 
 const CATEGORIES = ["semua", "budgeting", "investing", "saving", "debt"];
 const DIFF_COLORS = {
-    beginner:     { bg: "#dcfce7", color: "#166534" },
+    beginner: { bg: "#dcfce7", color: "#166534" },
     intermediate: { bg: "#fef9c3", color: "#854d0e" },
-    advanced:     { bg: "#fee2e2", color: "#991b1b" },
+    advanced: { bg: "#fee2e2", color: "#991b1b" },
 };
 
 function PathCard({ path, onClick }) {
@@ -53,15 +53,15 @@ function PathCard({ path, onClick }) {
 }
 
 export default function LearningPathList() {
-    const navigate                    = useNavigate();
-    const [paths, setPaths]           = useState([]);
-    const [loading, setLoading]       = useState(true);
+    const navigate = useNavigate();
+    const [paths, setPaths] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [activeCategory, setActive] = useState("semua");
-    
+
     // New state for sidebar and navbar
-    const [profile, setProfile]         = useState(null);
-    const [personal, setPersonal]       = useState(null);
-    const [activeNav, setActiveNav]     = useState("learning");
+    const [profile, setProfile] = useState(null);
+    const [personal, setPersonal] = useState(null);
+    const [activeNav, setActiveNav] = useState("learning");
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -116,10 +116,10 @@ export default function LearningPathList() {
     return (
         <div className="flex h-screen bg-gray-50 font-sans overflow-hidden">
             <Sidebar active={activeNav} setActive={(navId) => { setActiveNav(navId); handleNavigation(navId); }} handleLogout={handleLogout} isOpen={isSidebarOpen} setOpen={setIsSidebarOpen} />
-            
+
             <div className="flex-1 flex flex-col overflow-hidden w-full">
                 <Navbar profile={profile} personal={personal} isOpen={isProfileOpen} setOpen={setIsProfileOpen} isSidebarOpen={isSidebarOpen} setSidebarOpen={setIsSidebarOpen} />
-                
+
                 <div className="flex-1 overflow-y-auto bg-gray-100">
                     <div style={{ minHeight: "100vh", background: "#f0f4f0", fontFamily: "Plus Jakarta Sans, sans-serif", paddingTop: "60px" }}>
                         <style>{`@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');`}</style>

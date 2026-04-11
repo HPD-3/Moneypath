@@ -119,19 +119,12 @@ export default function Register() {
                     </div>
 
                     {/* GOOGLE BUTTON (Exact Login Style) */}
-                    <button
-                        type="button"
-                        onClick={googleRegister}
-                        className="w-full text-center text-[22px] mb-[35px] cursor-pointer bg-transparent border-none"
-                        style={{ fontFamily: "Arial, sans-serif" }}
-                    >
-                        <span className="text-[#4285F4]">G</span>
-                        <span className="text-[#EA4335]">o</span>
-                        <span className="text-[#FBBC05]">o</span>
-                        <span className="text-[#4285F4]">g</span>
-                        <span className="text-[#34A853]">l</span>
-                        <span className="text-[#EA4335]">e</span>
-                    </button>
+                    <div className="flex justify-center">
+                        <button onClick={googleRegister} className="flex items-center gap-3 border border-gray-300 px-6 py-2 rounded-full bg-white shadow-sm">
+                            <img src="https://www.svgrepo.com/show/355037/google.svg" className="w-5" />
+                            Sign in with google
+                        </button>
+                    </div>
 
                     {/* DESC */}
                     <p className="text-[10px] text-center text-[#222] leading-[1.6] mt-[50px] max-w-[240px] mx-auto">

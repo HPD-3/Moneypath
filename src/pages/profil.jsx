@@ -27,7 +27,7 @@ function Profil() {
 
                 {/* TOPBAR */}
                 <div className="topbar">
-                    <div className="user-box">UserName 👤</div>
+                    <div className="user-box"><iconify-icon icon="mdi:account" style={{ marginRight: "8px" }}></iconify-icon>UserName</div>
                 </div>
 
                 {/* PROFILE HEADER */}
@@ -59,11 +59,11 @@ function Profil() {
                     {/* INFORMASI */}
                     <div className="card info">
                         <h3>Informasi Pribadi</h3>
-                        <p>👤 Full Name User</p>
-                        <p>📅 24-11-2009</p>
-                        <p>📞 089687432567</p>
-                        <p>⚥ Perempuan</p>
-                        <p>📍 Alamat</p>
+                        <p><iconify-icon icon="mdi:account" style={{ marginRight: "8px" }}></iconify-icon>Full Name User</p>
+                        <p><iconify-icon icon="mdi:calendar" style={{ marginRight: "8px" }}></iconify-icon>24-11-2009</p>
+                        <p><iconify-icon icon="mdi:phone" style={{ marginRight: "8px" }}></iconify-icon>089687432567</p>
+                        <p><iconify-icon icon="mdi:gender-female" style={{ marginRight: "8px" }}></iconify-icon>Perempuan</p>
+                        <p><iconify-icon icon="mdi:map-marker" style={{ marginRight: "8px" }}></iconify-icon>Alamat</p>
                     </div>
 
                     {/* STATISTIK */}

@@ -1,15 +1,16 @@
 import { useState } from "react";
 import { auth, googleProvider, db } from "../firebase";
-import { signInWithEmailAndPassword, signInWithRedirect } from "firebase/auth";
+import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 import { useNavigate, Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import loginImg from "../assets/image.jpg";
 import logo3 from "../assets/logo3.png";
 
 export default function Login() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const navigate = useNavigate();
+    const { user } = useAuth();
 
     const login = async (e) => {
         e.preventDefault();
@@ -19,7 +20,8 @@ export default function Login() {
                 email: result.user.email,
                 lastLogin: new Date(),
             }, { merge: true });
-            navigate("/dashboard");
+            // onAuthStateChanged in AuthContext will trigger and update user state
+            // No need to manually navigate - PublicRoute will handle the redirect
         } catch (error) {
             alert(error.message);
         }
@@ -27,7 +29,13 @@ export default function Login() {
 
     const googleLogin = async () => {
         try {
-            await signInWithRedirect(auth, googleProvider);
+            const result = await signInWithPopup(auth, googleProvider);
+            await setDoc(doc(db, "users", result.user.uid), {
+                name: result.user.displayName,
+                email: result.user.email,
+                lastLogin: new Date(),
+            }, { merge: true });
+            // onAuthStateChanged in AuthContext will trigger and update user state
         } catch (error) {
             alert(error.message);
         }
@@ -87,9 +95,13 @@ export default function Login() {
                         <span className="flex-1 h-[1.5px] bg-black" />
                     </div>
 
-                    <button type="button" onClick={googleLogin} className="w-full text-center text-[22px] mb-[35px] cursor-pointer bg-transparent border-none">
-                        <span className="text-[#4285F4]">G</span><span className="text-[#EA4335]">o</span><span className="text-[#FBBC05]">o</span><span className="text-[#4285F4]">g</span><span className="text-[#34A853]">l</span><span className="text-[#EA4335]">e</span>
-                    </button>
+                    <div className="flex justify-center">
+                        <button onClick={googleLogin} className="flex items-center gap-3 border border-gray-300 px-6 py-2 rounded-full bg-white shadow-sm">
+                            <img src="https://www.svgrepo.com/show/355037/google.svg" className="w-5" />
+                            Sign in with google
+                        </button>
+                    </div>
+
                     {/* DESC */}
                     <p className="text-[10px] text-center text-[#222] leading-[1.6] mt-[50px] max-w-[240px] mx-auto">
                         Pantau, rencanakan, dan tumbuhkan keuanganmu bersama MoneyPath.

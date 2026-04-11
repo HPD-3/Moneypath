@@ -844,10 +844,10 @@ export default function Balance() {
                                         const netFlow = totalIncome - totalExpense;
 
                                         return [
-                                            { label: 'Pemasukan', value: totalIncome, color: 'bg-emerald-50 dark:bg-emerald-900/30', textColor: 'text-emerald-600 dark:text-emerald-400' },
-                                            { label: 'Pengeluaran', value: totalExpense, color: 'bg-red-50 dark:bg-red-900/30', textColor: 'text-red-600 dark:text-red-400' },
-                                            { label: 'Arus Bersih', value: netFlow, color: netFlow >= 0 ? 'bg-blue-50 dark:bg-blue-900/30' : 'bg-orange-50 dark:bg-orange-900/30', textColor: netFlow >= 0 ? 'text-blue-600 dark:text-blue-400' : 'text-orange-600 dark:text-orange-400' },
-                                            { label: 'Total Saldo', value: balances.reduce((sum, b) => sum + (b.balance || 0), 0), color: 'bg-purple-50 dark:bg-purple-900/30', textColor: 'text-purple-600 dark:text-purple-400' }
+                                            { label: 'Pemasukan', value: totalIncome, color: 'bg-emerald-600 dark:bg-emerald-700', textColor: 'text-white dark:text-emerald-100' },
+                                            { label: 'Pengeluaran', value: totalExpense, color: 'bg-red-600 dark:bg-red-700', textColor: 'text-white dark:text-red-100' },
+                                            { label: 'Arus Bersih', value: netFlow, color: netFlow >= 0 ? 'bg-blue-600 dark:bg-blue-700' : 'bg-orange-600 dark:bg-orange-700', textColor: netFlow >= 0 ? 'text-white dark:text-blue-100' : 'text-white dark:text-orange-100' },
+                                            { label: 'Total Saldo', value: balances.reduce((sum, b) => sum + (b.balance || 0), 0), color: 'bg-purple-600 dark:bg-purple-700', textColor: 'text-white dark:text-purple-100' }
                                         ].map((stat, idx) => (
                                             <div key={idx} className={`${stat.color} border border-gray-100 dark:border-gray-800 rounded-2xl p-4`}>
                                                 <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">{stat.label}</p>

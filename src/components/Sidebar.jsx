@@ -4,7 +4,7 @@ import logo2 from "/src/assets/logo2.png";
 
 export default function Sidebar({ active, setActive, handleLogout, isOpen, setOpen }) {
     const navigate = useNavigate();
-    
+
     const NAV_ITEMS = [
         { id: "beranda", icon: "mdi:home-outline", label: "Beranda", path: "/dashboard" },
         { id: "edukasi", icon: "mdi:play-circle", label: "Edukasi", path: "/video" },
