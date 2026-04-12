@@ -11,7 +11,7 @@ const fmt = (n) => `Rp ${(n || 0).toLocaleString("id-ID")}`;
 const pct = (terkumpul, target) => Math.min(Math.round((terkumpul / target) * 100), 100);
 
 const CATEGORIES = ["umum", "liburan", "elektronik", "kendaraan", "pendidikan", "darurat", "lainnya"];
-const CAT_ICONS  = { umum: "🎯", liburan: "✈️", elektronik: "💻", kendaraan: "🚗", pendidikan: "📚", darurat: "🏥", lainnya: "📦" };
+const CAT_ICONS = { umum: "🎯", liburan: "✈️", elektronik: "💻", kendaraan: "🚗", pendidikan: "📚", darurat: "🏥", lainnya: "📦" };
 
 // ── Target Card ───────────────────────────────────────────────
 function TargetCard({ target, onClick }) {
@@ -63,14 +63,14 @@ function TargetCard({ target, onClick }) {
 
 // ── Detail / Alokasi Modal ────────────────────────────────────
 function DetailModal({ target, balances, onClose, onAlokasi, onDelete, onCheckout }) {
-    const [amount, setAmount]   = useState("");
-    const [balId, setBalId]     = useState(balances[0]?.id || "");
+    const [amount, setAmount] = useState("");
+    const [balId, setBalId] = useState(balances[0]?.id || "");
     const [checkoutBalId, setCheckoutBalId] = useState(balances[0]?.id || "");
     const [riwayat, setRiwayat] = useState([]);
-    const [saving, setSaving]   = useState(false);
+    const [saving, setSaving] = useState(false);
     const [checkingOut, setCheckingOut] = useState(false);
-    const [error, setError]     = useState(null);
-    const [tab, setTab]         = useState("detail"); // detail | riwayat
+    const [error, setError] = useState(null);
+    const [tab, setTab] = useState("detail"); // detail | riwayat
 
     const progress = pct(target.terkumpul, target.targetAmount);
     const sisaTarget = target.targetAmount - target.terkumpul;
@@ -79,7 +79,7 @@ function DetailModal({ target, balances, onClose, onAlokasi, onDelete, onCheckou
     useEffect(() => {
         API.get(`/tabungan/${target.id}/riwayat`)
             .then(res => setRiwayat(res.data))
-            .catch(() => {});
+            .catch(() => { });
     }, [target.id]);
 
     const handleAlokasi = async e => {
@@ -107,7 +107,7 @@ function DetailModal({ target, balances, onClose, onAlokasi, onDelete, onCheckou
     const handleCheckout = async () => {
         setError(null);
         if (!checkoutBalId) return setError("Pilih balance untuk menerima dana");
-        
+
         setCheckingOut(true);
         try {
             await onCheckout(target.id, checkoutBalId);
@@ -242,7 +242,7 @@ function DetailModal({ target, balances, onClose, onAlokasi, onDelete, onCheckou
                             <p style={{ fontSize: 40, marginBottom: 10 }}>🎉</p>
                             <p style={{ fontWeight: 700, color: "#166534", fontSize: 16 }}>Target Tercapai!</p>
                             <p style={{ fontSize: 12, color: "#9ca3af", marginTop: 6, marginBottom: 20 }}>Selamat! Kamu berhasil mencapai target tabungan ini.</p>
-                            
+
                             {!target.isWithdrawn ? (
                                 <>
                                     <div style={{ marginBottom: 12, padding: "14px", background: "#f0fdf4", borderRadius: 10, border: "1px solid #c6e8bb" }}>
@@ -390,18 +390,18 @@ function CreateModal({ onClose, onCreate }) {
 
 // ── Main Tabungan Page ────────────────────────────────────────
 export default function Tabungan() {
-    const navigate                      = useNavigate();
-    const [targets, setTargets]         = useState([]);
-    const [balances, setBalances]       = useState([]);
-    const [loading, setLoading]         = useState(true);
-    const [selected, setSelected]       = useState(null);
-    const [showCreate, setShowCreate]   = useState(false);
-    const [filterTab, setFilterTab]     = useState("semua"); // semua | aktif | tercapai
-    
+    const navigate = useNavigate();
+    const [targets, setTargets] = useState([]);
+    const [balances, setBalances] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [selected, setSelected] = useState(null);
+    const [showCreate, setShowCreate] = useState(false);
+    const [filterTab, setFilterTab] = useState("semua"); // semua | aktif | tercapai
+
     // New state for sidebar and navbar
-    const [profile, setProfile]         = useState(null);
-    const [personal, setPersonal]       = useState(null);
-    const [activeNav, setActiveNav]     = useState("tabungan");
+    const [profile, setProfile] = useState(null);
+    const [personal, setPersonal] = useState(null);
+    const [activeNav, setActiveNav] = useState("tabungan");
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -485,11 +485,11 @@ export default function Tabungan() {
 
     // Stats
     const totalTerkumpul = targets.reduce((s, t) => s + (t.terkumpul || 0), 0);
-    const aktifCount     = targets.filter(t => !t.isCompleted).length;
-    const bulanIni       = targets.reduce((s, t) => s + (t.terkumpul || 0), 0); // simplified
+    const aktifCount = targets.filter(t => !t.isCompleted).length;
+    const bulanIni = targets.reduce((s, t) => s + (t.terkumpul || 0), 0); // simplified
 
     const filtered = targets.filter(t => {
-        if (filterTab === "aktif")   return !t.isCompleted;
+        if (filterTab === "aktif") return !t.isCompleted;
         if (filterTab === "tercapai") return t.isCompleted;
         return true;
     });
@@ -497,10 +497,10 @@ export default function Tabungan() {
     return (
         <div className="flex h-screen bg-gray-50 font-sans overflow-hidden">
             <Sidebar active={activeNav} setActive={(navId) => { setActiveNav(navId); handleNavigation(navId); }} handleLogout={handleLogout} isOpen={isSidebarOpen} setOpen={setIsSidebarOpen} />
-            
+
             <div className="flex-1 flex flex-col overflow-hidden w-full">
                 <Navbar profile={profile} personal={personal} isOpen={isProfileOpen} setOpen={setIsProfileOpen} isSidebarOpen={isSidebarOpen} setSidebarOpen={setIsSidebarOpen} />
-                
+
                 <div className="flex-1 overflow-y-auto bg-gray-100">
                     <div style={{ minHeight: "100vh", background: "#f0f4f0", fontFamily: "Plus Jakarta Sans, sans-serif" }}>
                         <style>{`@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap'); * { box-sizing: border-box; margin: 0; padding: 0; }`}</style>
@@ -513,73 +513,79 @@ export default function Tabungan() {
                                 <p style={{ fontSize: 13, color: "#9ca3af" }}>Kelola dan Pantau Progres Menabungmu</p>
                             </div>
 
-                {/* Stats Cards */}
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginBottom: 24 }}>
-                    <div style={{ background: "white", borderRadius: 12, padding: "14px 14px", border: "1px solid #f0f0f0" }}>
-                        <p style={{ fontSize: 10, color: "#9ca3af", marginBottom: 4 }}>Total Saldo</p>
-                        <p style={{ fontSize: 13, fontWeight: 800, color: "#1a3a1f" }}>{fmt(totalTerkumpul)}</p>
-                    </div>
-                    <div style={{ background: "#1a3a1f", borderRadius: 12, padding: "14px 14px" }}>
-                        <p style={{ fontSize: 10, color: "rgba(255,255,255,0.5)", marginBottom: 4 }}>Target Aktif</p>
-                        <p style={{ fontSize: 18, fontWeight: 800, color: "#9FF782" }}>{aktifCount} Target</p>
-                    </div>
-                    <div style={{ background: "#1a3a1f", borderRadius: 12, padding: "14px 14px" }}>
-                        <p style={{ fontSize: 10, color: "rgba(255,255,255,0.5)", marginBottom: 4 }}>Bulan Ini</p>
-                        <p style={{ fontSize: 13, fontWeight: 800, color: "#9FF782" }}>+{fmt(bulanIni)}</p>
-                    </div>
-                </div>
-
-                {/* Saldo Tersedia */}
-                {balances.length > 0 && (
-                    <div style={{ background: "white", borderRadius: 14, padding: "14px 16px", marginBottom: 20, border: "1px solid #f0f0f0" }}>
-                        <p style={{ fontSize: 11, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 }}>Saldo Tersedia</p>
-                        <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 4 }}>
-                            {balances.map(b => (
-                                <div key={b.id} style={{ flexShrink: 0, background: "#f8fdf8", borderRadius: 10, padding: "8px 14px", border: "1px solid #e8fce0" }}>
-                                    <p style={{ fontSize: 10, color: "#9ca3af", marginBottom: 2 }}>{b.name}</p>
-                                    <p style={{ fontSize: 12, fontWeight: 700, color: "#1a3a1f" }}>{fmt(b.balance)}</p>
+                            {/* Stats Cards */}
+                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginBottom: 24 }}>
+                                <div style={{ background: "white", borderRadius: 12, padding: "14px 14px", border: "1px solid #f0f0f0" }}>
+                                    <p style={{ fontSize: 10, color: "#9ca3af", marginBottom: 4 }}>Total Saldo</p>
+                                    <p style={{ fontSize: 13, fontWeight: 800, color: "#1a3a1f" }}>{fmt(totalTerkumpul)}</p>
                                 </div>
-                            ))}
-                        </div>
-                    </div>
-                )}
+                                <div style={{ background: "#1a3a1f", borderRadius: 12, padding: "14px 14px" }}>
+                                    <p style={{ fontSize: 10, color: "rgba(255,255,255,0.5)", marginBottom: 4 }}>Target Aktif</p>
+                                    <p style={{ fontSize: 18, fontWeight: 800, color: "#9FF782" }}>{aktifCount} Target</p>
+                                </div>
+                                <div style={{ background: "#1a3a1f", borderRadius: 12, padding: "14px 14px" }}>
+                                    <p style={{ fontSize: 10, color: "rgba(255,255,255,0.5)", marginBottom: 4 }}>Bulan Ini</p>
+                                    <p style={{ fontSize: 13, fontWeight: 800, color: "#9FF782" }}>+{fmt(bulanIni)}</p>
+                                </div>
+                            </div>
 
-                {/* Filter Tabs */}
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-                    <h2 style={{ fontSize: 16, fontWeight: 700, color: "#1a3a1f" }}>Daftar Target Tabungan</h2>
-                    <div style={{ display: "flex", gap: 6 }}>
-                        {[
-                            { key: "semua", label: "Semua" },
-                            { key: "aktif", label: "Aktif" },
-                            { key: "tercapai", label: "Tercapai" },
-                        ].map(f => (
-                            <button key={f.key} onClick={() => setFilterTab(f.key)}
-                                style={{ padding: "5px 12px", borderRadius: 20, border: "none", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "Plus Jakarta Sans, sans-serif", background: filterTab === f.key ? "#1a3a1f" : "#f3f4f6", color: filterTab === f.key ? "#9FF782" : "#6b7280", transition: "all 0.2s" }}>
-                                {f.label}
-                            </button>
-                        ))}
-                    </div>
-                </div>
+                            {/* Saldo Tersedia */}
+                            {balances.length > 0 && (
+                                <div style={{ background: "white", borderRadius: 14, padding: "14px 16px", marginBottom: 20, border: "1px solid #f0f0f0" }}>
+                                    <p style={{ fontSize: 11, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 }}>Saldo Tersedia</p>
+                                    <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 4 }}>
+                                        {balances.map(b => (
+                                            <div key={b.id} style={{ flexShrink: 0, background: "#f8fdf8", borderRadius: 10, padding: "8px 14px", border: "1px solid #e8fce0" }}>
+                                                <p style={{ fontSize: 10, color: "#9ca3af", marginBottom: 2 }}>{b.name}</p>
+                                                <p style={{ fontSize: 12, fontWeight: 700, color: "#1a3a1f" }}>{fmt(b.balance)}</p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
 
-                {/* Target Grid */}
-                {loading ? (
-                    <div style={{ textAlign: "center", padding: 48, color: "#9ca3af" }}>Loading...</div>
-                ) : filtered.length === 0 ? (
-                    <div style={{ textAlign: "center", padding: 48, color: "#9ca3af" }}>
-                        <p style={{ fontSize: 40, marginBottom: 12 }}>🎯</p>
-                        <p style={{ fontSize: 14, marginBottom: 16 }}>Belum ada target tabungan.</p>
-                        <button onClick={() => setShowCreate(true)}
-                            style={{ background: "#1a3a1f", color: "#9FF782", border: "none", borderRadius: 10, padding: "12px 24px", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "Plus Jakarta Sans, sans-serif" }}>
-                            + Tambah Target Pertama
-                        </button>
-                    </div>
-                ) : (
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-                        {filtered.map(t => (
-                            <TargetCard key={t.id} target={t} onClick={setSelected} />
-                        ))}
-                    </div>
-                )}
+                            {/* Filter Tabs */}
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+                                <h2 style={{ fontSize: 16, fontWeight: 700, color: "#1a3a1f" }}>Daftar Target Tabungan</h2>
+                                <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+                                    <button onClick={() => setShowCreate(true)}
+                                        style={{ background: "#1a3a1f", color: "#9FF782", border: "none", borderRadius: 8, padding: "8px 16px", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "Plus Jakarta Sans, sans-serif", transition: "all 0.2s" }}>
+                                        + Tambah Target
+                                    </button>
+                                    <div style={{ display: "flex", gap: 6 }}>
+                                    {[
+                                        { key: "semua", label: "Semua" },
+                                        { key: "aktif", label: "Aktif" },
+                                        { key: "tercapai", label: "Tercapai" },
+                                    ].map(f => (
+                                        <button key={f.key} onClick={() => setFilterTab(f.key)}
+                                            style={{ padding: "5px 12px", borderRadius: 20, border: "none", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "Plus Jakarta Sans, sans-serif", background: filterTab === f.key ? "#1a3a1f" : "#f3f4f6", color: filterTab === f.key ? "#9FF782" : "#6b7280", transition: "all 0.2s" }}>
+                                            {f.label}
+                                        </button>
+                                    ))}
+                                </div>
+                                </div>
+                            </div>
+
+                            {/* Target Grid */}
+                            {loading ? (
+                                <div style={{ textAlign: "center", padding: 48, color: "#9ca3af" }}>Loading...</div>
+                            ) : filtered.length === 0 ? (
+                                <div style={{ textAlign: "center", padding: 48, color: "#9ca3af" }}>
+                                    <p style={{ fontSize: 40, marginBottom: 12 }}>🎯</p>
+                                    <p style={{ fontSize: 14, marginBottom: 16 }}>Belum ada target tabungan.</p>
+                                    <button onClick={() => setShowCreate(true)}
+                                        style={{ background: "#1a3a1f", color: "#9FF782", border: "none", borderRadius: 10, padding: "12px 24px", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "Plus Jakarta Sans, sans-serif" }}>
+                                        + Tambah Target Pertama
+                                    </button>
+                                </div>
+                            ) : (
+                                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+                                    {filtered.map(t => (
+                                        <TargetCard key={t.id} target={t} onClick={setSelected} />
+                                    ))}
+                                </div>
+                            )}
 
                             {/* Detail Modal */}
                             {selected && (
