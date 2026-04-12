@@ -180,235 +180,410 @@ firebase deploy
 
 \---
 
-##  Landing Page Components
+##  Setup Instructions
 
-### Overview
-The landing page (`src/pages/Landing.jsx`) has been redesigned with modern UI components, animations, and responsive mobile support. Below is a detailed guide on all components and how to customize them.
+### Prerequisites
+- Node.js v16+ installed
+- Firebase account with Firestore database
+- Vercel account (for backend deployment)
 
-### Components & Structure
+### Frontend Setup
 
-#### 1. **GlobalStyles**
-Provides all global CSS styles including animations, typography, and component-specific styles.
-
-**Key Styles:**
-- `.fade-up` - Intersection observer animation that fades elements up from bottom
-- `.nav-link` - Navigation link with animated underline (green #B7FF9F)
-- `.feature-card` - Clickable feature cards with active state styling
-- `.navbar-bg` - Glassmorphism blur effect for navbar
-
-**Customization:**
-```jsx
-// Modify animation timing
-.fade-up {
-    transition: all 0.7s ease; // Change duration here
-}
-
-// Adjust navbar blur strength
-.navbar-bg {
-    backdrop-filter: blur(10px); // Increase/decrease blur amount
-    background: rgba(23, 38, 25, 0.7); // Adjust opacity
-}
+1. **Clone the repository:**
+```bash
+git clone <your-repo-url>
+cd Moneypath
 ```
 
-#### 2. **Navbar Component**
-A fixed, responsive navigation bar with:
-- Logo display
-- Desktop navigation links with hover underline effects
-- Mobile hamburger menu with animated icon
-- Login/Register buttons
-- Glassmorphism background effect
-
-**Features:**
-- Animated hamburger menu (3-line animation transforms to X)
-- Mobile menu dropdown with smooth animations
-- Active link state tracking
-- Auto-close menu on navigation
-
-**Mobile Menu:**
-```jsx
-// The mobile menu automatically closes when:
-- A navigation link is clicked
-- A button is pressed
-- This prevents menu from staying open
+2. **Install dependencies:**
+```bash
+npm install
 ```
 
-#### 3. **Hero Component**
-Full-width hero section with:
-- Gradient background (green gradient from #172619 to #558C5C)
-- Animated glow effect (green blur behind phone mockup)
-- Responsive text and image layout
-- Fade-up animation on load
-
-**Customization:**
-```jsx
-// Adjust glow effect
-<div className="absolute w-[400px] h-[400px] bg-green-400 opacity-20 blur-3xl">
-  {/* Change width/height, opacity, or blur-3xl value */}
-</div>
-
-// Modify background gradient
-className="bg-gradient-to-b from-[#172619] via-[#36593B] to-[#558C5C]"
-{/* Change hex colors or gradient direction */}
+3. **Create `.env` file in root directory:**
+```env
+VITE_FIREBASE_API_KEY=your_firebase_api_key
+VITE_FIREBASE_AUTH_DOMAIN=your_firebase_auth_domain
+VITE_FIREBASE_PROJECT_ID=your_firebase_project_id
+VITE_FIREBASE_STORAGE_BUCKET=your_firebase_storage_bucket
+VITE_FIREBASE_MESSAGING_SENDER_ID=your_firebase_messaging_sender_id
+VITE_FIREBASE_APP_ID=your_firebase_app_id
+VITE_API_URL=http://localhost:3000
 ```
 
-#### 4. **FeatureCard Component**
-Individual feature cards that:
-- Display icon, title, and description
-- Highlight on click (active state)
-- Animate with fade-up on page load
-- Change styling when active
+4. **Run development server:**
+```bash
+npm run dev
+```
+Navigate to `http://localhost:5173`
 
-**Active Card Styling:**
-```jsx
-.feature-card.active {
-    background: linear-gradient(135deg, #1E5B3A, #0B2E1E);
-    color: white;
-    transform: scale(1.02);
-    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
-}
+5. **Build for production:**
+```bash
+npm run build
+npm run preview
 ```
 
-#### 5. **Features Component**
-Grid of 6 feature cards showcasing app features:
-- **Saldo** - Balance and transaction management
-- **Video Edukasi** - Educational video content
-- **Learning Path** - Structured financial learning modules
-- **Quiz** - Interactive quizzes with progress tracking
-- **Rekap** - Monthly financial recap reports
-- **Tabungan** - Savings goal tracking
+### Backend Setup
 
-**Default Active Card:**
-The 3rd card (Learning Path) is active by default:
-```jsx
-const [activeCard, setActiveCard] = useState(2);
-// Change 2 to 0, 1, 3, 4, or 5 for different default card
+1. **Navigate to server directory:**
+```bash
+cd server
 ```
 
-#### 6. **TestimonialCard Component**
-Individual testimonial card with:
-- User quote/review
-- User avatar placeholder
-- Name and role
-
-#### 7. **Testimonial Section**
-Dark background section with:
-- Circular background decoration (lingkaran.png)
-- Multiple testimonial cards in a scrollable container
-- 4 sample testimonials from Nadia, Hannah, Ammar, and Lilya
-
-#### 8. **ImportantStuff Component (Accordion)**
-Interactive accordion section showcasing:
-- 3 expandable items
-- Plus/minus icons that animate
-- Expanded item shows full description
-- Only one item can be expanded at a time (default: item 2)
-
-**Default Expanded Item:**
-```jsx
-const [expandedItem, setExpandedItem] = useState(2);
-// Change 2 to 0 or 1 for different default expanded item
+2. **Install dependencies:**
+```bash
+npm install
 ```
 
-**Item Structure:**
-```jsx
+3. **Create `.env` file in server directory:**
+```env
+FIREBASE_PROJECT_ID=your_project_id
+FIREBASE_PRIVATE_KEY=your_private_key
+FIREBASE_CLIENT_EMAIL=your_client_email
+RESEND_API_KEY=your_resend_api_key
+```
+
+4. **Run locally:**
+```bash
+npm start
+```
+
+5. **Deploy to Vercel:**
+```bash
+vercel --prod
+```
+
+\---
+
+##  API Endpoints
+
+### Authentication APIs
+
+#### POST `/auth/register`
+Register a new user account.
+
+**Request:**
+```json
 {
-    title: "Item Title",
-    description: "Full description text shown when expanded"
+  "email": "user@example.com",
+  "password": "securePassword123"
 }
 ```
 
-#### 9. **CTA (Call-to-Action) Component**
-Bottom section with:
-- Large green text headline
-- Call-to-action buttons
-- Darker gradient background
-
-#### 10. **Footer Component**
-Simple footer with copyright information.
-
-### How to Customize & Replicate
-
-#### Adding New Feature Cards
-1. Open `src/pages/Landing.jsx`
-2. Locate the `featureCards` array in the `Features` component
-3. Add a new object to the array:
-
-```jsx
+**Response:**
+```json
 {
-    title: "Your Feature Name",
-    description: "Feature description text here",
-    icon: {
-        bgColor: "bg-purple-100", // Tailwind bg color
-        element: (
-            <svg className="w-7 h-7 text-purple-600" /* your SVG icon */>
-        ),
-    },
+  "message": "User created successfully",
+  "uid": "user_id"
 }
 ```
 
-#### Changing Colors
-All colors use Tailwind classes and can be modified:
-- Primary green: `#9FF782` (lime)
-- Dark green: `#1E5B3A` or `#0B2E1E`
-- Accent green: `#B7FF9F`
+#### POST `/auth/login`
+Authenticate user and receive auth token.
 
-Find & replace these hex values or change Tailwind classes like:
-- `bg-green-100` → `bg-blue-100`
-- `text-green-600` → `text-blue-600`
-
-#### Modifying Animations
-**Fade-up timing:**
-```jsx
-.fade-up {
-    transition: all 0.7s ease; // Change 0.7s to your desired duration
+**Request:**
+```json
+{
+  "email": "user@example.com",
+  "password": "securePassword123"
 }
 ```
 
-**Hamburger animation:**
-```jsx
-className={`transition-all duration-300 ${mobileMenuOpen ? "rotate-45" : ""}`}
-// Change duration-300 to duration-200, duration-500, etc.
+**Response:**
+```json
+{
+  "token": "jwt_token_here",
+  "uid": "user_id",
+  "email": "user@example.com"
+}
 ```
 
-#### Adding New Testimonials
-In the `Testimonial` component, add to the testimonial cards:
+#### GET `/auth/profile`
+Get authenticated user profile information.
 
-```jsx
-<TestimonialCard
-    quote="User's review text here"
-    name="User Name"
-    role="User Role"
-/>
+**Headers:**
+```
+Authorization: Bearer <jwt_token>
 ```
 
-#### Updating Images
-Replace image imports:
-```jsx
-import logo2 from "../assets/logo2.png";
-import phonemockup from "../assets/phone-mockup (2).png";
-// Ensure new images are in src/assets/ folder
+**Response:**
+```json
+{
+  "uid": "user_id",
+  "email": "user@example.com",
+  "displayName": "User Name"
+}
 ```
 
-### Key Technologies Used
+#### POST `/auth/logout`
+Logout user and invalidate token.
 
-- **React** - Component-based UI library
-- **Tailwind CSS** - Utility-first CSS framework
-- **Intersection Observer API** - For fade-up animations
-- **CSS Backdrop Filter** - For glassmorphism effect
-- **SVG Icons** - Inline SVG icons for features
+**Headers:**
+```
+Authorization: Bearer <jwt_token>
+```
 
-### Browser Support
+**Response:**
+```json
+{
+  "message": "Logged out successfully"
+}
+```
 
-- Modern browsers (Chrome, Firefox, Safari, Edge)
-- Mobile responsive (iOS, Android)
-- Supports backdrop-filter (use fallback for older browsers)
+### Transaction APIs
 
-### Performance Notes
+#### GET `/transactions`
+Get all transactions for authenticated user.
 
-- Images optimized with object-contain
-- CSS animations use GPU-accelerated properties (transform, opacity)
-- Intersection Observer for efficient scroll animations
-- No external animation libraries needed
+**Headers:**
+```
+Authorization: Bearer <jwt_token>
+```
+
+**Query Parameters:**
+- `month` (optional): Filter by month (format: YYYY-MM)
+- `type` (optional): Filter by type (income/expense)
+
+**Response:**
+```json
+{
+  "transactions": [
+    {
+      "id": "trans_id",
+      "type": "expense",
+      "amount": 50000,
+      "category": "food",
+      "date": "2024-04-12",
+      "description": "Coffee"
+    }
+  ]
+}
+```
+
+#### POST `/transactions`
+Create a new transaction.
+
+**Headers:**
+```
+Authorization: Bearer <jwt_token>
+Content-Type: application/json
+```
+
+**Request:**
+```json
+{
+  "type": "expense",
+  "amount": 50000,
+  "category": "food",
+  "description": "Coffee",
+  "date": "2024-04-12"
+}
+```
+
+**Response:**
+```json
+{
+  "message": "Transaction created",
+  "id": "trans_id"
+}
+```
+
+#### PUT `/transactions/:id`
+Update an existing transaction.
+
+**Headers:**
+```
+Authorization: Bearer <jwt_token>
+```
+
+**Request:**
+```json
+{
+  "amount": 75000,
+  "description": "Coffee & lunch"
+}
+```
+
+**Response:**
+```json
+{
+  "message": "Transaction updated"
+}
+```
+
+#### DELETE `/transactions/:id`
+Delete a transaction.
+
+**Headers:**
+```
+Authorization: Bearer <jwt_token>
+```
+
+**Response:**
+```json
+{
+  "message": "Transaction deleted"
+}
+```
+
+### Reports & Analytics APIs
+
+#### GET `/reports/monthly`
+Get monthly financial summary and report.
+
+**Headers:**
+```
+Authorization: Bearer <jwt_token>
+```
+
+**Query Parameters:**
+- `month` (required): Format YYYY-MM
+- `email` (optional): Send report to email
+
+**Response:**
+```json
+{
+  "month": "2024-04",
+  "totalIncome": 5000000,
+  "totalExpense": 3000000,
+  "balance": 2000000,
+  "transactions": []
+}
+```
+
+#### POST `/reports/send-email`
+Send monthly financial report to email.
+
+**Headers:**
+```
+Authorization: Bearer <jwt_token>
+```
+
+**Request:**
+```json
+{
+  "month": "2024-04",
+  "email": "user@example.com"
+}
+```
+
+**Response:**
+```json
+{
+  "message": "Report sent to email"
+}
+```
+
+### Savings Goals APIs
+
+#### GET `/savings`
+Get all savings goals for user.
+
+**Headers:**
+```
+Authorization: Bearer <jwt_token>
+```
+
+**Response:**
+```json
+{
+  "goals": [
+    {
+      "id": "goal_id",
+      "name": "Vacation",
+      "targetAmount": 10000000,
+      "currentAmount": 5000000,
+      "deadline": "2024-12-31"
+    }
+  ]
+}
+```
+
+#### POST `/savings`
+Create a new savings goal.
+
+**Headers:**
+```
+Authorization: Bearer <jwt_token>
+```
+
+**Request:**
+```json
+{
+  "name": "Vacation",
+  "targetAmount": 10000000,
+  "deadline": "2024-12-31"
+}
+```
+
+**Response:**
+```json
+{
+  "message": "Savings goal created",
+  "id": "goal_id"
+}
+```
+
+#### PUT `/savings/:id`
+Update a savings goal.
+
+**Headers:**
+```
+Authorization: Bearer <jwt_token>
+```
+
+**Request:**
+```json
+{
+  "currentAmount": 6000000
+}
+```
+
+**Response:**
+```json
+{
+  "message": "Savings goal updated"
+}
+```
+
+#### DELETE `/savings/:id`
+Delete a savings goal.
+
+**Headers:**
+```
+Authorization: Bearer <jwt_token>
+```
+
+**Response:**
+```json
+{
+  "message": "Savings goal deleted"
+}
+```
+
+\---
+
+##  Environment Variables
+
+### Frontend (.env)
+```env
+VITE_FIREBASE_API_KEY=
+VITE_FIREBASE_AUTH_DOMAIN=
+VITE_FIREBASE_PROJECT_ID=
+VITE_FIREBASE_STORAGE_BUCKET=
+VITE_FIREBASE_MESSAGING_SENDER_ID=
+VITE_FIREBASE_APP_ID=
+VITE_API_URL=http://localhost:3000
+```
+
+### Backend (server/.env)
+```env
+FIREBASE_PROJECT_ID=
+FIREBASE_PRIVATE_KEY=
+FIREBASE_CLIENT_EMAIL=
+RESEND_API_KEY=
+NODE_ENV=production
+```
 
 \---
 
