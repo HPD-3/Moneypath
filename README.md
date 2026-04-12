@@ -16,6 +16,12 @@
 
 *  Deployed Version: [Link Here!](https://moneypath-7777.firebaseapp.com/)
 
+Account For testing :
+* User : usertesting@gmail.com
+  pass : user123
+
+* admin : admintesting@gmail.com
+  pass : admin123
 
 \---
 
