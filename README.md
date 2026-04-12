@@ -242,12 +242,22 @@ cd server
 npm install
 ```
 
-3. **Create `.env` file in server directory:**
+3. **Create `serviceAccountKey.json` file in server directory:**
 ```env
-FIREBASE_PROJECT_ID=your_project_id
-FIREBASE_PRIVATE_KEY=your_private_key
-FIREBASE_CLIENT_EMAIL=your_client_email
-RESEND_API_KEY=your_resend_api_key
+{
+  "type": "service_account",
+  "project_id": "your_project_id",
+  "private_key_id": "your_private_key_id",
+  "private_key": :"your_private_key",
+  "client_email": "your_client_email",
+  "client_id": "your_client_id",
+  "auth_uri": "your_auth_uri",
+  "token_uri": "your_token_uri",
+  "auth_provider_x509_cert_url": "your_auth_provider_x509_cert_url",
+  "client_x509_cert_url": "your_client_x509_cert_url",
+  "universe_domain": "your_universe_domain"
+}
+
 ```
 
 4. **Run locally:**
