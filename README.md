@@ -16,6 +16,13 @@
 
 *  Deployed Version: [Link Here!](https://moneypath-7777.firebaseapp.com/)
 
+Account For testing :
+* User : you can use the register
+
+
+* admin : admintesting@gmail.com
+  pass : admin123
+* you can check the admin dashboard in the -> profile icon -> Click admin dashboard
 
 \---
 
