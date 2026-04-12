@@ -157,6 +157,15 @@ export default function Dashboard() {
         <div className="flex h-screen bg-white overflow-hidden w-full" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
             <style>{`
                 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Lilita+One&display=swap');
+                
+                @media (max-width: 768px) {
+                    [data-responsive-grid-2] { display: grid !important; grid-template-columns: 1fr !important; }
+                    [data-responsive-grid-3] { display: grid !important; grid-template-columns: 1fr !important; }
+                    [data-responsive-flex] { flex-direction: column !important; }
+                    [data-responsive-text-lg] { font-size: 28px !important; }
+                    [data-responsive-text-md] { font-size: 14px !important; }
+                    [data-responsive-padding] { padding: 16px !important; }
+                }
             `}</style>
 
             {/* ── SIDEBAR ──────────────────────────────────── */}
@@ -169,20 +178,20 @@ export default function Dashboard() {
 
                 {/* ── MAIN CONTENT ──────────────────────────────────── */}
                 <div className="flex-1 overflow-y-auto bg-gray-50">
-                    <div style={{ maxWidth: 1400, margin: "0 auto", padding: "24px 16px 40px", paddingTop: "80px" }}>
+                    <div style={{ maxWidth: 1400, margin: "0 auto", padding: "16px", paddingTop: "80px" }}>
 
                         {/* ── TOP SECTION: Level Card ──────────────────────── */}
-                        <div style={{ background: "linear-gradient(135deg, #1a3a1f 0%, #0f2a18 100%)", borderRadius: 20, padding: "24px", color: "white", position: "relative", overflow: "hidden", marginBottom: 24 }}>
+                        <div data-responsive-padding style={{ background: "linear-gradient(135deg, #1a3a1f 0%, #0f2a18 100%)", borderRadius: 20, padding: "24px", color: "white", position: "relative", overflow: "hidden", marginBottom: 24 }}>
                             <div style={{ position: "absolute", right: -30, top: -30, width: 120, height: 120, borderRadius: "50%", background: "rgba(159,247,130,0.07)" }} />
                             <div style={{ position: "absolute", right: 20, top: 20, width: 60, height: 60, borderRadius: "50%", background: "rgba(159,247,130,0.05)" }} />
 
-                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", position: "relative" }}>
+                            <div data-responsive-flex style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", position: "relative", flexWrap: "wrap", gap: 16 }}>
                                 <div>
                                     <p style={{ fontSize: 11, color: "rgba(255,255,255,0.45)", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 8 }}>Level Kamu</p>
-                                    <p style={{ fontSize: 48, fontWeight: 800, color: "#9FF782", lineHeight: 1 }}>Lv. {quizStats?.level || 1}</p>
+                                    <p data-responsive-text-lg style={{ fontSize: 48, fontWeight: 800, color: "#9FF782", lineHeight: 1 }}>Lv. {quizStats?.level || 1}</p>
                                     <p style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", marginTop: 8 }}>{quizStats?.totalExp || 0}/100 xp</p>
                                 </div>
-                                <div style={{ textAlign: "center", background: "white", borderRadius: 12, padding: "12px 16px" }}>
+                                <div style={{ textAlign: "center", background: "white", borderRadius: 12, padding: "12px 16px", flexShrink: 0 }}>
                                     <iconify-icon icon="mdi:fire" style={{ fontSize: 24, color: "#ff6b6b" }}></iconify-icon>
                                     <p style={{ fontSize: 20, fontWeight: 700, color: "#1a3a1f", lineHeight: 1.1 }}>{quizStats?.streak || 0}</p>
                                     <p style={{ fontSize: 10, color: "#6b7280" }}>streak</p>
@@ -197,9 +206,9 @@ export default function Dashboard() {
                         </div>
 
                         {/* ── DAILY QUIZ & LEARNING PATH CARDS ──────────────────────── */}
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 24 }}>
+                        <div data-responsive-grid-2 style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 24 }}>
                             {/* Daily Quiz Card */}
-                            <div style={{ background: "linear-gradient(135deg, #fef9c3, #fef3c7)", borderRadius: 20, padding: "24px", position: "relative", overflow: "hidden", border: "2px solid #fde68a", transition: "all 0.2s", display: "flex", alignItems: "center", gap: 16 }}
+                            <div style={{ background: "linear-gradient(135deg, #fef9c3, #fef3c7)", borderRadius: 20, padding: "24px", position: "relative", overflow: "hidden", border: "2px solid #fde68a", transition: "all 0.2s", display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 12, cursor: "pointer" }}
                                 onClick={() => navigate("/quiz")}
                                 onMouseEnter={e => {
                                     e.currentTarget.style.transform = "translateY(-2px)";
@@ -214,13 +223,13 @@ export default function Dashboard() {
                                     <p style={{ fontWeight: 700, fontSize: 18, color: "#92400e", marginBottom: 4 }}>Daily Quiz Tersedia</p>
                                     <p style={{ fontSize: 12, color: "#b45309" }}>nyalakan streak mu dengan memulai kuis!</p>
                                 </div>
-                                <button style={{ background: "#1a3a1f", color: "#9FF782", borderRadius: 8, padding: "10px 20px", fontSize: 13, fontWeight: 600, flexShrink: 0, border: "none", cursor: "pointer", whiteSpace: "nowrap" }}>
+                                <button style={{ background: "#1a3a1f", color: "#9FF782", borderRadius: 8, padding: "10px 20px", fontSize: 13, fontWeight: 600, border: "none", cursor: "pointer", whiteSpace: "nowrap" }}>
                                     Mulai
                                 </button>
                             </div>
 
                             {/* Learning Path Card */}
-                            <div style={{ background: "linear-gradient(135deg, #fef9c3, #fef3c7)", borderRadius: 20, padding: "24px", position: "relative", overflow: "hidden", border: "2px solid #fde68a", transition: "all 0.2s", display: "flex", alignItems: "center", gap: 16, cursor: "pointer" }}
+                            <div style={{ background: "linear-gradient(135deg, #fef9c3, #fef3c7)", borderRadius: 20, padding: "24px", position: "relative", overflow: "hidden", border: "2px solid #fde68a", transition: "all 0.2s", display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 12, cursor: "pointer" }}
                                 onClick={() => navigate("/learning")}
                                 onMouseEnter={e => {
                                     e.currentTarget.style.transform = "translateY(-2px)";
@@ -239,7 +248,7 @@ export default function Dashboard() {
                         </div>
 
                         {/* ── MAIN GRID: Features ──────────────────────── */}
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: 16, marginBottom: 24 }}>
+                        <div data-responsive-grid-2 style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: 16, marginBottom: 24 }}>
                             {/* Left Column: Video Edukasi */}
                             <div style={{ background: "white", borderRadius: 16, padding: "20px", border: "2px solid #d1d5db", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12, transition: "all 0.2s", minHeight: 200 }}
                                 onClick={() => navigate("/video")}
@@ -260,7 +269,7 @@ export default function Dashboard() {
                             </div>
 
                             {/* Right Column: Feature Grid */}
-                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                            <div data-responsive-grid-3 style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
                                 {/* Saldo Saya */}
                                 <div style={{ background: "white", borderRadius: 16, padding: "16px", border: "2px solid #d1d5db", cursor: "pointer", transition: "all 0.2s" }}
                                     onClick={() => navigate("/balance")}
@@ -330,7 +339,7 @@ export default function Dashboard() {
                                         e.currentTarget.style.boxShadow = "none";
                                     }}>
                                     <iconify-icon icon="mdi:bullseye" style={{ fontSize: 32, marginBottom: 8, color: "#1a3a1f" }}></iconify-icon>
-                                    <p style={{ fontSize: 14, fontWeight: 800, color: "#1a3a1f", marginBottom: 2 }}>Tabungan Bersama</p>
+                                    <p style={{ fontSize: 14, fontWeight: 800, color: "#1a3a1f", marginBottom: 2 }}>Tabungan Saya</p>
                                     <p style={{ fontSize: 11, color: "#9ca3af", marginBottom: 12 }}>Kelola Target</p>
                                     <button style={{ background: "#1a3a1f", color: "white", borderRadius: 6, padding: "4px 10px", fontSize: 10, fontWeight: 600, border: "none", cursor: "pointer" }}>
                                         Click
@@ -340,7 +349,7 @@ export default function Dashboard() {
                         </div>
 
                         {/* ── BOTTOM GRID: Recap + Other Features ──────────────────────── */}
-                        <div style={{ display: "grid", gridTemplateColumns: "0.7fr 1.3fr", gap: 16, marginBottom: 24 }}>
+                        <div data-responsive-grid-2 style={{ display: "grid", gridTemplateColumns: "0.7fr 1.3fr", gap: 16, marginBottom: 24 }}>
                             {/* Recap Card */}
                             <div style={{ background: "white", borderRadius: 16, padding: "20px", border: "2px solid #d1d5db", cursor: "pointer", transition: "all 0.2s" }}
                                 onClick={() => navigate("/rekap")}

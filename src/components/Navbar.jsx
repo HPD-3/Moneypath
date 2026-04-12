@@ -50,7 +50,7 @@ export default function Navbar({ profile, personal, isSidebarOpen, setSidebarOpe
     return (
         <nav style={{
             background: "white",
-            padding: "12px 24px",
+            padding: "12px 16px",
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
@@ -59,13 +59,35 @@ export default function Navbar({ profile, personal, isSidebarOpen, setSidebarOpe
             zIndex: 50,
             boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
             borderBottom: "1px solid #e5e7eb",
-            gap: 24,
+            gap: 12,
+            flexWrap: "wrap",
         }}>
+            <style>{`
+                @media (max-width: 768px) {
+                    nav { padding: 8px 12px !important; gap: 8px !important; }
+                    [data-navbar-search] { display: none !important; }
+                    [data-navbar-right] { gap: 8px !important; }
+                    [data-navbar-streak-label] { display: none !important; }
+                    [data-navbar-xp-label] { display: none !important; }
+                    [data-navbar-streak-icon] { display: none !important; }
+                    [data-navbar-xp-icon] { display: none !important; }
+                    [data-navbar-streak-number] { display: block !important; }
+                    [data-navbar-xp-number] { display: block !important; }
+                    [data-navbar-streak] { gap: 0 !important; }
+                    [data-navbar-xp] { gap: 0 !important; }
+                    [data-navbar-profile] button { width: 32px !important; height: 32px !important; }
+                    [data-navbar-profile] button iconify-icon { font-size: 18px !important; }
+                    [data-navbar-profile] [data-chevron] { display: none !important; }
+                }
+            `}</style>
+
             {/* Left: Hamburger + Search */}
             <div style={{
                 display: "flex",
                 alignItems: "center",
-                gap: 16,
+                gap: 12,
+                flex: isMobile ? "1 1 auto" : "1 1 auto",
+                minWidth: 0,
             }}>
                 {/* Hamburger Button - Mobile Only */}
                 <button
@@ -81,6 +103,7 @@ export default function Navbar({ profile, personal, isSidebarOpen, setSidebarOpe
                         border: "none",
                         cursor: "pointer",
                         transition: "background 0.2s",
+                        flexShrink: 0,
                     }}
                     onMouseEnter={e => e.currentTarget.style.background = "#e5e7eb"}
                     onMouseLeave={e => e.currentTarget.style.background = "#f3f4f6"}>
@@ -115,14 +138,16 @@ export default function Navbar({ profile, personal, isSidebarOpen, setSidebarOpe
                     </span>
                 </button>
 
-                {/* Search Bar */}
-                <div style={{
+                {/* Search Bar - Hidden on mobile */}
+                <div data-navbar-search style={{
                     position: "relative",
-                    width: isMobile ? "100%" : "400px",
+                    flex: isMobile ? "1 1 auto" : "0 1 300px",
+                    minWidth: isMobile ? 0 : 200,
+                    display: isMobile ? "none" : "block",
                 }}>
                     <input 
                         type="text"
-                        placeholder="Cari Topik..."
+                        placeholder={isMobile ? "Cari..." : "Cari Topik..."}
                         style={{
                             width: "100%",
                             border: "1px solid #d1d5db",
@@ -152,14 +177,15 @@ export default function Navbar({ profile, personal, isSidebarOpen, setSidebarOpe
             </div>
 
             {/* Right: XP + Streak + Profile Menu + Notifications */}
-            <div style={{
+            <div data-navbar-right style={{
                 display: "flex",
                 alignItems: "center",
-                gap: 20,
+                gap: 16,
+                flexShrink: 0,
             }}>
-                {/* Streak Display - Fire Icon */}
+                {/* Streak Display - Fire Icon - Shows number on mobile */}
                 {quizStats?.streak !== undefined && (
-                    <div style={{
+                    <div data-navbar-streak style={{
                         display: "flex",
                         alignItems: "center",
                         gap: 8,
@@ -175,12 +201,20 @@ export default function Navbar({ profile, personal, isSidebarOpen, setSidebarOpe
                             justifyContent: "center",
                             boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
                         }}>
-                            <iconify-icon icon="mdi:fire" style={{
+                            <iconify-icon data-navbar-streak-icon icon="mdi:fire" style={{
                                 fontSize: 22,
                                 color: "#FF6B00",
                             }}></iconify-icon>
+                            <span data-navbar-streak-number style={{
+                                display: "none",
+                                fontWeight: 700,
+                                color: "#FF6B00",
+                                fontSize: 18,
+                            }}>
+                                {quizStats?.streak || 0}
+                            </span>
                         </div>
-                        <div style={{
+                        <div data-navbar-streak-label style={{
                             display: "flex",
                             flexDirection: "column",
                             gap: 2,
@@ -202,8 +236,8 @@ export default function Navbar({ profile, personal, isSidebarOpen, setSidebarOpe
                     </div>
                 )}
 
-                {/* XP Display - Lightning Icon */}
-                <div style={{
+                {/* XP Display - Lightning Icon - Shows number on mobile */}
+                <div data-navbar-xp style={{
                     display: "flex",
                     alignItems: "center",
                     gap: 8,
@@ -219,12 +253,20 @@ export default function Navbar({ profile, personal, isSidebarOpen, setSidebarOpe
                         justifyContent: "center",
                         boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
                     }}>
-                        <iconify-icon icon="mdi:lightning-bolt" style={{
+                        <iconify-icon data-navbar-xp-icon icon="mdi:lightning-bolt" style={{
                             fontSize: 22,
                             color: "#059669",
                         }}></iconify-icon>
+                        <span data-navbar-xp-number style={{
+                            display: "none",
+                            fontWeight: 700,
+                            color: "#059669",
+                            fontSize: 16,
+                        }}>
+                            {quizStats?.totalExp || 0}
+                        </span>
                     </div>
-                    <div style={{
+                    <div data-navbar-xp-label style={{
                         display: "flex",
                         flexDirection: "column",
                         gap: 2,
@@ -245,8 +287,8 @@ export default function Navbar({ profile, personal, isSidebarOpen, setSidebarOpe
                     </div>
                 </div>
 
-                {/* Profile Menu */}
-                <div style={{ position: "relative" }}>
+                {/* Profile Menu - Smaller on mobile */}
+                <div data-navbar-profile style={{ position: "relative" }}>
                     <button 
                         onClick={() => setShowDropdown(!showDropdown)}
                         style={{
@@ -267,13 +309,14 @@ export default function Navbar({ profile, personal, isSidebarOpen, setSidebarOpe
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
+                            flexShrink: 0,
                         }}>
                             <iconify-icon icon="mdi:account" style={{
                                 fontSize: 20,
                                 color: "#9ca3af",
                             }}></iconify-icon>
                         </div>
-                        <iconify-icon icon="mdi:chevron-down" style={{
+                        <iconify-icon data-chevron icon="mdi:chevron-down" style={{
                             fontSize: 20,
                             color: "#4b5563",
                         }}></iconify-icon>

@@ -7,6 +7,76 @@ const fmt  = (n) => `Rp ${(n || 0).toLocaleString("id-ID")}`;
 const MONTHS = ["", "Januari", "Februari", "Maret", "April", "Mei", "Juni",
                 "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
 
+// ── Build chart HTML for email ───────────────────────────────
+function buildChartHTML(transactions) {
+    if (!transactions || transactions.length === 0) {
+        return `<div style="background:white;border-radius:14px;border:1px solid #f0f0f0;margin-bottom:16px;padding:20px;text-align:center;color:#9ca3af;font-size:13px;">Belum ada data transaksi untuk chart</div>`;
+    }
+
+    // Group transactions by date
+    const txByDate = {};
+    transactions.forEach(tx => {
+        const dateObj = new Date(tx.date);
+        const dateStr = dateObj.toLocaleDateString('id-ID', { day: '2-digit', month: 'short' });
+        if (!txByDate[dateStr]) txByDate[dateStr] = { income: 0, expense: 0 };
+        if (tx.type === 'income') txByDate[dateStr].income += tx.amount || 0;
+        else txByDate[dateStr].expense += tx.amount || 0;
+    });
+
+    const dates = Object.keys(txByDate).sort();
+    if (dates.length === 0) {
+        return `<div style="background:white;border-radius:14px;border:1px solid #f0f0f0;margin-bottom:16px;padding:20px;text-align:center;color:#9ca3af;font-size:13px;">Belum ada data transaksi untuk chart</div>`;
+    }
+
+    // Find max value for scaling
+    let maxValue = 0;
+    dates.forEach(date => {
+        const val = Math.max(txByDate[date].income, txByDate[date].expense);
+        if (val > maxValue) maxValue = val;
+    });
+
+    // Create bar chart
+    const chartRows = dates.map(date => {
+        const income = txByDate[date].income;
+        const expense = txByDate[date].expense;
+        const incomeWidth = maxValue > 0 ? Math.ceil((income / maxValue) * 100) : 0;
+        const expenseWidth = maxValue > 0 ? Math.ceil((expense / maxValue) * 100) : 0;
+
+        return `
+        <div style="margin-bottom:14px;">
+            <div style="font-size:12px;color:#374151;font-weight:600;margin-bottom:4px;">${date}</div>
+            <div style="display:flex;gap:4px;align-items:center;">
+                <div style="flex:1;">
+                    <div style="font-size:11px;color:#166534;margin-bottom:2px;">+${fmt(income)}</div>
+                    <div style="background:#e8f5e9;border-radius:2px;height:8px;overflow:hidden;">
+                        <div style="width:${incomeWidth}%;height:100%;background:#10b981;"></div>
+                    </div>
+                </div>
+            </div>
+            <div style="display:flex;gap:4px;align-items:center;margin-top:4px;">
+                <div style="flex:1;">
+                    <div style="font-size:11px;color:#991b1b;margin-bottom:2px;">-${fmt(expense)}</div>
+                    <div style="background:#ffebee;border-radius:2px;height:8px;overflow:hidden;">
+                        <div style="width:${expenseWidth}%;height:100%;background:#ef4444;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        `;
+    }).join('');
+
+    return `
+    <div style="background:white;border-radius:14px;border:1px solid #f0f0f0;margin-bottom:16px;overflow:hidden;">
+        <div style="padding:16px 16px 12px;border-bottom:1px solid #f3f4f6;">
+            <h2 style="margin:0;font-size:15px;font-weight:700;color:#1a3a1f;">📈 Riwayat Transaksi Trend</h2>
+        </div>
+        <div style="padding:16px;">
+            ${chartRows}
+        </div>
+    </div>
+    `;
+}
+
 // ── Build HTML Email ──────────────────────────────────────────
 function buildEmailHTML({ name, year, month, summary, byCategory, balances, tabungan, transactions }) {
     const monthName  = MONTHS[month];
@@ -112,6 +182,9 @@ function buildEmailHTML({ name, year, month, summary, byCategory, balances, tabu
             </tr>
         </table>
     </div>
+
+    <!-- TRANSACTION TREND CHART -->
+    ${buildChartHTML(transactions)}
 
     <!-- PENGELUARAN PER KATEGORI -->
     <div style="background:white;border-radius:14px;border:1px solid #f0f0f0;margin-bottom:16px;overflow:hidden;">

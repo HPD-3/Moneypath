@@ -454,9 +454,55 @@ export default function Balance() {
                                                         </div>
                                                         <div style={{ textAlign: "right" }}>
                                                             <p style={{ fontWeight: 700, color: "#1a3a1f", fontSize: 16, marginBottom: 4 }}>{formatRp(b.balance)}</p>
-                                                            <p style={{ fontSize: 11, color: "#ef4444", fontWeight: 600 }}>Hapus</p>
+                                                            <button 
+                                                                onClick={() => handleDeleteCategory(b.id)}
+                                                                style={{ fontSize: 11, color: "#ef4444", fontWeight: 600, background: "none", border: "none", cursor: "pointer", padding: 0 }}>
+                                                                Hapus
+                                                            </button>
                                                         </div>
                                                     </div>
+
+                                                    {/* Edit Budget Limit Mode */}
+                                                    {isEditingLimit ? (
+                                                        <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+                                                            <input
+                                                                type="number"
+                                                                value={limitValue}
+                                                                onChange={e => setLimitValue(e.target.value)}
+                                                                placeholder="Masukkan batas anggaran"
+                                                                style={{ flex: 1, borderRadius: 8, border: "1px solid #d1d5db", padding: "8px 12px", fontSize: 13, outline: "none" }}
+                                                            />
+                                                            <button 
+                                                                onClick={() => handleUpdateLimit(b.id)}
+                                                                style={{ padding: "8px 16px", borderRadius: 8, background: "#10b981", color: "white", border: "none", cursor: "pointer", fontWeight: 600, fontSize: 12 }}>
+                                                                Simpan
+                                                            </button>
+                                                            <button 
+                                                                onClick={() => { setEditLimitId(null); setLimitValue(""); }}
+                                                                style={{ padding: "8px 16px", borderRadius: 8, background: "#e5e7eb", color: "#6b7280", border: "none", cursor: "pointer", fontWeight: 600, fontSize: 12 }}>
+                                                                Batal
+                                                            </button>
+                                                        </div>
+                                                    ) : (
+                                                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16, fontSize: 12 }}>
+                                                            {b.budgetLimit ? (
+                                                                <>
+                                                                    <span style={{ color: "#9ca3af" }}>Limit: {formatRp(b.budgetLimit)}</span>
+                                                                    <button 
+                                                                        onClick={() => { setEditLimitId(b.id); setLimitValue(b.budgetLimit || ""); }}
+                                                                        style={{ color: "#0ea5e9", fontWeight: 600, background: "none", border: "none", cursor: "pointer", padding: 0 }}>
+                                                                        Edit Limit
+                                                                    </button>
+                                                                </>
+                                                            ) : (
+                                                                <button 
+                                                                    onClick={() => { setEditLimitId(b.id); setLimitValue(""); }}
+                                                                    style={{ color: "#9ca3af", fontWeight: 600, background: "none", border: "none", cursor: "pointer", padding: 0 }}>
+                                                                    + Tambah Limit Anggaran
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                    )}
 
                                                     {/* Budget bar */}
                                                     {b.budgetLimit && b.budgetLimit > 0 && (

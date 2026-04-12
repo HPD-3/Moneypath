@@ -24,6 +24,29 @@ export default function Profile() {
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
+    // Edit profile form state
+    const [editForm, setEditForm] = useState({
+        name: "",
+        phoneNumber: "",
+        dateOfBirth: "",
+        gender: "",
+        address: ""
+    });
+
+    // Password form state
+    const [passwordForm, setPasswordForm] = useState({
+        oldPassword: "",
+        newPassword: "",
+        confirmPassword: ""
+    });
+
+    const [editLoading, setEditLoading] = useState(false);
+    const [passwordLoading, setPasswordLoading] = useState(false);
+    const [editMessage, setEditMessage] = useState("");
+    const [passwordMessage, setPasswordMessage] = useState("");
+    const [editError, setEditError] = useState("");
+    const [passwordError, setPasswordError] = useState("");
+
     const handleNavigation = (navId) => {
         const routes = {
             beranda: "/dashboard",
@@ -37,6 +60,105 @@ export default function Profile() {
     const handleLogout = async () => {
         await auth.signOut();
         navigate("/login");
+    };
+
+    // 🔹 Open edit modal with current data
+    const openEditModal = () => {
+        if (personal) {
+            setEditForm({
+                name: personal.name || "",
+                phoneNumber: personal.phoneNumber || "",
+                dateOfBirth: personal.dateOfBirth || "",
+                gender: personal.gender || "",
+                address: personal.address || ""
+            });
+            setEditError("");
+            setEditMessage("");
+        }
+        setShowEdit(true);
+    };
+
+    // 🔹 Handle edit profile form change
+    const handleEditChange = (e) => {
+        const { name, value } = e.target;
+        setEditForm(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+
+    // 🔹 Submit edit profile
+    const handleEditSubmit = async (e) => {
+        e.preventDefault();
+        setEditLoading(true);
+        setEditError("");
+        setEditMessage("");
+
+        try {
+            const response = await API.put("/personal/profile", editForm);
+            setPersonal(response.data);
+            setEditMessage("Profil berhasil diperbarui!");
+            setTimeout(() => {
+                setShowEdit(false);
+                setEditMessage("");
+            }, 2000);
+        } catch (err) {
+            setEditError(err.response?.data?.message || "Gagal memperbarui profil");
+        } finally {
+            setEditLoading(false);
+        }
+    };
+
+    // 🔹 Handle password form change
+    const handlePasswordChange = (e) => {
+        const { name, value } = e.target;
+        setPasswordForm(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+
+    // 🔹 Submit password change
+    const handlePasswordSubmit = async (e) => {
+        e.preventDefault();
+        setPasswordLoading(true);
+        setPasswordError("");
+        setPasswordMessage("");
+
+        // Validate passwords match
+        if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+            setPasswordError("Password baru dan konfirmasi password tidak cocok");
+            setPasswordLoading(false);
+            return;
+        }
+
+        // Validate password length
+        if (passwordForm.newPassword.length < 6) {
+            setPasswordError("Password baru minimal 6 karakter");
+            setPasswordLoading(false);
+            return;
+        }
+
+        try {
+            await API.post("/auth/change-password", {
+                oldPassword: passwordForm.oldPassword,
+                newPassword: passwordForm.newPassword
+            });
+            setPasswordMessage("Password berhasil diubah!");
+            setTimeout(() => {
+                setShowPassword(false);
+                setPasswordForm({
+                    oldPassword: "",
+                    newPassword: "",
+                    confirmPassword: ""
+                });
+                setPasswordMessage("");
+            }, 2000);
+        } catch (err) {
+            setPasswordError(err.response?.data?.message || "Gagal mengubah password");
+        } finally {
+            setPasswordLoading(false);
+        }
     };
 
     // 🔹 Fetch Auth Profile
@@ -138,7 +260,7 @@ export default function Profile() {
 
                 {/* PROFILE HEADER CARD */}
                 {profile && (
-                    <div className="bg-gradient-to-r from-green-900 to-green-800 text-white rounded-3xl p-4 md:p-8 mb-8 flex flex-col md:flex-row md:justify-between md:items-center gap-4 shadow-lg">
+                    <div className="bg-gradient-to-b from-[#0b2a17] to-[#123d23] text-white rounded-3xl p-4 md:p-8 mb-8 flex flex-col md:flex-row md:justify-between md:items-center gap-4 shadow-lg">
                         <div className="flex gap-4 md:gap-6 items-center flex-col sm:flex-row">
                             {/* Avatar */}
                             <div className="w-20 h-20 md:w-24 md:h-24 bg-gradient-to-br from-orange-300 to-orange-400 rounded-full flex-shrink-0 flex items-center justify-center text-3xl md:text-4xl font-bold">
@@ -157,14 +279,19 @@ export default function Profile() {
 
                         <div className="flex flex-row md:flex-col gap-2 md:gap-3 w-full sm:w-auto">
                             <button 
-                                onClick={() => setShowEdit(true)}
+                                onClick={openEditModal}
                                 className="flex-1 md:flex-none px-3 md:px-4 py-2 rounded-full bg-green-400 text-green-900 font-semibold hover:bg-green-300 transition-all text-xs md:text-sm flex items-center gap-2 justify-center"
                             >
                                 <iconify-icon icon="mdi:pencil"></iconify-icon> Edit Profil
                             </button>
 
                             <button 
-                                onClick={() => setShowPassword(true)}
+                                onClick={() => {
+                                    setPasswordForm({ oldPassword: "", newPassword: "", confirmPassword: "" });
+                                    setPasswordError("");
+                                    setPasswordMessage("");
+                                    setShowPassword(true);
+                                }}
                                 className="flex-1 md:flex-none px-3 md:px-4 py-2 rounded-full bg-green-400 text-green-900 font-semibold hover:bg-green-300 transition-all text-xs md:text-sm flex items-center gap-2 justify-center"
                             >
                                 <iconify-icon icon="mdi:lock"></iconify-icon> Ubah Password
@@ -316,24 +443,73 @@ export default function Profile() {
             {/* MODAL EDIT PROFIL */}
             {showEdit && (
                 <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50 backdrop-blur-sm">
-                    <div className="bg-white p-8 rounded-2xl w-full max-w-sm shadow-2xl">
+                    <div className="bg-white p-8 rounded-2xl w-full max-w-md shadow-2xl">
                         <h3 className="text-lg font-bold text-green-900 mb-5">Edit Profil</h3>
-                        <input 
-                            type="text" 
-                            placeholder={personal?.name || "Nama Baru"}
-                            className="w-full p-3 border border-gray-300 rounded-lg mb-3 text-sm focus:outline-none focus:border-green-300 focus:ring-4 focus:ring-green-100"
-                        />
-                        <input 
-                            type="email" 
-                            placeholder={profile?.email || "Email Baru"}
-                            className="w-full p-3 border border-gray-300 rounded-lg mb-5 text-sm focus:outline-none focus:border-green-300 focus:ring-4 focus:ring-green-100"
-                        />
-                        <button 
-                            onClick={() => setShowEdit(false)}
-                            className="w-full p-3 bg-green-900 text-green-300 font-semibold rounded-lg hover:bg-green-800 transition-all"
-                        >
-                            Simpan
-                        </button>
+                        
+                        {editError && <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg text-sm">{editError}</div>}
+                        {editMessage && <div className="mb-4 p-3 bg-green-100 text-green-700 rounded-lg text-sm">{editMessage}</div>}
+                        
+                        <form onSubmit={handleEditSubmit} className="space-y-3">
+                            <input 
+                                type="text"
+                                name="name"
+                                value={editForm.name}
+                                onChange={handleEditChange}
+                                placeholder="Nama Lengkap"
+                                className="w-full p-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-green-300 focus:ring-4 focus:ring-green-100"
+                            />
+                            <input 
+                                type="tel"
+                                name="phoneNumber"
+                                value={editForm.phoneNumber}
+                                onChange={handleEditChange}
+                                placeholder="Nomor Telepon"
+                                className="w-full p-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-green-300 focus:ring-4 focus:ring-green-100"
+                            />
+                            <input 
+                                type="date"
+                                name="dateOfBirth"
+                                value={editForm.dateOfBirth}
+                                onChange={handleEditChange}
+                                className="w-full p-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-green-300 focus:ring-4 focus:ring-green-100"
+                            />
+                            <select 
+                                name="gender"
+                                value={editForm.gender}
+                                onChange={handleEditChange}
+                                className="w-full p-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-green-300 focus:ring-4 focus:ring-green-100"
+                            >
+                                <option value="">Pilih Jenis Kelamin</option>
+                                <option value="Laki-laki">Laki-laki</option>
+                                <option value="Perempuan">Perempuan</option>
+                            </select>
+                            <textarea 
+                                name="address"
+                                value={editForm.address}
+                                onChange={handleEditChange}
+                                placeholder="Alamat"
+                                rows="3"
+                                className="w-full p-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-green-300 focus:ring-4 focus:ring-green-100"
+                            />
+                            
+                            <div className="flex gap-3 pt-2">
+                                <button 
+                                    type="button"
+                                    onClick={() => setShowEdit(false)}
+                                    disabled={editLoading}
+                                    className="flex-1 p-3 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition-all disabled:opacity-50"
+                                >
+                                    Batal
+                                </button>
+                                <button 
+                                    type="submit"
+                                    disabled={editLoading}
+                                    className="flex-1 p-3 bg-green-900 text-white font-semibold rounded-lg hover:bg-green-800 transition-all disabled:opacity-50"
+                                >
+                                    {editLoading ? "Menyimpan..." : "Simpan"}
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             )}
@@ -341,24 +517,56 @@ export default function Profile() {
             {/* MODAL PASSWORD */}
             {showPassword && (
                 <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50 backdrop-blur-sm">
-                    <div className="bg-white p-8 rounded-2xl w-full max-w-sm shadow-2xl">
+                    <div className="bg-white p-8 rounded-2xl w-full max-w-md shadow-2xl">
                         <h3 className="text-lg font-bold text-green-900 mb-5">Ubah Password</h3>
-                        <input 
-                            type="password" 
-                            placeholder="Password Lama"
-                            className="w-full p-3 border border-gray-300 rounded-lg mb-3 text-sm focus:outline-none focus:border-green-300 focus:ring-4 focus:ring-green-100"
-                        />
-                        <input 
-                            type="password" 
-                            placeholder="Password Baru"
-                            className="w-full p-3 border border-gray-300 rounded-lg mb-5 text-sm focus:outline-none focus:border-green-300 focus:ring-4 focus:ring-green-100"
-                        />
-                        <button 
-                            onClick={() => setShowPassword(false)}
-                            className="w-full p-3 bg-green-900 text-green-300 font-semibold rounded-lg hover:bg-green-800 transition-all"
-                        >
-                            Simpan
-                        </button>
+                        
+                        {passwordError && <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg text-sm">{passwordError}</div>}
+                        {passwordMessage && <div className="mb-4 p-3 bg-green-100 text-green-700 rounded-lg text-sm">{passwordMessage}</div>}
+                        
+                        <form onSubmit={handlePasswordSubmit} className="space-y-3">
+                            <input 
+                                type="password"
+                                name="oldPassword"
+                                value={passwordForm.oldPassword}
+                                onChange={handlePasswordChange}
+                                placeholder="Password Lama"
+                                className="w-full p-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-green-300 focus:ring-4 focus:ring-green-100"
+                            />
+                            <input 
+                                type="password"
+                                name="newPassword"
+                                value={passwordForm.newPassword}
+                                onChange={handlePasswordChange}
+                                placeholder="Password Baru"
+                                className="w-full p-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-green-300 focus:ring-4 focus:ring-green-100"
+                            />
+                            <input 
+                                type="password"
+                                name="confirmPassword"
+                                value={passwordForm.confirmPassword}
+                                onChange={handlePasswordChange}
+                                placeholder="Konfirmasi Password Baru"
+                                className="w-full p-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-green-300 focus:ring-4 focus:ring-green-100"
+                            />
+                            
+                            <div className="flex gap-3 pt-2">
+                                <button 
+                                    type="button"
+                                    onClick={() => setShowPassword(false)}
+                                    disabled={passwordLoading}
+                                    className="flex-1 p-3 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition-all disabled:opacity-50"
+                                >
+                                    Batal
+                                </button>
+                                <button 
+                                    type="submit"
+                                    disabled={passwordLoading}
+                                    className="flex-1 p-3 bg-green-900 text-white font-semibold rounded-lg hover:bg-green-800 transition-all disabled:opacity-50"
+                                >
+                                    {passwordLoading ? "Mengubah..." : "Simpan"}
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             )}

@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../services/api.js";
+import Navbar from "../components/Navbar.jsx";
+import Sidebar from "../components/Sidebar.jsx";
 
 const fmt = (n) => `Rp ${(n || 0).toLocaleString("id-ID")}`;
 
@@ -19,39 +21,45 @@ function RoleBadge({ role }) {
 // ── Group Card ────────────────────────────────────────────────
 function GroupCard({ group, uid, onClick }) {
     const members = Object.values(group.members || {});
-    const myRole = group.members?.[uid]?.role;
     const [hov, setHov] = useState(false);
 
     return (
-        <div onClick={() => onClick(group)}
+        <div style={{ background: "white", borderRadius: 12, padding: "16px", border: "1px solid #e5e7eb", marginBottom: 12, cursor: "pointer", boxShadow: hov ? "0 4px 12px rgba(0,0,0,0.08)" : "0 1px 3px rgba(0,0,0,0.05)", transition: "all 0.2s", display: "flex", justifyContent: "space-between", alignItems: "center" }}
             onMouseEnter={() => setHov(true)}
-            onMouseLeave={() => setHov(false)}
-            style={{ background: "white", borderRadius: 16, padding: "18px 20px", cursor: "pointer", border: "1px solid #f0f0f0", boxShadow: hov ? "0 8px 24px rgba(0,0,0,0.1)" : "0 2px 8px rgba(0,0,0,0.05)", transform: hov ? "translateY(-2px)" : "none", transition: "all 0.2s" }}>
+            onMouseLeave={() => setHov(false)}>
 
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
-                <div>
-                    <p style={{ fontWeight: 700, fontSize: 15, color: "#1a3a1f", marginBottom: 4 }}>{group.name}</p>
-                    <div style={{ display: "flex", gap: 6 }}>
-                        <RoleBadge role={myRole} />
-                        <span style={{ fontSize: 10, color: "#9ca3af" }}>{members.length} anggota</span>
+            <div style={{ flex: 1 }}>
+                <p style={{ fontWeight: 700, fontSize: 14, color: "#1a3a1f", marginBottom: 8 }}>{group.name}</p>
+                
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                    {/* Member badge */}
+                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                        <span style={{ fontSize: 11, fontWeight: 600, color: "#9ca3af" }}>Member</span>
+                        <span style={{ fontSize: 11, fontWeight: 700, padding: "3px 8px", borderRadius: 16, background: "#1a3a1f", color: "white" }}>{members.length} Anggota</span>
                     </div>
-                </div>
-                <div style={{ textAlign: "right" }}>
-                    <p style={{ fontSize: 11, color: "#9ca3af", marginBottom: 2 }}>Saldo Grup</p>
-                    <p style={{ fontSize: 18, fontWeight: 800, color: "#1a3a1f" }}>{fmt(group.balance)}</p>
+
+                    {/* Member avatars */}
+                    <div style={{ display: "flex", alignItems: "center" }}>
+                        {members.slice(0, 5).map((m, i) => (
+                            <div key={m.uid} style={{ width: 28, height: 28, borderRadius: "50%", background: `hsl(${(i * 60) % 360}, 70%, 60%)`, color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 700, border: "2px solid white", marginLeft: i > 0 ? -8 : 0, zIndex: members.length - i }}>
+                                {(m.name || m.email || "?")[0].toUpperCase()}
+                            </div>
+                        ))}
+                    </div>
                 </div>
             </div>
 
-            {/* Member avatars */}
-            <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                {members.slice(0, 5).map((m, i) => (
-                    <div key={m.uid} style={{ width: 28, height: 28, borderRadius: "50%", background: i === 0 ? "#1a3a1f" : "#e8fce0", color: i === 0 ? "#9FF782" : "#166534", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, border: "2px solid white", marginLeft: i > 0 ? -8 : 0, zIndex: members.length - i }}>
-                        {(m.name || m.email || "?")[0].toUpperCase()}
-                    </div>
-                ))}
-                {members.length > 5 && (
-                    <span style={{ fontSize: 11, color: "#9ca3af", marginLeft: 4 }}>+{members.length - 5}</span>
-                )}
+            <div style={{ textAlign: "right", display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 10 }}>
+                <div>
+                    <p style={{ fontSize: 11, color: "#9ca3af", marginBottom: 2 }}>Saldo Grup</p>
+                    <p style={{ fontSize: 16, fontWeight: 800, color: "#1a3a1f" }}>{fmt(group.balance)}</p>
+                </div>
+                <button onClick={() => onClick(group)}
+                    style={{ background: "#1a3a1f", color: "white", border: "none", borderRadius: 8, padding: "8px 16px", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "Plus Jakarta Sans, sans-serif", transition: "background 0.2s" }}
+                    onMouseEnter={e => e.target.style.background = "#0f2a18"}
+                    onMouseLeave={e => e.target.style.background = "#1a3a1f"}>
+                    Click
+                </button>
             </div>
         </div>
     );
@@ -503,18 +511,25 @@ export default function SharedBalance() {
     const [showCreate, setShowCreate] = useState(false);
     const [showJoin, setShowJoin] = useState(false);
     const [uid, setUid] = useState(null);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [active, setActive] = useState("balance");
+    const [profile, setProfile] = useState(null);
+    const [personal, setPersonal] = useState(null);
 
     useEffect(() => { fetchAll(); }, []);
 
     const fetchAll = async () => {
         setLoading(true);
         try {
-            const [profileRes, groupsRes, invitesRes] = await Promise.all([
+            const [profileRes, groupsRes, invitesRes, personalRes] = await Promise.all([
                 API.get("/auth/profile"),
                 API.get("/shared-balance"),
                 API.get("/shared-balance/invites/pending"),
+                API.get("/users/personal").catch(() => ({ data: null })),
             ]);
             setUid(profileRes.data.uid);
+            setProfile(profileRes.data);
+            setPersonal(personalRes.data);
             setGroups(groupsRes.data);
             setInvites(invitesRes.data);
 
@@ -559,84 +574,82 @@ export default function SharedBalance() {
         } catch (err) { console.error(err); }
     };
 
+
     return (
-        <div style={{ minHeight: "100vh", background: "#f0f4f0", fontFamily: "Plus Jakarta Sans, sans-serif" }}>
-            <style>{`@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap'); * { box-sizing: border-box; margin: 0; padding: 0; }`}</style>
+        <div className="flex h-screen bg-white overflow-hidden w-full" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+            <style>{`
+                @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+                @media (max-width: 768px) {
+                    aside.fixed { top: 56px !important; height: calc(100vh - 56px) !important; }
+                }
+            `}</style>
 
-            {/* Navbar */}
-            <nav style={{ background: "linear-gradient(90deg,#1a3a1f,#0f2a18)", padding: "12px 24px", display: "flex", justifyContent: "space-between", alignItems: "center", position: "sticky", top: 0, zIndex: 40 }}>
-                <button onClick={() => navigate("/dashboard")}
-                    style={{ background: "none", border: "none", color: "#9FF782", fontSize: 14, cursor: "pointer", fontFamily: "Plus Jakarta Sans, sans-serif", fontWeight: 600 }}>
-                    ← Dashboard
-                </button>
-                <span style={{ color: "white", fontWeight: 700, fontSize: 15 }}>🤝 Saldo Bersama</span>
-                <div style={{ display: "flex", gap: 8 }}>
-                    <button onClick={() => setShowJoin(true)}
-                        style={{ background: "rgba(159,247,130,0.15)", color: "#9FF782", border: "1px solid rgba(159,247,130,0.3)", borderRadius: 8, padding: "6px 12px", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "Plus Jakarta Sans, sans-serif" }}>
-                        Gabung
-                    </button>
-                    <button onClick={() => setShowCreate(true)}
-                        style={{ background: "#9FF782", color: "#0a1f10", border: "none", borderRadius: 8, padding: "6px 14px", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "Plus Jakarta Sans, sans-serif" }}>
-                        + Buat
-                    </button>
-                </div>
-            </nav>
+            <Sidebar active={active} setActive={setActive} handleLogout={() => navigate("/")} isOpen={isSidebarOpen} setOpen={setIsSidebarOpen} />
 
-            <div style={{ maxWidth: 520, margin: "0 auto", padding: "20px 16px 40px" }}>
+            <main className="flex-1 flex flex-col h-screen overflow-hidden w-full">
+                <Navbar profile={profile} personal={personal} isSidebarOpen={isSidebarOpen} setSidebarOpen={setIsSidebarOpen} />
 
-                {/* Pending Invites */}
-                {invites.length > 0 && (
-                    <div style={{ marginBottom: 20 }}>
-                        <p style={{ fontSize: 11, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 10 }}>📨 Undangan Masuk</p>
-                        {invites.map(inv => (
-                            <div key={inv.id} style={{ background: "white", borderRadius: 12, padding: "14px 16px", border: "1px solid #fde68a", marginBottom: 8, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                                <div>
-                                    <p style={{ fontWeight: 600, fontSize: 13, color: "#1a3a1f" }}>{inv.groupName}</p>
-                                    <p style={{ fontSize: 11, color: "#9ca3af", marginTop: 2 }}>Kode: {inv.inviteCode}</p>
-                                </div>
-                                <button onClick={() => handleAcceptInvite(inv.groupId)}
-                                    style={{ background: "#1a3a1f", color: "#9FF782", border: "none", borderRadius: 8, padding: "7px 14px", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "Plus Jakarta Sans, sans-serif" }}>
-                                    Terima
+                <div className="flex-1 overflow-y-auto bg-gray-50">
+                    <div style={{ maxWidth: 1200, margin: "0 auto", padding: "40px 20px" }}>
+
+                        {/* Header Section */}
+                        <div style={{ marginBottom: 32 }}>
+                            <h1 style={{ fontSize: 28, fontWeight: 800, color: "#1a3a1f", marginBottom: 4 }}>Saldo Bersama</h1>
+                            <p style={{ fontSize: 13, color: "#6b7280" }}>Buat grup sekarang dan capai target keuanganmu bersama-teman-teman!</p>
+                        </div>
+
+                        {/* Daftar Grup Section with Action Buttons */}
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
+                            <h2 style={{ fontSize: 14, fontWeight: 700, color: "#1a3a1f" }}>Daftar Grup ({groups.length})</h2>
+                            <div style={{ display: "flex", gap: 10 }}>
+                                <button onClick={() => setShowCreate(true)}
+                                    style={{ background: "#1a3a1f", color: "white", border: "none", borderRadius: 8, padding: "10px 16px", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "Plus Jakarta Sans, sans-serif", display: "flex", alignItems: "center", gap: 6, transition: "background 0.2s" }}
+                                    onMouseEnter={e => e.target.style.background = "#0f2a18"}
+                                    onMouseLeave={e => e.target.style.background = "#1a3a1f"}>
+                                    + Buat Grup
+                                </button>
+                                <button onClick={() => setShowJoin(true)}
+                                    style={{ background: "white", color: "#f59e0b", border: "2px solid #fbbf24", borderRadius: 8, padding: "8px 16px", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "Plus Jakarta Sans, sans-serif", display: "flex", alignItems: "center", gap: 6, transition: "all 0.2s" }}
+                                    onMouseEnter={e => { e.target.style.background = "#fef3c7"; }}
+                                    onMouseLeave={e => { e.target.style.background = "white"; }}>
+                                    🔑 Masukkan Kode
                                 </button>
                             </div>
-                        ))}
-                    </div>
-                )}
-
-                {/* Groups */}
-                <p style={{ fontSize: 11, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 12 }}>Grup Kamu ({groups.length})</p>
-
-                {loading ? (
-                    <div style={{ textAlign: "center", padding: 48, color: "#9ca3af" }}>Loading...</div>
-                ) : groups.length === 0 ? (
-                    <div style={{ textAlign: "center", padding: 48, color: "#9ca3af" }}>
-                        <p style={{ fontSize: 40, marginBottom: 12 }}>🤝</p>
-                        <p style={{ fontSize: 14, marginBottom: 16 }}>Belum ada saldo bersama.</p>
-                        <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
-                            <button onClick={() => setShowCreate(true)}
-                                style={{ background: "#1a3a1f", color: "#9FF782", border: "none", borderRadius: 10, padding: "12px 20px", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "Plus Jakarta Sans, sans-serif" }}>
-                                + Buat Grup
-                            </button>
-                            <button onClick={() => setShowJoin(true)}
-                                style={{ background: "white", color: "#1a3a1f", border: "1px solid #e5e7eb", borderRadius: 10, padding: "12px 20px", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "Plus Jakarta Sans, sans-serif" }}>
-                                🔑 Masukkan Kode
-                            </button>
                         </div>
-                    </div>
-                ) : (
-                    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                        {groups.map(g => (
-                            <GroupCard key={g.id} group={g} uid={uid} onClick={setSelected} />
-                        ))}
-                    </div>
-                )}
-            </div>
 
-            {selected && uid && (
-                <GroupDetail group={selected} uid={uid} onClose={() => setSelected(null)} onRefresh={handleRefreshGroup} balanceCategories={balances} />
-            )}
-            {showCreate && <CreateModal onClose={() => setShowCreate(false)} onCreate={handleCreate} />}
-            {showJoin && <JoinModal onClose={() => setShowJoin(false)} onJoin={handleJoin} />}
+                        {/* Groups List */}
+                        {loading ? (
+                            <div style={{ textAlign: "center", padding: 48, color: "#9ca3af" }}>Loading...</div>
+                        ) : groups.length === 0 ? (
+                            <div style={{ textAlign: "center", padding: 48, color: "#9ca3af", background: "white", borderRadius: 12 }}>
+                                <p style={{ fontSize: 40, marginBottom: 12 }}>🤝</p>
+                                <p style={{ fontSize: 14, marginBottom: 16 }}>Belum ada saldo bersama.</p>
+                                <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
+                                    <button onClick={() => setShowCreate(true)}
+                                        style={{ background: "#1a3a1f", color: "white", border: "none", borderRadius: 8, padding: "10px 16px", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "Plus Jakarta Sans, sans-serif" }}>
+                                        + Buat Grup
+                                    </button>
+                                    <button onClick={() => setShowJoin(true)}
+                                        style={{ background: "white", color: "#f59e0b", border: "2px solid #fbbf24", borderRadius: 8, padding: "8px 16px", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "Plus Jakarta Sans, sans-serif" }}>
+                                        🔑 Masukkan Kode
+                                    </button>
+                                </div>
+                            </div>
+                        ) : (
+                            <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+                                {groups.map(g => (
+                                    <GroupCard key={g.id} group={g} uid={uid} onClick={setSelected} />
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+                {selected && uid && (
+                    <GroupDetail group={selected} uid={uid} onClose={() => setSelected(null)} onRefresh={handleRefreshGroup} balanceCategories={balances} />
+                )}
+                {showCreate && <CreateModal onClose={() => setShowCreate(false)} onCreate={handleCreate} />}
+                {showJoin && <JoinModal onClose={() => setShowJoin(false)} onJoin={handleJoin} />}
+            </main>
         </div>
     );
 }

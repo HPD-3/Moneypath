@@ -5,6 +5,7 @@ import { auth } from "../firebase.js";
 import API from "../services/api.js";
 import Sidebar from "../components/Sidebar.jsx";
 import Navbar from "../components/Navbar.jsx";
+import { LineChart } from "@mui/x-charts";
 
 const fmt = (n) => `Rp ${(n || 0).toLocaleString("id-ID")}`;
 const MONTHS = ["", "Januari", "Februari", "Maret", "April", "Mei",
@@ -119,7 +120,7 @@ export default function RekapBulanan() {
                     <div style={{ minHeight: "100vh", background: "#f0f4f0", fontFamily: "Plus Jakarta Sans, sans-serif" }}>
                         <style>{`@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap'); * { box-sizing: border-box; margin: 0; padding: 0; }`}</style>
 
-                        <div style={{ maxWidth: 560, margin: "0 auto", padding: "20px 16px 48px", paddingTop: "60px" }}>
+                        <div style={{ width: "100%", padding: "20px 16px 48px", paddingTop: "60px" }}>
 
                             {/* Month Selector */}
                             <div style={{ background: "white", borderRadius: 14, padding: "16px 20px", marginBottom: 20, border: "1px solid #f0f0f0", display: "flex", gap: 10, alignItems: "center" }}>
@@ -196,6 +197,84 @@ export default function RekapBulanan() {
                                             <p style={{ fontSize: 11, color: "#9ca3af", marginBottom: 6 }}>💸 Total Pengeluaran</p>
                                             <p style={{ fontSize: 16, fontWeight: 800, color: "#991b1b" }}>-{fmt(data.summary.totalExpense)}</p>
                                         </div>
+                                    </div>
+
+                                    {/* Transaction Trend Chart */}
+                                    <div className="bg-gradient-to-b from-[#0b2a17] to-[#123d23] rounded-2xl p-6 shadow-lg mt-6 w-full" style={{ marginBottom: 16 }}>
+                                        <h3 className="font-semibold text-white dark:text-white mb-4">Riwayat Transaksi Trend</h3>
+                                        {(() => {
+                                            // Group transactions by date
+                                            const txByDate = {};
+                                            (data.transactions || []).forEach(tx => {
+                                                const date = new Date(tx.date).toLocaleDateString('id-ID');
+                                                if (!txByDate[date]) txByDate[date] = { income: 0, expense: 0 };
+                                                if (tx.type === 'income') txByDate[date].income += tx.amount;
+                                                else txByDate[date].expense += tx.amount;
+                                            });
+
+                                            const chartData = Object.keys(txByDate).sort().map(date => ({
+                                                date,
+                                                income: txByDate[date].income,
+                                                expense: txByDate[date].expense,
+                                                net: txByDate[date].income - txByDate[date].expense
+                                            }));
+
+                                            if (chartData.length === 0) {
+                                                return (
+                                                    <div className="text-center py-8 text-gray-400">
+                                                        <iconify-icon icon="mdi:chart-box-outline" style={{ fontSize: 32, marginBottom: 8, color: "#9ca3af", display: "block" }}></iconify-icon>
+                                                        <p className="text-sm">Belum ada data transaksi</p>
+                                                    </div>
+                                                );
+                                            }
+
+                                            return (
+                                                <div style={{ width: '100%', height: 400, display: 'flex', justifyContent: 'center' }}>
+                                                    <LineChart
+                                                        series={[
+                                                            {
+                                                                data: chartData.map(d => d.income),
+                                                                label: 'Pemasukan',
+                                                                color: '#10b981',
+                                                                valueFormatter: (value) => `Rp ${value.toLocaleString('id-ID')}`,
+                                                            },
+                                                            {
+                                                                data: chartData.map(d => d.expense),
+                                                                label: 'Pengeluaran',
+                                                                color: '#ef4444',
+                                                                valueFormatter: (value) => `Rp ${value.toLocaleString('id-ID')}`,
+                                                            },
+                                                            {
+                                                                data: chartData.map(d => d.net),
+                                                                label: 'Arus Bersih',
+                                                                color: '#0ea5e9',
+                                                                valueFormatter: (value) => `Rp ${value.toLocaleString('id-ID')}`,
+                                                            }
+                                                        ]}
+                                                        xAxis={[{
+                                                            scaleType: 'point',
+                                                            data: chartData.map(d => d.date)
+                                                        }]}
+                                                        width={1000}
+                                                        height={400}
+                                                        margin={{ top: 20, right: 20, bottom: 60, left: 80 }}
+                                                        slotProps={{
+                                                            legend: {
+                                                                direction: 'row',
+                                                                position: { vertical: 'bottom', horizontal: 'middle' },
+                                                                padding: 20,
+                                                            }
+                                                        }}
+                                                        sx={{
+                                                            '& text': {
+                                                                fill: '#ffffff !important',
+                                                                fontSize: '13px',
+                                                            }
+                                                        }}
+                                                    />
+                                                </div>
+                                            );
+                                        })()}
                                     </div>
 
                                     {/* Per Category */}

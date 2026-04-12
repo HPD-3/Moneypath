@@ -122,8 +122,8 @@ function DetailModal({ target, balances, onClose, onAlokasi, onDelete, onCheckou
     };
 
     return (
-        <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 100, display: "flex", alignItems: "flex-end", justifyContent: "center", padding: "0" }}>
-            <div onClick={e => e.stopPropagation()} style={{ background: "white", borderRadius: "20px 20px 0 0", width: "100%", maxWidth: 520, maxHeight: "90vh", overflowY: "auto" }}>
+        <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center", padding: "16px" }}>
+            <div onClick={e => e.stopPropagation()} style={{ background: "white", borderRadius: "20px", width: "90%", maxWidth: 520, maxHeight: "90vh", overflowY: "auto" }}>
 
                 {/* Handle */}
                 <div style={{ display: "flex", justifyContent: "center", padding: "12px 0 0" }}>
@@ -325,8 +325,8 @@ function CreateModal({ onClose, onCreate }) {
     };
 
     return (
-        <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 100, display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
-            <div onClick={e => e.stopPropagation()} style={{ background: "white", borderRadius: "20px 20px 0 0", width: "100%", maxWidth: 520, padding: "20px 20px 32px" }}>
+        <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <div onClick={e => e.stopPropagation()} style={{ background: "white", borderRadius: "20px", width: "90%", maxWidth: 520, padding: "20px 20px 32px", maxHeight: "90vh", overflowY: "auto" }}>
 
                 <div style={{ display: "flex", justifyContent: "center", marginBottom: 16 }}>
                     <div style={{ width: 40, height: 4, borderRadius: 2, background: "#e5e7eb" }} />
@@ -505,7 +505,7 @@ export default function Tabungan() {
                     <div style={{ minHeight: "100vh", background: "#f0f4f0", fontFamily: "Plus Jakarta Sans, sans-serif" }}>
                         <style>{`@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap'); * { box-sizing: border-box; margin: 0; padding: 0; }`}</style>
 
-                        <div style={{ maxWidth: 520, margin: "0 auto", padding: "20px 16px 40px", paddingTop: "60px" }}>
+                        <div style={{ width: "100%", maxWidth: 900, margin: "0 auto", padding: "20px 16px 40px", paddingTop: "60px" }}>
 
                             {/* Header */}
                             <div style={{ marginBottom: 20 }}>

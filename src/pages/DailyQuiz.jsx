@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../services/api.js";
+import Navbar from "../components/Navbar.jsx";
+import Sidebar from "../components/Sidebar.jsx";
 
 function calcLevel(totalExp) {
-    const level      = Math.floor(totalExp / 100) + 1;
+    const level = Math.floor(totalExp / 100) + 1;
     const currentExp = totalExp % 100;
     return { level, currentExp, expToNext: 100, progress: currentExp };
 }
@@ -57,8 +59,8 @@ function QuestionCard({ question, index, total, selectedAnswer, onAnswer, submit
                 {question.options?.map((opt, j) => {
                     let bg = "white", border = "1px solid #e5e7eb", color = "#374151";
                     if (submitted) {
-                        if (j === correctIndex)          { bg = "#dcfce7"; border = "1px solid #86efac"; color = "#166534"; }
-                        else if (selectedAnswer === j)   { bg = "#fee2e2"; border = "1px solid #fca5a5"; color = "#991b1b"; }
+                        if (j === correctIndex) { bg = "#dcfce7"; border = "1px solid #86efac"; color = "#166534"; }
+                        else if (selectedAnswer === j) { bg = "#fee2e2"; border = "1px solid #fca5a5"; color = "#991b1b"; }
                     } else if (selectedAnswer === j) {
                         bg = "#e8fce0"; border = "2px solid #1a3a1f"; color = "#1a3a1f";
                     }
@@ -140,25 +142,33 @@ function ResultScreen({ score, correct, total, expEarned, streak, levelUp, newLe
 
 // ── Main Daily Quiz Page ──────────────────────────────────────
 export default function DailyQuiz() {
-    const navigate                   = useNavigate();
-    const [stats, setStats]          = useState(null);
-    const [questions, setQuestions]  = useState([]);
-    const [currentQ, setCurrentQ]    = useState(0);
-    const [answers, setAnswers]      = useState({});
+    const navigate = useNavigate();
+    const [stats, setStats] = useState(null);
+    const [questions, setQuestions] = useState([]);
+    const [currentQ, setCurrentQ] = useState(0);
+    const [answers, setAnswers] = useState({});
     const [currentAnswer, setCurrent] = useState(null);
-    const [submitted, setSubmitted]  = useState(false);
-    const [result, setResult]        = useState(null);
-    const [loading, setLoading]      = useState(true);
-    const [phase, setPhase]          = useState("stats"); // stats | quiz | result
+    const [submitted, setSubmitted] = useState(false);
+    const [result, setResult] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [phase, setPhase] = useState("stats"); // stats | quiz | result
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [active, setActive] = useState("quiz");
+    const [profile, setProfile] = useState(null);
+    const [personal, setPersonal] = useState(null);
 
     useEffect(() => {
         const fetchAll = async () => {
             try {
-                const [statsRes, quizRes] = await Promise.all([
+                const [statsRes, quizRes, profileRes, personalRes] = await Promise.all([
                     API.get("/quiz/stats"),
                     API.get("/quiz/today"),
+                    API.get("/auth/profile").catch(() => ({ data: null })),
+                    API.get("/personal/profile").catch(() => ({ data: null })),
                 ]);
                 setStats(statsRes.data);
+                setProfile(profileRes.data);
+                setPersonal(personalRes.data);
                 if (quizRes.data.alreadyCompleted) {
                     setResult({ alreadyCompleted: true, score: quizRes.data.score });
                 } else {
@@ -209,134 +219,138 @@ export default function DailyQuiz() {
     const q = questions[currentQ];
 
     return (
-        <div style={{ minHeight: "100vh", background: "#f0f4f0", fontFamily: "Plus Jakarta Sans, sans-serif" }}>
-            <style>{`@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');`}</style>
+        <div className="flex h-screen bg-white overflow-hidden w-full" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+            <style>{`
+                @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+                @media (max-width: 768px) {
+                    aside.fixed { top: 56px !important; height: calc(100vh - 56px) !important; }
+                }
+            `}</style>
 
-            {/* Navbar */}
-            <nav style={{ background: "linear-gradient(90deg, #1a3a1f, #0f2a18)", padding: "12px 24px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ fontWeight: 700, color: "#9FF782", fontSize: 18 }}>MoneyPath</span>
-                <button onClick={() => navigate("/dashboard")}
-                    style={{ background: "#9FF782", color: "#0a1f10", border: "none", borderRadius: 8, padding: "7px 16px", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "Plus Jakarta Sans, sans-serif" }}>
-                    ← Dashboard
-                </button>
-            </nav>
+            <Sidebar active={active} setActive={setActive} handleLogout={() => navigate("/")} isOpen={isSidebarOpen} setOpen={setIsSidebarOpen} />
 
-            <div style={{ maxWidth: 520, margin: "0 auto", padding: 24 }}>
+            <main className="flex-1 flex flex-col h-screen overflow-hidden w-full">
+                <Navbar profile={profile} personal={personal} isSidebarOpen={isSidebarOpen} setSidebarOpen={setIsSidebarOpen} />
 
-                {/* Stats / Level Card */}
-                {stats && (
-                    <LevelBadge level={stats.level} totalExp={stats.totalExp} streak={stats.streak} />
-                )}
+                <div className="flex-1 overflow-y-auto bg-gray-50">
+                    <div style={{ maxWidth: 1400, margin: "0 auto", padding: "16px", paddingTop: "20px" }}>
 
-                {/* Main Card */}
-                <div style={{ background: "white", borderRadius: 16, padding: 24, boxShadow: "0 2px 12px rgba(0,0,0,0.08)" }}>
+                        {/* Stats / Level Card */}
+                        {stats && (
+                            <LevelBadge level={stats.level} totalExp={stats.totalExp} streak={stats.streak} />
+                        )}
 
-                    {/* Already completed today */}
-                    {result?.alreadyCompleted && (
-                        <div style={{ textAlign: "center", padding: "20px 0" }}>
-                            <p style={{ fontSize: 48, marginBottom: 12 }}>✅</p>
-                            <h2 style={{ fontWeight: 700, color: "#1a3a1f", marginBottom: 8 }}>Sudah Selesai Hari Ini!</h2>
-                            <p style={{ color: "#6b7280", fontSize: 14, marginBottom: 20 }}>
-                                Nilai kamu hari ini: <strong>{result.score}</strong>
-                            </p>
-                            <p style={{ color: "#9ca3af", fontSize: 13, marginBottom: 20 }}>Kembali besok untuk quiz baru 🌅</p>
+                        {/* Main Card */}
+                        <div style={{ background: "white", borderRadius: 16, padding: 24, boxShadow: "0 2px 12px rgba(0,0,0,0.08)" }}>
 
-                            {/* EXP log */}
-                            {stats?.expLog?.length > 0 && (
-                                <div style={{ background: "#f8fdf8", borderRadius: 10, padding: 14, marginBottom: 16, textAlign: "left" }}>
-                                    <p style={{ fontSize: 12, fontWeight: 600, color: "#1a3a1f", marginBottom: 8 }}>📜 Riwayat EXP Terakhir</p>
-                                    {stats.expLog.slice().reverse().map((log, i) => (
-                                        <div key={i} style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "#6b7280", marginBottom: 4 }}>
-                                            <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{log.reason}</span>
-                                            <span style={{ color: "#166534", fontWeight: 600, marginLeft: 8 }}>+{log.amount} EXP</span>
+                            {/* Already completed today */}
+                            {result?.alreadyCompleted && (
+                                <div style={{ textAlign: "center", padding: "20px 0" }}>
+                                    <p style={{ fontSize: 48, marginBottom: 12 }}>✅</p>
+                                    <h2 style={{ fontWeight: 700, color: "#1a3a1f", marginBottom: 8 }}>Sudah Selesai Hari Ini!</h2>
+                                    <p style={{ color: "#6b7280", fontSize: 14, marginBottom: 20 }}>
+                                        Nilai kamu hari ini: <strong>{result.score}</strong>
+                                    </p>
+                                    <p style={{ color: "#9ca3af", fontSize: 13, marginBottom: 20 }}>Kembali besok untuk quiz baru 🌅</p>
+
+                                    {/* EXP log */}
+                                    {stats?.expLog?.length > 0 && (
+                                        <div style={{ background: "#f8fdf8", borderRadius: 10, padding: 14, marginBottom: 16, textAlign: "left" }}>
+                                            <p style={{ fontSize: 12, fontWeight: 600, color: "#1a3a1f", marginBottom: 8 }}>📜 Riwayat EXP Terakhir</p>
+                                            {stats.expLog.slice().reverse().map((log, i) => (
+                                                <div key={i} style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "#6b7280", marginBottom: 4 }}>
+                                                    <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{log.reason}</span>
+                                                    <span style={{ color: "#166534", fontWeight: 600, marginLeft: 8 }}>+{log.amount} EXP</span>
+                                                </div>
+                                            ))}
                                         </div>
-                                    ))}
+                                    )}
+
+                                    <button onClick={() => navigate("/learning")}
+                                        style={{ width: "100%", background: "#1a3a1f", color: "#9FF782", border: "none", borderRadius: 10, padding: 14, fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "Plus Jakarta Sans, sans-serif", marginBottom: 10 }}>
+                                        📚 Lanjut Belajar
+                                    </button>
+                                    <button onClick={() => navigate("/dashboard")}
+                                        style={{ width: "100%", background: "#f3f4f6", color: "#374151", border: "none", borderRadius: 10, padding: 14, fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "Plus Jakarta Sans, sans-serif" }}>
+                                        ← Dashboard
+                                    </button>
                                 </div>
                             )}
 
-                            <button onClick={() => navigate("/learning")}
-                                style={{ width: "100%", background: "#1a3a1f", color: "#9FF782", border: "none", borderRadius: 10, padding: 14, fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "Plus Jakarta Sans, sans-serif", marginBottom: 10 }}>
-                                📚 Lanjut Belajar
-                            </button>
-                            <button onClick={() => navigate("/dashboard")}
-                                style={{ width: "100%", background: "#f3f4f6", color: "#374151", border: "none", borderRadius: 10, padding: 14, fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "Plus Jakarta Sans, sans-serif" }}>
-                                ← Dashboard
-                            </button>
-                        </div>
-                    )}
+                            {/* Result Screen */}
+                            {phase === "result" && result && !result.alreadyCompleted && (
+                                <ResultScreen
+                                    score={result.score}
+                                    correct={result.correct}
+                                    total={result.total}
+                                    expEarned={result.expEarned}
+                                    streak={result.streak}
+                                    levelUp={result.levelUp}
+                                    newLevel={result.newLevel}
+                                    onClose={() => navigate("/dashboard")}
+                                />
+                            )}
 
-                    {/* Result Screen */}
-                    {phase === "result" && result && !result.alreadyCompleted && (
-                        <ResultScreen
-                            score={result.score}
-                            correct={result.correct}
-                            total={result.total}
-                            expEarned={result.expEarned}
-                            streak={result.streak}
-                            levelUp={result.levelUp}
-                            newLevel={result.newLevel}
-                            onClose={() => navigate("/dashboard")}
-                        />
-                    )}
+                            {/* Quiz Phase */}
+                            {phase === "stats" && !result?.alreadyCompleted && questions.length > 0 && (
+                                <div>
+                                    <div style={{ textAlign: "center", marginBottom: 24 }}>
+                                        <h2 style={{ fontWeight: 700, fontSize: 20, color: "#1a3a1f", marginBottom: 4 }}>🧠 Daily Quiz</h2>
+                                        <p style={{ fontSize: 13, color: "#9ca3af" }}>{questions.length} soal • Minimal 60 untuk lulus</p>
+                                    </div>
 
-                    {/* Quiz Phase */}
-                    {phase === "stats" && !result?.alreadyCompleted && questions.length > 0 && (
-                        <div>
-                            <div style={{ textAlign: "center", marginBottom: 24 }}>
-                                <h2 style={{ fontWeight: 700, fontSize: 20, color: "#1a3a1f", marginBottom: 4 }}>🧠 Daily Quiz</h2>
-                                <p style={{ fontSize: 13, color: "#9ca3af" }}>{questions.length} soal • Minimal 60 untuk lulus</p>
-                            </div>
+                                    {/* EXP preview */}
+                                    <div style={{ background: "#f8fdf8", border: "1px solid #d1fae5", borderRadius: 10, padding: 14, marginBottom: 20 }}>
+                                        <p style={{ fontSize: 12, fontWeight: 600, color: "#166534", marginBottom: 8 }}>Hadiah hari ini:</p>
+                                        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                                            {[{ icon: "⚡", label: "+50 EXP Daily Quiz" }, { icon: "🔥", label: `+10 EXP Streak (${(stats?.streak || 0) + 1} hari)` }].map((r, i) => (
+                                                <span key={i} style={{ fontSize: 11, fontWeight: 600, color: "#166534", background: "#e8fce0", padding: "3px 8px", borderRadius: 20 }}>
+                                                    {r.icon} {r.label}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </div>
 
-                            {/* EXP preview */}
-                            <div style={{ background: "#f8fdf8", border: "1px solid #d1fae5", borderRadius: 10, padding: 14, marginBottom: 20 }}>
-                                <p style={{ fontSize: 12, fontWeight: 600, color: "#166534", marginBottom: 8 }}>Hadiah hari ini:</p>
-                                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                                    {[{ icon: "⚡", label: "+50 EXP Daily Quiz" }, { icon: "🔥", label: `+10 EXP Streak (${(stats?.streak || 0) + 1} hari)` }].map((r, i) => (
-                                        <span key={i} style={{ fontSize: 11, fontWeight: 600, color: "#166534", background: "#e8fce0", padding: "3px 8px", borderRadius: 20 }}>
-                                            {r.icon} {r.label}
-                                        </span>
-                                    ))}
+                                    <button onClick={() => setPhase("quiz")}
+                                        style={{ width: "100%", background: "#1a3a1f", color: "#9FF782", border: "none", borderRadius: 10, padding: 14, fontSize: 15, fontWeight: 600, cursor: "pointer", fontFamily: "Plus Jakarta Sans, sans-serif" }}>
+                                        Mulai Quiz →
+                                    </button>
                                 </div>
-                            </div>
+                            )}
 
-                            <button onClick={() => setPhase("quiz")}
-                                style={{ width: "100%", background: "#1a3a1f", color: "#9FF782", border: "none", borderRadius: 10, padding: 14, fontSize: 15, fontWeight: 600, cursor: "pointer", fontFamily: "Plus Jakarta Sans, sans-serif" }}>
-                                Mulai Quiz →
-                            </button>
+                            {/* Active Quiz */}
+                            {phase === "quiz" && q && (
+                                <div>
+                                    <QuestionCard
+                                        question={q}
+                                        index={currentQ}
+                                        total={questions.length}
+                                        selectedAnswer={currentAnswer}
+                                        onAnswer={handleAnswer}
+                                        submitted={submitted}
+                                        correctIndex={submitted ? q.correctIndex : undefined}
+                                    />
+
+                                    <button
+                                        onClick={handleNext}
+                                        disabled={currentAnswer === null}
+                                        style={{ width: "100%", marginTop: 20, background: currentAnswer === null ? "#e5e7eb" : "#1a3a1f", color: currentAnswer === null ? "#9ca3af" : "#9FF782", border: "none", borderRadius: 10, padding: 14, fontSize: 14, fontWeight: 600, cursor: currentAnswer === null ? "not-allowed" : "pointer", fontFamily: "Plus Jakarta Sans, sans-serif", transition: "all 0.2s" }}>
+                                        {currentQ < questions.length - 1 ? "Jawab & Lanjut →" : "Kumpulkan Jawaban ✓"}
+                                    </button>
+                                </div>
+                            )}
+
+                            {/* No questions available */}
+                            {!result?.alreadyCompleted && questions.length === 0 && !loading && (
+                                <div style={{ textAlign: "center", padding: "20px 0" }}>
+                                    <p style={{ fontSize: 40, marginBottom: 12 }}>📭</p>
+                                    <p style={{ color: "#6b7280" }}>Belum ada soal tersedia. Admin belum menambahkan soal quiz.</p>
+                                </div>
+                            )}
                         </div>
-                    )}
-
-                    {/* Active Quiz */}
-                    {phase === "quiz" && q && (
-                        <div>
-                            <QuestionCard
-                                question={q}
-                                index={currentQ}
-                                total={questions.length}
-                                selectedAnswer={currentAnswer}
-                                onAnswer={handleAnswer}
-                                submitted={submitted}
-                                correctIndex={submitted ? q.correctIndex : undefined}
-                            />
-
-                            <button
-                                onClick={handleNext}
-                                disabled={currentAnswer === null}
-                                style={{ width: "100%", marginTop: 20, background: currentAnswer === null ? "#e5e7eb" : "#1a3a1f", color: currentAnswer === null ? "#9ca3af" : "#9FF782", border: "none", borderRadius: 10, padding: 14, fontSize: 14, fontWeight: 600, cursor: currentAnswer === null ? "not-allowed" : "pointer", fontFamily: "Plus Jakarta Sans, sans-serif", transition: "all 0.2s" }}>
-                                {currentQ < questions.length - 1 ? "Jawab & Lanjut →" : "Kumpulkan Jawaban ✓"}
-                            </button>
-                        </div>
-                    )}
-
-                    {/* No questions available */}
-                    {!result?.alreadyCompleted && questions.length === 0 && !loading && (
-                        <div style={{ textAlign: "center", padding: "20px 0" }}>
-                            <p style={{ fontSize: 40, marginBottom: 12 }}>📭</p>
-                            <p style={{ color: "#6b7280" }}>Belum ada soal tersedia. Admin belum menambahkan soal quiz.</p>
-                        </div>
-                    )}
+                    </div>
                 </div>
-            </div>
+            </main>
         </div>
     );
 }

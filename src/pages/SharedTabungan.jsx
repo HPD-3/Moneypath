@@ -1,65 +1,58 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../services/api.js";
+import Navbar from "../components/Navbar.jsx";
+import Sidebar from "../components/Sidebar.jsx";
 
-const fmt  = (n) => `Rp ${(n || 0).toLocaleString("id-ID")}`;
-const pct  = (terkumpul, target) => Math.min(Math.round((terkumpul / target) * 100), 100);
+const fmt = (n) => `Rp ${(n || 0).toLocaleString("id-ID")}`;
+const pct = (terkumpul, target) => Math.min(Math.round((terkumpul / target) * 100), 100);
 const CATS = ["umum", "liburan", "elektronik", "kendaraan", "pendidikan", "darurat", "lainnya"];
 const CAT_ICONS = { umum: "🎯", liburan: "✈️", elektronik: "💻", kendaraan: "🚗", pendidikan: "📚", darurat: "🏥", lainnya: "📦" };
 
 // ── Target Card ───────────────────────────────────────────────
 function TargetCard({ group, uid, onClick }) {
     const progress = pct(group.terkumpul, group.targetAmount);
-    const members  = Object.values(group.members || {});
-    const myRole   = group.members?.[uid]?.role;
     const [hov, setHov] = useState(false);
 
     return (
         <div onClick={() => onClick(group)}
             onMouseEnter={() => setHov(true)}
             onMouseLeave={() => setHov(false)}
-            style={{ background: "white", borderRadius: 16, overflow: "hidden", cursor: "pointer", border: group.isCompleted ? "2px solid #9FF782" : "1px solid #f0f0f0", boxShadow: hov ? "0 8px 24px rgba(0,0,0,0.1)" : "0 2px 8px rgba(0,0,0,0.05)", transform: hov ? "translateY(-2px)" : "none", transition: "all 0.2s" }}>
+            style={{ background: "white", borderRadius: 12, overflow: "hidden", cursor: "pointer", border: "1px solid #e5e7eb", boxShadow: hov ? "0 8px 20px rgba(0,0,0,0.12)" : "0 2px 8px rgba(0,0,0,0.05)", transform: hov ? "translateY(-4px)" : "none", transition: "all 0.3s" }}>
 
             {/* Image / Icon */}
-            <div style={{ height: 100, background: group.imageUrl ? `url(${group.imageUrl}) center/cover` : "linear-gradient(135deg,#1a3a1f,#0f2a18)", display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}>
-                {!group.imageUrl && <span style={{ fontSize: 36 }}>{CAT_ICONS[group.category] || "🎯"}</span>}
-                <div style={{ position: "absolute", top: 8, left: 8, background: "rgba(0,0,0,0.5)", color: "white", borderRadius: 20, padding: "2px 10px", fontSize: 10, fontWeight: 600 }}>
-                    🤝 {members.length} anggota
-                </div>
+            <div style={{ height: 180, background: group.imageUrl ? `url(${group.imageUrl}) center/cover` : "linear-gradient(135deg,#1a3a1f,#0f2a18)", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden" }}>
+                {!group.imageUrl && <span style={{ fontSize: 48 }}>{CAT_ICONS[group.category] || "🎯"}</span>}
                 {group.isCompleted && (
-                    <div style={{ position: "absolute", top: 8, right: 8, background: "#9FF782", color: "#0a1f10", borderRadius: 20, padding: "2px 10px", fontSize: 10, fontWeight: 700 }}>
+                    <div style={{ position: "absolute", top: 8, right: 8, background: "#9FF782", color: "#0a1f10", borderRadius: 20, padding: "4px 12px", fontSize: 11, fontWeight: 700 }}>
                         ✓ Tercapai!
                     </div>
                 )}
             </div>
 
-            <div style={{ padding: "14px 16px" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
-                    <p style={{ fontWeight: 700, fontSize: 14, color: "#1a3a1f" }}>{group.name}</p>
-                    <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 20, background: myRole === "admin" ? "#fef9c3" : "#e8fce0", color: myRole === "admin" ? "#854d0e" : "#166534" }}>
-                        {myRole}
-                    </span>
+            <div style={{ padding: "16px" }}>
+                <p style={{ fontWeight: 700, fontSize: 14, color: "#1a3a1f", marginBottom: 10 }}>{group.name}</p>
+
+                {/* Amount and Progress */}
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
+                    <div>
+                        <p style={{ fontSize: 12, color: "#9ca3af", marginBottom: 2 }}>{fmt(group.terkumpul)} / {fmt(group.targetAmount)}</p>
+                        <p style={{ fontSize: 11, color: "#9ca3af" }}>{progress}% Terkumpul</p>
+                    </div>
                 </div>
 
                 {/* Progress bar */}
-                <div style={{ background: "#f3f4f6", borderRadius: 4, height: 6, marginBottom: 8, overflow: "hidden" }}>
+                <div style={{ background: "#f3f4f6", borderRadius: 4, height: 6, marginBottom: 12, overflow: "hidden" }}>
                     <div style={{ width: `${progress}%`, height: "100%", borderRadius: 4, background: group.isCompleted ? "#9FF782" : "#1a3a1f", transition: "width 0.5s" }} />
                 </div>
 
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <div>
-                        <p style={{ fontSize: 11, color: "#9ca3af" }}>{fmt(group.terkumpul)} / {fmt(group.targetAmount)}</p>
-                        <p style={{ fontSize: 10, color: "#9ca3af", marginTop: 1 }}>{progress}% terkumpul</p>
-                    </div>
-                    {/* Member avatars */}
-                    <div style={{ display: "flex" }}>
-                        {members.slice(0, 4).map((m, i) => (
-                            <div key={m.uid} style={{ width: 24, height: 24, borderRadius: "50%", background: i === 0 ? "#1a3a1f" : "#e8fce0", color: i === 0 ? "#9FF782" : "#166534", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 700, border: "2px solid white", marginLeft: i > 0 ? -6 : 0 }}>
-                                {(m.name || "?")[0].toUpperCase()}
-                            </div>
-                        ))}
-                    </div>
-                </div>
+                {/* Click Button */}
+                <button
+                    style={{ width: "100%", background: "#1a3a1f", color: "white", border: "none", borderRadius: 8, padding: "10px", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "Plus Jakarta Sans, sans-serif", transition: "background 0.2s" }}
+                    onMouseEnter={e => e.target.style.background = "#0f2a18"}
+                    onMouseLeave={e => e.target.style.background = "#1a3a1f"}>
+                    Click
+                </button>
             </div>
         </div>
     );
@@ -134,9 +127,9 @@ function CreateModal({ onClose, onCreate }) {
 
 // ── Join Modal ────────────────────────────────────────────────
 function JoinModal({ onClose, onJoin }) {
-    const [code, setCode]     = useState("");
+    const [code, setCode] = useState("");
     const [saving, setSaving] = useState(false);
-    const [error, setError]   = useState(null);
+    const [error, setError] = useState(null);
 
     const handleSubmit = async e => {
         e.preventDefault();
@@ -170,19 +163,19 @@ function JoinModal({ onClose, onJoin }) {
 
 // ── Group Detail Modal ────────────────────────────────────────
 function GroupDetail({ group, uid, personalBalances, sharedBalances, onClose, onRefresh }) {
-    const [tab, setTab]         = useState("setor");
-    const [amount, setAmount]   = useState("");
+    const [tab, setTab] = useState("setor");
+    const [amount, setAmount] = useState("");
     const [sourceType, setSourceType] = useState("personal");
-    const [sourceId, setSourceId]     = useState("");
+    const [sourceId, setSourceId] = useState("");
     const [inviteEmail, setInviteEmail] = useState("");
-    const [saving, setSaving]   = useState(false);
-    const [copied, setCopied]   = useState(false);
-    const [error, setError]     = useState(null);
+    const [saving, setSaving] = useState(false);
+    const [copied, setCopied] = useState(false);
+    const [error, setError] = useState(null);
     const [success, setSuccess] = useState(null);
 
-    const members  = Object.values(group.members || {});
-    const myRole   = group.members?.[uid]?.role;
-    const isAdmin  = myRole === "admin";
+    const members = Object.values(group.members || {});
+    const myRole = group.members?.[uid]?.role;
+    const isAdmin = myRole === "admin";
     const progress = pct(group.terkumpul, group.targetAmount);
     const sisaTarget = group.targetAmount - group.terkumpul;
 
@@ -261,9 +254,9 @@ function GroupDetail({ group, uid, personalBalances, sharedBalances, onClose, on
                     <div style={{ background: "#f8fdf8", borderRadius: 12, padding: 16, marginBottom: 16 }}>
                         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginBottom: 12 }}>
                             {[
-                                { label: "Target",    value: fmt(group.targetAmount), color: "#1a3a1f" },
-                                { label: "Terkumpul", value: fmt(group.terkumpul),    color: "#166534" },
-                                { label: "Sisa",      value: fmt(Math.max(sisaTarget, 0)), color: group.isCompleted ? "#166534" : "#b45309" },
+                                { label: "Target", value: fmt(group.targetAmount), color: "#1a3a1f" },
+                                { label: "Terkumpul", value: fmt(group.terkumpul), color: "#166534" },
+                                { label: "Sisa", value: fmt(Math.max(sisaTarget, 0)), color: group.isCompleted ? "#166534" : "#b45309" },
                             ].map((s, i) => (
                                 <div key={i} style={{ textAlign: "center" }}>
                                     <p style={{ fontSize: 10, color: "#9ca3af", marginBottom: 2 }}>{s.label}</p>
@@ -290,7 +283,7 @@ function GroupDetail({ group, uid, personalBalances, sharedBalances, onClose, on
                     </div>
 
                     {/* Alerts */}
-                    {error   && <div style={{ background: "#fee2e2", border: "1px solid #fca5a5", borderRadius: 8, padding: "10px 14px", fontSize: 12, color: "#991b1b", marginBottom: 12 }}>⚠️ {error}</div>}
+                    {error && <div style={{ background: "#fee2e2", border: "1px solid #fca5a5", borderRadius: 8, padding: "10px 14px", fontSize: 12, color: "#991b1b", marginBottom: 12 }}>⚠️ {error}</div>}
                     {success && <div style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 8, padding: "10px 14px", fontSize: 12, color: "#166534", marginBottom: 12 }}>✅ {success}</div>}
 
                     {/* Tabs */}
@@ -310,7 +303,7 @@ function GroupDetail({ group, uid, personalBalances, sharedBalances, onClose, on
                             <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
                                 {[
                                     { val: "personal", label: "💳 Saldo Pribadi" },
-                                    { val: "shared",   label: "🤝 Saldo Bersama" },
+                                    { val: "shared", label: "🤝 Saldo Bersama" },
                                 ].map(opt => (
                                     <button key={opt.val} type="button" onClick={() => { setSourceType(opt.val); setSourceId(""); }}
                                         style={{ flex: 1, padding: "10px", borderRadius: 10, border: "none", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "Plus Jakarta Sans, sans-serif", background: sourceType === opt.val ? "#1a3a1f" : "#f3f4f6", color: sourceType === opt.val ? "#9FF782" : "#6b7280", transition: "all 0.2s" }}>
@@ -472,16 +465,20 @@ function GroupDetail({ group, uid, personalBalances, sharedBalances, onClose, on
 
 // ── Main Page ─────────────────────────────────────────────────
 export default function SharedTabungan() {
-    const navigate                    = useNavigate();
-    const [groups, setGroups]         = useState([]);
-    const [invites, setInvites]       = useState([]);
+    const navigate = useNavigate();
+    const [groups, setGroups] = useState([]);
+    const [invites, setInvites] = useState([]);
     const [personalBal, setPersonalBal] = useState([]);
-    const [sharedBal, setSharedBal]   = useState([]);
-    const [loading, setLoading]       = useState(true);
-    const [selected, setSelected]     = useState(null);
+    const [sharedBal, setSharedBal] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [selected, setSelected] = useState(null);
     const [showCreate, setShowCreate] = useState(false);
-    const [showJoin, setShowJoin]     = useState(false);
-    const [uid, setUid]               = useState(null);
+    const [showJoin, setShowJoin] = useState(false);
+    const [uid, setUid] = useState(null);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [active, setActive] = useState("tabungan");
+    const [profile, setProfile] = useState(null);
+    const [personal, setPersonal] = useState(null);
 
     useEffect(() => { fetchAll(); }, []);
 
@@ -496,6 +493,8 @@ export default function SharedTabungan() {
                 API.get("/shared-balance"),
             ]);
             setUid(profileRes.data.uid);
+            setProfile(profileRes.data);
+            setPersonal(personalRes.data);
             setGroups(groupsRes.data);
             setInvites(invitesRes.data);
             setPersonalBal(personalRes.data);
@@ -520,81 +519,80 @@ export default function SharedTabungan() {
     };
 
     return (
-        <div style={{ minHeight: "100vh", background: "#f0f4f0", fontFamily: "Plus Jakarta Sans, sans-serif" }}>
-            <style>{`@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap'); * { box-sizing: border-box; margin: 0; padding: 0; }`}</style>
+        <div className="flex h-screen bg-white overflow-hidden w-full" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+            <style>{`@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap'); * { box-sizing: border-box; margin: 0; padding: 0; }
+                @media (max-width: 768px) {
+                    aside.fixed { top: 56px !important; height: calc(100vh - 56px) !important; }
+                }
+            `}</style>
 
-            <nav style={{ background: "linear-gradient(90deg,#1a3a1f,#0f2a18)", padding: "12px 24px", display: "flex", justifyContent: "space-between", alignItems: "center", position: "sticky", top: 0, zIndex: 40 }}>
-                <button onClick={() => navigate("/dashboard")}
-                    style={{ background: "none", border: "none", color: "#9FF782", fontSize: 14, cursor: "pointer", fontFamily: "Plus Jakarta Sans, sans-serif", fontWeight: 600 }}>
-                    ← Dashboard
-                </button>
-                <span style={{ color: "white", fontWeight: 700, fontSize: 15 }}>🤝 Tabungan Bersama</span>
-                <div style={{ display: "flex", gap: 8 }}>
-                    <button onClick={() => setShowJoin(true)}
-                        style={{ background: "rgba(159,247,130,0.15)", color: "#9FF782", border: "1px solid rgba(159,247,130,0.3)", borderRadius: 8, padding: "6px 12px", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "Plus Jakarta Sans, sans-serif" }}>
-                        Gabung
-                    </button>
-                    <button onClick={() => setShowCreate(true)}
-                        style={{ background: "#9FF782", color: "#0a1f10", border: "none", borderRadius: 8, padding: "6px 14px", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "Plus Jakarta Sans, sans-serif" }}>
-                        + Buat
-                    </button>
-                </div>
-            </nav>
+            <Sidebar active={active} setActive={setActive} handleLogout={() => navigate("/")} isOpen={isSidebarOpen} setOpen={setIsSidebarOpen} />
 
-            <div style={{ maxWidth: 520, margin: "0 auto", padding: "20px 16px 40px" }}>
+            <main className="flex-1 flex flex-col h-screen overflow-hidden w-full">
+                <Navbar profile={profile} personal={personal} isSidebarOpen={isSidebarOpen} setSidebarOpen={setIsSidebarOpen} />
 
-                {/* Pending invites */}
-                {invites.length > 0 && (
-                    <div style={{ marginBottom: 20 }}>
-                        <p style={{ fontSize: 11, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 10 }}>📨 Undangan Masuk</p>
-                        {invites.map(inv => (
-                            <div key={inv.id} style={{ background: "white", borderRadius: 12, padding: "14px 16px", border: "1px solid #fde68a", marginBottom: 8, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                                <div>
-                                    <p style={{ fontWeight: 600, fontSize: 13, color: "#1a3a1f" }}>{inv.groupName}</p>
-                                    <p style={{ fontSize: 11, color: "#9ca3af", marginTop: 2 }}>Target: {fmt(inv.targetAmount)}</p>
-                                </div>
-                                <button onClick={async () => { await API.post(`/shared-tabungan/invites/${inv.groupId}/accept`); fetchAll(); }}
-                                    style={{ background: "#1a3a1f", color: "#9FF782", border: "none", borderRadius: 8, padding: "7px 14px", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "Plus Jakarta Sans, sans-serif" }}>
-                                    Terima
+                <div style={{ flex: 1, padding: "40px 40px", overflowY: "auto", width: "100%", background: "#f5f5f5" }}>
+
+                        {/* Header with Back Button */}
+                        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
+                            <button onClick={() => navigate("/")} style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", padding: 0 }}>←</button>
+                            <div>
+                                <h1 style={{ fontSize: 28, fontWeight: 800, color: "#1a3a1f", marginBottom: 4 }}>Tabungan Bersama</h1>
+                                <p style={{ fontSize: 13, color: "#6b7280" }}>Buat Taget sekarang bersama teman-teman mu!</p>
+                            </div>
+                        </div>
+
+                        {/* Daftar Target Section with Action Buttons */}
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
+                            <h2 style={{ fontSize: 14, fontWeight: 700, color: "#1a3a1f" }}>Daftar Target ({groups.length})</h2>
+                            <div style={{ display: "flex", gap: 10 }}>
+                                <button onClick={() => setShowCreate(true)}
+                                    style={{ background: "#1a3a1f", color: "white", border: "none", borderRadius: 8, padding: "10px 16px", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "Plus Jakarta Sans, sans-serif", display: "flex", alignItems: "center", gap: 6, transition: "background 0.2s" }}
+                                    onMouseEnter={e => e.target.style.background = "#0f2a18"}
+                                    onMouseLeave={e => e.target.style.background = "#1a3a1f"}>
+                                    + Buat Target
+                                </button>
+                                <button onClick={() => setShowJoin(true)}
+                                    style={{ background: "white", color: "#f59e0b", border: "2px solid #fbbf24", borderRadius: 8, padding: "8px 16px", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "Plus Jakarta Sans, sans-serif", display: "flex", alignItems: "center", gap: 6, transition: "all 0.2s" }}
+                                    onMouseEnter={e => { e.target.style.background = "#fef3c7"; }}
+                                    onMouseLeave={e => { e.target.style.background = "white"; }}>
+                                    🔑 Masukan Kode
                                 </button>
                             </div>
-                        ))}
-                    </div>
-                )}
-
-                <p style={{ fontSize: 11, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 12 }}>Target Bersama ({groups.length})</p>
-
-                {loading ? (
-                    <div style={{ textAlign: "center", padding: 48, color: "#9ca3af" }}>Loading...</div>
-                ) : groups.length === 0 ? (
-                    <div style={{ textAlign: "center", padding: 48, color: "#9ca3af" }}>
-                        <p style={{ fontSize: 40, marginBottom: 12 }}>🤝</p>
-                        <p style={{ fontSize: 14, marginBottom: 16 }}>Belum ada tabungan bersama.</p>
-                        <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
-                            <button onClick={() => setShowCreate(true)} style={{ background: "#1a3a1f", color: "#9FF782", border: "none", borderRadius: 10, padding: "12px 20px", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "Plus Jakarta Sans, sans-serif" }}>+ Buat Target</button>
-                            <button onClick={() => setShowJoin(true)} style={{ background: "white", color: "#1a3a1f", border: "1px solid #e5e7eb", borderRadius: 10, padding: "12px 20px", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "Plus Jakarta Sans, sans-serif" }}>🔑 Masukkan Kode</button>
                         </div>
-                    </div>
-                ) : (
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                        {groups.map(g => (
-                            <TargetCard key={g.id} group={g} uid={uid} onClick={setSelected} />
-                        ))}
-                    </div>
-                )}
-            </div>
 
-            {selected && uid && (
-                <GroupDetail
-                    group={selected} uid={uid}
-                    personalBalances={personalBal}
-                    sharedBalances={sharedBal}
-                    onClose={() => setSelected(null)}
-                    onRefresh={handleRefreshGroup}
-                />
-            )}
-            {showCreate && <CreateModal onClose={() => setShowCreate(false)} onCreate={async (form) => { await API.post("/shared-tabungan", form); fetchAll(); }} />}
-            {showJoin   && <JoinModal   onClose={() => setShowJoin(false)}   onJoin={async (code) => { await API.post("/shared-tabungan/join", { inviteCode: code }); fetchAll(); }} />}
+                        {loading ? (
+                            <div style={{ textAlign: "center", padding: 48, color: "#9ca3af" }}>Loading...</div>
+                        ) : groups.length === 0 ? (
+                            <div style={{ textAlign: "center", padding: 48, color: "#9ca3af", background: "white", borderRadius: 12 }}>
+                                <p style={{ fontSize: 40, marginBottom: 12 }}>🤝</p>
+                                <p style={{ fontSize: 14, marginBottom: 16 }}>Belum ada tabungan bersama.</p>
+                                <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
+                                    <button onClick={() => setShowCreate(true)} style={{ background: "#1a3a1f", color: "white", border: "none", borderRadius: 8, padding: "10px 16px", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "Plus Jakarta Sans, sans-serif" }}>+ Buat Target</button>
+                                    <button onClick={() => setShowJoin(true)} style={{ background: "white", color: "#f59e0b", border: "2px solid #fbbf24", borderRadius: 8, padding: "8px 16px", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "Plus Jakarta Sans, sans-serif" }}>🔑 Masukan Kode</button>
+                                </div>
+                            </div>
+                        ) : (
+                            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 20 }}>
+                                {groups.map(g => (
+                                    <TargetCard key={g.id} group={g} uid={uid} onClick={setSelected} />
+                                ))}
+                            </div>
+                        )}
+
+                    {selected && uid && (
+                        <GroupDetail
+                            group={selected} uid={uid}
+                            personalBalances={personalBal}
+                            sharedBalances={sharedBal}
+                            onClose={() => setSelected(null)}
+                            onRefresh={handleRefreshGroup}
+                        />
+                    )}
+                     {showCreate && <CreateModal onClose={() => setShowCreate(false)} onCreate={async (form) => { await API.post("/shared-tabungan", form); fetchAll(); }} />}
+                    {showJoin && <JoinModal onClose={() => setShowJoin(false)} onJoin={async (code) => { await API.post("/shared-tabungan/join", { inviteCode: code }); fetchAll(); }} />}
+                </div>
+            </main>
         </div>
     );
 }
