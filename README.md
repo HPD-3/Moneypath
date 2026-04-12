@@ -20,8 +20,10 @@ Account For testing :
 * User : usertesting@gmail.com
   pass : user123
 
+
 * admin : admintesting@gmail.com
   pass : admin123
+* you can check the admin dashboard in the -> profile icon -> Click admin dashboard
 
 \---
 
