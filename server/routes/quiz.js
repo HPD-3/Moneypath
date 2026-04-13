@@ -11,6 +11,22 @@ function todayStr() {
     return new Date().toISOString().split("T")[0]; // "2026-03-27"
 }
 
+// ── Helper: seeded random shuffle based on date ────────────────
+function seededShuffle(array, seed) {
+    // Simple seeded random generator
+    const seededRandom = (s) => {
+        const x = Math.sin(s) * 10000;
+        return x - Math.floor(x);
+    };
+
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(seededRandom(seed + i) * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+}
+
 // ── Helper: streak calculation ────────────────────────────────
 function calcStreak(lastDate, currentStreak) {
     const today     = todayStr();
@@ -18,7 +34,7 @@ function calcStreak(lastDate, currentStreak) {
 
     if (lastDate === today)      return currentStreak;       // already done today
     if (lastDate === yesterday)  return currentStreak + 1;   // continued streak
-    return 1;                                                // streak reset
+    return 1;                                                // new streak starts at 1
 }
 
 // ══════════════════════════════════════════════
@@ -80,7 +96,7 @@ router.delete("/questions/:id", verifyAdmin, async (req, res) => {
 //  USER — daily quiz flow
 // ══════════════════════════════════════════════
 
-// GET today's quiz (5 random questions)
+// GET today's quiz (5 random questions - same for all users each day)
 router.get("/today", verifyToken, async (req, res) => {
     try {
         const uid      = req.user.uid;
@@ -91,7 +107,7 @@ router.get("/today", verifyToken, async (req, res) => {
             .collection("dailyQuiz").doc(today);
         const userQuizDoc = await userQuizRef.get();
 
-        if (userQuizDoc.exists) {
+        if (userQuizDoc.exists && userQuizDoc.data().completed === true) {
             return res.json({
                 alreadyCompleted: true,
                 score: userQuizDoc.data().score,
@@ -99,12 +115,15 @@ router.get("/today", verifyToken, async (req, res) => {
             });
         }
 
-        // Get random 5 questions from pool
+        // Get random 5 questions from pool using date-based seed
         const snap = await db.collection("dailyQuizPool").get();
         if (snap.empty) return res.status(404).json({ error: "No questions available" });
 
         const allQuestions = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        const shuffled     = allQuestions.sort(() => Math.random() - 0.5).slice(0, 5);
+        
+        // Use date as seed to ensure same questions for all users each day
+        const dateSeed = parseInt(today.replace(/-/g, "")); // "2026-04-13" -> 20260413
+        const shuffled = seededShuffle(allQuestions, dateSeed).slice(0, 5);
 
         // Store which questions were assigned today (so same user gets same questions)
         await userQuizRef.set({

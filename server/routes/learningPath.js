@@ -70,7 +70,30 @@ router.post("/:pathId/progress", verifyToken, async (req, res) => {
             newLevel = expResult.level;
         }
 
-        res.json({ completedModules: existing, isCompleted, expEarned, levelUp, newLevel });
+        // Update streak for learning path completion
+        const today = new Date().toISOString().split("T")[0];
+        const userDoc = await db.collection("users").doc(uid).get();
+        const userData = userDoc.exists ? userDoc.data() : {};
+        const lastDate = userData.lastLearningDate || "";
+        const yesterday = new Date(Date.now() - 86400000).toISOString().split("T")[0];
+
+        let newStreak = userData.learningStreak || 0;
+        if (lastDate !== today) {
+            // New day - update streak
+            if (lastDate === yesterday) {
+                newStreak = (newStreak || 0) + 1; // Continue streak
+            } else {
+                newStreak = 1; // Start new streak
+            }
+            
+            await db.collection("users").doc(uid).set({
+                lastLearningDate: today,
+                learningStreak: newStreak,
+                maxLearningStreak: Math.max(newStreak, userData.maxLearningStreak || 0)
+            }, { merge: true });
+        }
+
+        res.json({ completedModules: existing, isCompleted, expEarned, levelUp, newLevel, learningStreak: newStreak });
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 

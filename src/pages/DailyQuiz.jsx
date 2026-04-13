@@ -291,31 +291,40 @@ export default function DailyQuiz() {
                                 />
                             )}
 
-                            {/* Quiz Phase */}
-                            {phase === "stats" && !result?.alreadyCompleted && questions.length > 0 && (
-                                <div>
-                                    <div style={{ textAlign: "center", marginBottom: 24 }}>
-                                        <h2 style={{ fontWeight: 700, fontSize: 20, color: "#1a3a1f", marginBottom: 4 }}>🧠 Daily Quiz</h2>
-                                        <p style={{ fontSize: 13, color: "#9ca3af" }}>{questions.length} soal • Minimal 60 untuk lulus</p>
-                                    </div>
+                            {/* Quiz Start / No Questions */}
+                            {!result?.alreadyCompleted && phase === "stats" && (
+                                <>
+                                    {questions.length > 0 ? (
+                                        <div>
+                                            <div style={{ textAlign: "center", marginBottom: 24 }}>
+                                                <h2 style={{ fontWeight: 700, fontSize: 20, color: "#1a3a1f", marginBottom: 4 }}>🧠 Daily Quiz</h2>
+                                                <p style={{ fontSize: 13, color: "#9ca3af" }}>{questions.length} soal • Minimal 60 untuk lulus</p>
+                                            </div>
 
-                                    {/* EXP preview */}
-                                    <div style={{ background: "#f8fdf8", border: "1px solid #d1fae5", borderRadius: 10, padding: 14, marginBottom: 20 }}>
-                                        <p style={{ fontSize: 12, fontWeight: 600, color: "#166534", marginBottom: 8 }}>Hadiah hari ini:</p>
-                                        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                                            {[{ icon: "⚡", label: "+50 EXP Daily Quiz" }, { icon: "🔥", label: `+10 EXP Streak (${(stats?.streak || 0) + 1} hari)` }].map((r, i) => (
-                                                <span key={i} style={{ fontSize: 11, fontWeight: 600, color: "#166534", background: "#e8fce0", padding: "3px 8px", borderRadius: 20 }}>
-                                                    {r.icon} {r.label}
-                                                </span>
-                                            ))}
+                                            {/* EXP preview */}
+                                            <div style={{ background: "#f8fdf8", border: "1px solid #d1fae5", borderRadius: 10, padding: 14, marginBottom: 20 }}>
+                                                <p style={{ fontSize: 12, fontWeight: 600, color: "#166534", marginBottom: 8 }}>Hadiah hari ini:</p>
+                                                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                                                    {[{ icon: "⚡", label: "+50 EXP Daily Quiz" }, { icon: "🔥", label: `+10 EXP Streak (${(stats?.streak || 0) + 1} hari)` }].map((r, i) => (
+                                                        <span key={i} style={{ fontSize: 11, fontWeight: 600, color: "#166534", background: "#e8fce0", padding: "3px 8px", borderRadius: 20 }}>
+                                                            {r.icon} {r.label}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            </div>
+
+                                            <button onClick={() => setPhase("quiz")}
+                                                style={{ width: "100%", background: "#1a3a1f", color: "#9FF782", border: "none", borderRadius: 10, padding: 14, fontSize: 15, fontWeight: 600, cursor: "pointer", fontFamily: "Plus Jakarta Sans, sans-serif" }}>
+                                                Mulai Quiz →
+                                            </button>
                                         </div>
-                                    </div>
-
-                                    <button onClick={() => setPhase("quiz")}
-                                        style={{ width: "100%", background: "#1a3a1f", color: "#9FF782", border: "none", borderRadius: 10, padding: 14, fontSize: 15, fontWeight: 600, cursor: "pointer", fontFamily: "Plus Jakarta Sans, sans-serif" }}>
-                                        Mulai Quiz →
-                                    </button>
-                                </div>
+                                    ) : (
+                                        <div style={{ textAlign: "center", padding: "20px 0" }}>
+                                            <p style={{ fontSize: 40, marginBottom: 12 }}>📭</p>
+                                            <p style={{ color: "#6b7280" }}>Belum ada soal tersedia. Admin belum menambahkan soal quiz.</p>
+                                        </div>
+                                    )}
+                                </>
                             )}
 
                             {/* Active Quiz */}
@@ -337,14 +346,6 @@ export default function DailyQuiz() {
                                         style={{ width: "100%", marginTop: 20, background: currentAnswer === null ? "#e5e7eb" : "#1a3a1f", color: currentAnswer === null ? "#9ca3af" : "#9FF782", border: "none", borderRadius: 10, padding: 14, fontSize: 14, fontWeight: 600, cursor: currentAnswer === null ? "not-allowed" : "pointer", fontFamily: "Plus Jakarta Sans, sans-serif", transition: "all 0.2s" }}>
                                         {currentQ < questions.length - 1 ? "Jawab & Lanjut →" : "Kumpulkan Jawaban ✓"}
                                     </button>
-                                </div>
-                            )}
-
-                            {/* No questions available */}
-                            {!result?.alreadyCompleted && questions.length === 0 && !loading && (
-                                <div style={{ textAlign: "center", padding: "20px 0" }}>
-                                    <p style={{ fontSize: 40, marginBottom: 12 }}>📭</p>
-                                    <p style={{ color: "#6b7280" }}>Belum ada soal tersedia. Admin belum menambahkan soal quiz.</p>
                                 </div>
                             )}
                         </div>
