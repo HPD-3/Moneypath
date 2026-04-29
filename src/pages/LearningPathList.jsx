@@ -13,40 +13,66 @@ const DIFF_COLORS = {
     advanced: { bg: "#fee2e2", color: "#991b1b" },
 };
 
+const PAGE_FONT = "'Plus Jakarta Sans', sans-serif";
+const HERO_BG = "linear-gradient(135deg, #18331e 0%, #102416 100%)";
+const PAGE_BG = "#eef2eb";
+const BORDER = "#d7ddd6";
+
 function PathCard({ path, onClick }) {
     return (
-        <div onClick={() => onClick(path.id)}
-            style={{ background: "white", borderRadius: 14, padding: 20, cursor: "pointer", boxShadow: "0 1px 6px rgba(0,0,0,0.07)", border: "1px solid #f3f4f6", transition: "transform 0.2s, box-shadow 0.2s" }}
-            onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 8px 24px rgba(0,0,0,0.1)"; }}
-            onMouseLeave={e => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "0 1px 6px rgba(0,0,0,0.07)"; }}>
-
-            {/* Icon */}
-            <div style={{ width: 48, height: 48, borderRadius: 12, background: "linear-gradient(135deg, #1a3a1f, #0f2a18)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, marginBottom: 14 }}>
-                {path.category === "budgeting" ? "📊" : path.category === "investing" ? "📈" : path.category === "saving" ? "🐷" : "💳"}
+        <div
+            onClick={() => onClick(path.id)}
+            style={{
+                background: "#fff",
+                borderRadius: 14,
+                padding: 12,
+                cursor: "pointer",
+                boxShadow: "0 2px 10px rgba(16, 24, 40, 0.12)",
+                border: `1px solid ${BORDER}`,
+                transition: "transform 0.2s ease, box-shadow 0.2s ease",
+                overflow: "hidden",
+            }}
+            onMouseEnter={e => {
+                e.currentTarget.style.transform = "translateY(-4px)";
+                e.currentTarget.style.boxShadow = "0 12px 26px rgba(16, 24, 40, 0.14)";
+            }}
+            onMouseLeave={e => {
+                e.currentTarget.style.transform = "none";
+                e.currentTarget.style.boxShadow = "0 2px 10px rgba(16, 24, 40, 0.12)";
+            }}
+        >
+            <div style={{ position: "relative", borderRadius: 10, overflow: "hidden", marginBottom: 10, background: "#dfe6de" }}>
+                <img
+                    src={path.thumbnail}
+                    alt={path.title}
+                    style={{ width: "100%", height: 90, objectFit: "cover", display: "block" }}
+                />
+                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(0,0,0,0.1), rgba(0,0,0,0.08))" }} />
+                <div style={{ position: "absolute", left: 10, top: 10, width: 42, height: 42, borderRadius: 12, background: "rgba(255,255,255,0.88)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, boxShadow: "0 6px 14px rgba(0,0,0,0.12)" }}>
+                    {path.category === "budgeting" ? "📊" : path.category === "investing" ? "📈" : path.category === "saving" ? "🐷" : "💳"}
+                </div>
             </div>
 
-            {/* Badges */}
-            <div style={{ display: "flex", gap: 6, marginBottom: 10, flexWrap: "wrap" }}>
-                <span style={{ fontSize: 10, fontWeight: 600, padding: "2px 8px", borderRadius: 20, background: "#e8fce0", color: "#166534", textTransform: "capitalize" }}>
+            <div style={{ display: "flex", gap: 6, marginBottom: 8, flexWrap: "wrap" }}>
+                <span style={{ fontSize: 10, fontWeight: 600, padding: "3px 10px", borderRadius: 20, background: "#e6f4e9", color: "#2f5f3a", textTransform: "capitalize", border: "1px solid #b9dfc0" }}>
                     {path.category}
                 </span>
-                <span style={{ fontSize: 10, fontWeight: 600, padding: "2px 8px", borderRadius: 20, background: DIFF_COLORS[path.difficulty]?.bg, color: DIFF_COLORS[path.difficulty]?.color, textTransform: "capitalize" }}>
+                <span style={{ fontSize: 10, fontWeight: 600, padding: "3px 10px", borderRadius: 20, background: DIFF_COLORS[path.difficulty]?.bg, color: DIFF_COLORS[path.difficulty]?.color, textTransform: "capitalize", border: "1px solid rgba(0,0,0,0.06)" }}>
                     {path.difficulty}
                 </span>
             </div>
 
-            <h3 style={{ fontWeight: 700, fontSize: 15, color: "#1a3a1f", marginBottom: 8, lineHeight: 1.4 }}>{path.title}</h3>
-            <p style={{ fontSize: 12, color: "#9ca3af", lineHeight: 1.6, marginBottom: 14, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+            <h3 style={{ fontWeight: 700, fontSize: 15, color: "#1f2d21", marginBottom: 4, lineHeight: 1.35 }}>{path.title}</h3>
+            <p style={{ fontSize: 12, color: "#7b867d", lineHeight: 1.55, marginBottom: 14, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
                 {path.description}
             </p>
 
-            {/* Footer */}
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: 12, borderTop: "1px solid #f3f4f6" }}>
-                <div style={{ display: "flex", gap: 12, fontSize: 11, color: "#6b7280" }}>
-                    <span>📦 {path.totalModules || 0} modul</span>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: 12, borderTop: `1px solid ${BORDER}` }}>
+                <div style={{ display: "flex", gap: 12, fontSize: 11, color: "#526157", fontWeight: 600 }}>
+                    <span>📦 {path.totalModules || 0} Modul</span>
                     {path.estimatedTime && <span>⏱ {path.estimatedTime}</span>}
                 </div>
-                <span style={{ fontSize: 12, fontWeight: 600, color: "#1a3a1f" }}>Mulai →</span>
+                <span style={{ fontSize: 12, fontWeight: 700, color: "#30533a" }}>Mulai</span>
             </div>
         </div>
     );
@@ -121,22 +147,46 @@ export default function LearningPathList() {
                 <Navbar profile={profile} personal={personal} isOpen={isProfileOpen} setOpen={setIsProfileOpen} isSidebarOpen={isSidebarOpen} setSidebarOpen={setIsSidebarOpen} />
 
                 <div className="flex-1 overflow-y-auto bg-gray-100">
-                    <div style={{ minHeight: "100vh", background: "#f0f4f0", fontFamily: "Plus Jakarta Sans, sans-serif", paddingTop: "60px" }}>
+                    <div style={{ minHeight: "100vh", background: PAGE_BG, fontFamily: PAGE_FONT, paddingTop: "60px" }}>
                         <style>{`@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');`}</style>
-                        <div style={{ padding: "16px 24px", display: "flex", gap: 8, overflowX: "auto", background: "white", borderBottom: "1px solid #f3f4f6" }}>
-                            {CATEGORIES.map(cat => (
-                                <button key={cat} onClick={() => setActive(cat)}
-                                    style={{ padding: "6px 16px", borderRadius: 20, border: "none", fontSize: 13, fontWeight: 500, cursor: "pointer", textTransform: "capitalize", whiteSpace: "nowrap", fontFamily: "Plus Jakarta Sans, sans-serif", background: activeCategory === cat ? "#1a3a1f" : "#f3f4f6", color: activeCategory === cat ? "#9FF782" : "#6b7280", transition: "all 0.2s" }}>
-                                    {cat}
-                                </button>
-                            ))}
-                            <span style={{ marginLeft: "auto", fontSize: 12, color: "#9ca3af", alignSelf: "center", whiteSpace: "nowrap" }}>
-                                {filtered.length} path
-                            </span>
+                        <div style={{ background: HERO_BG, padding: "28px 24px 30px", textAlign: "center", boxShadow: "0 1px 0 rgba(255,255,255,0.04) inset" }}>
+                            <h1 style={{ color: "#f4f7f2", fontSize: 30, fontWeight: 800, marginBottom: 6, letterSpacing: "-0.02em" }}>Learning Path</h1>
+                            <p style={{ color: "rgba(255,255,255,0.76)", fontSize: 13, margin: 0 }}>Tingkatkan Literasi Finansial mu dengan edukasi pilihan</p>
                         </div>
 
-                        {/* Grid */}
-                        <div style={{ padding: 24 }}>
+                        <div style={{ padding: "22px 24px 14px" }}>
+                            <div style={{ maxWidth: 540, margin: "0 auto", background: "#f8faf8", border: `1px solid ${BORDER}`, borderRadius: 14, padding: 4, display: "grid", gridTemplateColumns: `repeat(${CATEGORIES.length}, minmax(0, 1fr))`, gap: 4, boxShadow: "0 4px 16px rgba(16, 24, 40, 0.08)" }}>
+                                {CATEGORIES.map(cat => (
+                                    <button
+                                        key={cat}
+                                        onClick={() => setActive(cat)}
+                                        style={{
+                                            padding: "8px 12px",
+                                            borderRadius: 10,
+                                            border: "none",
+                                            fontSize: 13,
+                                            fontWeight: 700,
+                                            cursor: "pointer",
+                                            textTransform: "capitalize",
+                                            whiteSpace: "nowrap",
+                                            fontFamily: PAGE_FONT,
+                                            background: activeCategory === cat ? "#314d36" : "transparent",
+                                            color: activeCategory === cat ? "#f4f7f2" : "#2f4034",
+                                            transition: "all 0.2s ease",
+                                            boxShadow: activeCategory === cat ? "0 4px 12px rgba(49, 77, 54, 0.25)" : "none",
+                                        }}
+                                    >
+                                        {cat}
+                                    </button>
+                                ))}
+                            </div>
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 14, color: "#66756b", fontSize: 12, fontWeight: 600 }}>
+                                <span>Daftar Materi</span>
+                                <span>{filtered.length} path</span>
+                            </div>
+                        </div>
+
+                        <div style={{ padding: "6px 24px 24px" }}>
                             {loading ? (
                                 <div style={{ textAlign: "center", padding: 60, color: "#9ca3af" }}>Loading...</div>
                             ) : filtered.length === 0 ? (
@@ -145,7 +195,7 @@ export default function LearningPathList() {
                                     <p>Belum ada learning path tersedia.</p>
                                 </div>
                             ) : (
-                                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 16 }}>
+                                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(255px, 1fr))", gap: 16, alignItems: "start" }}>
                                     {filtered.map(p => <PathCard key={p.id} path={p} onClick={id => navigate(`/learning/${id}`)} />)}
                                 </div>
                             )}

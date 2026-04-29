@@ -17,7 +17,7 @@ function GlobalStyles() {
 
             body { font-family: 'Inter', sans-serif; }
             h1, h2, h3 { font-family: 'Libre Caslon Text', serif; }
-            
+
             html { scroll-behavior: smooth; }
 
             .fade-up {
@@ -197,17 +197,14 @@ function Navbar({ onLogin, onRegister }) {
                     onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                     className="md:hidden flex flex-col gap-1.5 w-8 h-8 items-center justify-center">
                     <span
-                        className={`w-6 h-0.5 bg-white transition-all duration-300 ${
-                            mobileMenuOpen ? "rotate-45 translate-y-2" : ""
-                        }`}></span>
+                        className={`w-6 h-0.5 bg-white transition-all duration-300 ${mobileMenuOpen ? "rotate-45 translate-y-2" : ""
+                            }`}></span>
                     <span
-                        className={`w-6 h-0.5 bg-white transition-all duration-300 ${
-                            mobileMenuOpen ? "opacity-0" : ""
-                        }`}></span>
+                        className={`w-6 h-0.5 bg-white transition-all duration-300 ${mobileMenuOpen ? "opacity-0" : ""
+                            }`}></span>
                     <span
-                        className={`w-6 h-0.5 bg-white transition-all duration-300 ${
-                            mobileMenuOpen ? "-rotate-45 -translate-y-2" : ""
-                        }`}></span>
+                        className={`w-6 h-0.5 bg-white transition-all duration-300 ${mobileMenuOpen ? "-rotate-45 -translate-y-2" : ""
+                            }`}></span>
                 </button>
             </div>
 
@@ -218,11 +215,10 @@ function Navbar({ onLogin, onRegister }) {
                         <li>
                             <a
                                 href="#features"
-                                className={`block py-2 px-3 rounded-md transition-colors ${
-                                    activeNav === "features"
-                                        ? "bg-[#9FF782] text-black font-medium"
-                                        : "text-white hover:bg-white/10"
-                                }`}
+                                className={`block py-2 px-3 rounded-md transition-colors ${activeNav === "features"
+                                    ? "bg-[#9FF782] text-black font-medium"
+                                    : "text-white hover:bg-white/10"
+                                    }`}
                                 onClick={() => handleNavClick("features")}>
                                 Features
                             </a>
@@ -230,11 +226,10 @@ function Navbar({ onLogin, onRegister }) {
                         <li>
                             <a
                                 href="#testimonial"
-                                className={`block py-2 px-3 rounded-md transition-colors ${
-                                    activeNav === "testimonial"
-                                        ? "bg-[#9FF782] text-black font-medium"
-                                        : "text-white hover:bg-white/10"
-                                }`}
+                                className={`block py-2 px-3 rounded-md transition-colors ${activeNav === "testimonial"
+                                    ? "bg-[#9FF782] text-black font-medium"
+                                    : "text-white hover:bg-white/10"
+                                    }`}
                                 onClick={() => handleNavClick("testimonial")}>
                                 Testimonial
                             </a>
@@ -242,11 +237,10 @@ function Navbar({ onLogin, onRegister }) {
                         <li>
                             <a
                                 href="#information"
-                                className={`block py-2 px-3 rounded-md transition-colors ${
-                                    activeNav === "information"
-                                        ? "bg-[#9FF782] text-black font-medium"
-                                        : "text-white hover:bg-white/10"
-                                }`}
+                                className={`block py-2 px-3 rounded-md transition-colors ${activeNav === "information"
+                                    ? "bg-[#9FF782] text-black font-medium"
+                                    : "text-white hover:bg-white/10"
+                                    }`}
                                 onClick={() => handleNavClick("information")}>
                                 Information
                             </a>
@@ -274,7 +268,7 @@ function Navbar({ onLogin, onRegister }) {
 // ── Hero ──────────────────────────────────────────────────────
 function Hero() {
     return (
-        <section className="bg-gradient-to-b from-[#172619] via-[#36593B] to-[#558C5C] text-white pt-36 pb-28 px-6 md:px-20 flex flex-col md:flex-row items-center justify-between">
+        <section className="bg-gradient-to-b from-[#172619] via-[#36593B] to-[#558C5C] text-white pt-36 pb-16 md:pb-10 px-6 md:px-20 flex flex-col md:flex-row items-center justify-between overflow-visible">
             <div className="max-w-2xl fade-up">
                 <h1 className="text-5xl md:text-6xl font-semibold leading-tight">
                     Your Smart <span className="text-[#9FF782]">Financial</span>
@@ -293,7 +287,7 @@ function Hero() {
                 <div className="absolute w-[400px] h-[400px] bg-green-400 opacity-20 blur-3xl rounded-full top-10 left-10"></div>
                 <img
                     src={phonemockup}
-                    className="w-[360px] md:w-[500px] relative z-10 translate-y-10 md:translate-y-16"
+                    className="w-[360px] md:w-[500px] relative z-10 translate-y-10 md:translate-y-18"
                     alt="Phone mockup"
                 />
             </div>
@@ -594,16 +588,14 @@ function ImportantStuff() {
                     {items.map((item, index) => (
                         <div key={index}>
                             <div
-                                className={`flex items-center gap-4 cursor-pointer transition-opacity ${
-                                    expandedItem === index ? "" : "opacity-40 hover:opacity-60"
-                                }`}
+                                className={`flex items-center gap-4 cursor-pointer transition-opacity ${expandedItem === index ? "" : "opacity-40 hover:opacity-60"
+                                    }`}
                                 onClick={() => setExpandedItem(expandedItem === index ? -1 : index)}>
                                 <div
-                                    className={`w-10 h-10 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
-                                        expandedItem === index
-                                            ? "border-[#2F4F3E] bg-white"
-                                            : "border-gray-400 bg-white"
-                                    }`}>
+                                    className={`w-10 h-10 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-colors ${expandedItem === index
+                                        ? "border-[#2F4F3E] bg-white"
+                                        : "border-gray-400 bg-white"
+                                        }`}>
                                     <svg
                                         className={`w-5 h-5 ${expandedItem === index ? "text-[#2F4F3E]" : "text-gray-400"}`}
                                         fill="none"
@@ -618,9 +610,8 @@ function ImportantStuff() {
                                     </svg>
                                 </div>
                                 <p
-                                    className={`text-lg transition-colors ${
-                                        expandedItem === index ? "text-[#2F4F3E] font-bold" : "text-[#2F4F3E]"
-                                    }`}
+                                    className={`text-lg transition-colors ${expandedItem === index ? "text-[#2F4F3E] font-bold" : "text-[#2F4F3E]"
+                                        }`}
                                     style={{ fontFamily: "'Lilita One', cursive" }}>
                                     {item.title}
                                 </p>

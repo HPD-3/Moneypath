@@ -16,6 +16,10 @@ import sharedTabunganRoutes from "./routes/sharedTabungan.js";
 
 const app = express();
 
+app.get("/", (req, res) => {
+    res.send("Welcome to the Moneypath backend side.");
+});
+
 app.use((req, res, next) => {
     const allowedOrigins = [
         "https://moneypath-7777.firebaseapp.com",

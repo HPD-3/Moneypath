@@ -244,6 +244,9 @@ export default function Dashboard() {
                                     <p style={{ fontSize: 18, fontWeight: 800, color: "#92400e" }}>Learning</p>
                                     <p style={{ fontSize: 18, fontWeight: 800, color: "#92400e" }}>path</p>
                                 </div>
+                                <button style={{ background: "#1a3a1f", color: "#9FF782", borderRadius: 8, padding: "10px 20px", fontSize: 13, fontWeight: 600, border: "none", cursor: "pointer", whiteSpace: "nowrap" }}>
+                                    Mulai
+                                </button>
                             </div>
                         </div>
 
@@ -351,7 +354,7 @@ export default function Dashboard() {
                         {/* ── BOTTOM GRID: Recap + Other Features ──────────────────────── */}
                         <div data-responsive-grid-2 style={{ display: "grid", gridTemplateColumns: "0.7fr 1.3fr", gap: 16, marginBottom: 24 }}>
                             {/* Recap Card */}
-                            <div style={{ background: "white", borderRadius: 16, padding: "20px", border: "2px solid #d1d5db", cursor: "pointer", transition: "all 0.2s" }}
+                            <div style={{ background: "white", borderRadius: 16, padding: "20px", border: "2px solid #d1d5db", cursor: "pointer", transition: "all 0.2s", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center" }}
                                 onClick={() => navigate("/rekap")}
                                 onMouseEnter={e => {
                                     e.currentTarget.style.borderColor = "#9FF782";

@@ -8,10 +8,10 @@ export default function Sidebar({ active, setActive, handleLogout, isOpen, setOp
     const NAV_ITEMS = [
         { id: "beranda", icon: "mdi:home-outline", label: "Beranda", path: "/dashboard" },
         { id: "edukasi", icon: "mdi:play-circle", label: "Edukasi", path: "/video" },
-        { id: "tabungan", icon: "mdi:piggy-bank-outline", label: "Tabungan", path: "/tabungan" },
-        { id: "balance", icon: "mdi:wallet-outline", label: "Saldo", path: "/balance" },
-        { id: "rekap", icon: "mdi:chart-box-outline", label: "Rekap Bulanan", path: "/rekap" },
-        { id: "profil", icon: "mdi:account-outline", label: "Profil", path: "/profile" },
+        { id: "tabungan", icon: "fa6-solid:sack-dollar", label: "Tabungan", path: "/tabungan" },
+        { id: "balance", icon: "mdi:wallet", label: "Saldo", path: "/balance" },
+        { id: "rekap", icon: "mdi:chart-box", label: "Rekap Bulanan", path: "/rekap" },
+        { id: "profil", icon: "mdi:account", label: "Profil", path: "/profile" },
     ];
 
     const handleNavClick = (id, path) => {
@@ -37,7 +37,7 @@ export default function Sidebar({ active, setActive, handleLogout, isOpen, setOp
 
             {/* Sidebar */}
             <aside
-                className={`fixed md:static w-64 h-screen bg-gradient-to-b from-[#0b2a17] to-[#123d23] text-white flex flex-col flex-shrink-0 transition-all duration-300 z-40
+                className={`fixed md:static w-64 h-screen bg-[#172619] text-white flex flex-col flex-shrink-0 transition-all duration-300 z-40
                     ${isOpen ? "left-0" : "-left-64 md:left-0"}`}
             >
                 <div className="px-6 py-4">
