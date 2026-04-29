@@ -60,9 +60,9 @@ function QuestionCard({ question, index, total, selectedAnswer, onAnswer, submit
                     let bg = "white", border = "1px solid #e5e7eb", color = "#374151";
                     if (submitted) {
                         if (j === correctIndex) { bg = "#dcfce7"; border = "1px solid #86efac"; color = "#166534"; }
-                        else if (selectedAnswer === j) { bg = "#fee2e2"; border = "1px solid #fca5a5"; color = "#991b1b"; }
+                        else if (selectedAnswer === j) { bg = "#fef3c7"; border = "2px solid #fbbf24"; color = "#78350f"; }
                     } else if (selectedAnswer === j) {
-                        bg = "#e8fce0"; border = "2px solid #1a3a1f"; color = "#1a3a1f";
+                        bg = "#fef3c7"; border = "2px solid #fbbf24"; color = "#78350f";
                     }
                     return (
                         <div key={j} onClick={() => !submitted && onAnswer(j)}
@@ -72,7 +72,6 @@ function QuestionCard({ question, index, total, selectedAnswer, onAnswer, submit
                             </span>
                             <span style={{ fontSize: 14 }}>{opt}</span>
                             {submitted && j === correctIndex && <span style={{ marginLeft: "auto", fontWeight: 700, fontSize: 13 }}>✓</span>}
-                            {submitted && selectedAnswer === j && j !== correctIndex && <span style={{ marginLeft: "auto", fontWeight: 700, fontSize: 13 }}>✗</span>}
                         </div>
                     );
                 })}

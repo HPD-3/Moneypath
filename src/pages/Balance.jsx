@@ -534,22 +534,6 @@ export default function Balance() {
                                 )}
 
                                 {/* Action buttons — only show if empty or after list */}
-                                {balances.length > 0 && (
-                                    <div style={{ display: "flex", gap: 12, marginTop: 24 }}>
-                                        <button
-                                            onClick={() => { setShowAddTx(true); setFormErrors({}); }}
-                                            style={{ flex: 1, background: "#1a3a1f", color: "white", border: "none", borderRadius: 12, padding: "12px 20px", fontSize: 13, fontWeight: 600, cursor: "pointer" }}
-                                        >
-                                            + Transaksi
-                                        </button>
-                                        <button
-                                            onClick={() => { setShowAddCategory(true); setFormErrors({}); }}
-                                            style={{ flex: 1, background: "white", color: "#1a3a1f", border: "1px solid #e5e7eb", borderRadius: 12, padding: "12px 20px", fontSize: 13, fontWeight: 600, cursor: "pointer" }}
-                                        >
-                                            + Sumber Dana
-                                        </button>
-                                    </div>
-                                )}
                             </div>
                         )}
 

@@ -53,7 +53,7 @@ function Quiz({ questions, moduleId, pathId, onComplete }) {
                             if (j === q.correctIndex) style = "bg-green-100 border border-green-400 text-green-800";
                             else if (answers[i] === j) style = "bg-red-100 border border-red-400 text-red-800";
                         } else if (answers[i] === j) {
-                            style = "bg-green-100 border border-[#9FF782] text-[#1a3a1f]";
+                            style = "bg-yellow-100 border border-yellow-400 text-yellow-800";
                         }
 
                         return (
