@@ -260,7 +260,7 @@ export default function Profile() {
 
                             {/* PROFILE HEADER CARD */}
                             {profile && (
-                                <div className="bg-gradient-to-b from-[#0b2a17] to-[#123d23] text-white rounded-3xl p-4 md:p-8 mb-8 flex flex-col md:flex-row md:justify-between md:items-center gap-4 shadow-lg">
+                                <div className="bg-[#172619] text-white rounded-3xl p-4 md:p-8 mb-8 flex flex-col md:flex-row md:justify-between md:items-center gap-4 shadow-lg">
                                     <div className="flex gap-4 md:gap-6 items-center flex-col sm:flex-row">
                                         {/* Avatar */}
                                         <div className="w-20 h-20 md:w-24 md:h-24 bg-gradient-to-br from-orange-300 to-orange-400 rounded-full flex-shrink-0 flex items-center justify-center text-3xl md:text-4xl font-bold">
@@ -280,7 +280,7 @@ export default function Profile() {
                                     <div className="flex flex-row md:flex-col gap-2 md:gap-3 w-full sm:w-auto">
                                         <button
                                             onClick={openEditModal}
-                                            className="flex-1 md:flex-none px-3 md:px-4 py-2 rounded-full bg-green-400 text-green-900 font-semibold hover:bg-green-300 transition-all text-xs md:text-sm flex items-center gap-2 justify-center"
+                                            className="flex-1 md:flex-none px-3 md:px-4 py-2 rounded-full bg-[#9FF782] text-green-900 font-semibold hover:bg-green-300 transition-all text-xs md:text-sm flex items-center gap-2 justify-center"
                                         >
                                             <iconify-icon icon="mdi:pencil"></iconify-icon> Edit Profil
                                         </button>
@@ -292,7 +292,7 @@ export default function Profile() {
                                                 setPasswordMessage("");
                                                 setShowPassword(true);
                                             }}
-                                            className="flex-1 md:flex-none px-3 md:px-4 py-2 rounded-full bg-green-400 text-green-900 font-semibold hover:bg-green-300 transition-all text-xs md:text-sm flex items-center gap-2 justify-center"
+                                            className="flex-1 md:flex-none px-3 md:px-4 py-2 rounded-full bg-[#9FF782] text-green-900 font-semibold hover:bg-green-300 transition-all text-xs md:text-sm flex items-center gap-2 justify-center"
                                         >
                                             <iconify-icon icon="mdi:lock"></iconify-icon> Ubah Password
                                         </button>

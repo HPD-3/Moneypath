@@ -505,39 +505,39 @@ export default function Tabungan() {
                     <div style={{ minHeight: "100vh", background: "#f0f4f0", fontFamily: "Plus Jakarta Sans, sans-serif" }}>
                         <style>{`@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap'); * { box-sizing: border-box; margin: 0; padding: 0; }`}</style>
 
-                        <div style={{ width: "100%", maxWidth: 900, margin: "0 auto", padding: "20px 16px 40px", paddingTop: "60px" }}>
+                        <div style={{ width: "100%", maxWidth: 900, margin: "0 auto", padding: "12px 16px 20px", paddingTop: "60px" }}>
 
                             {/* Header */}
-                            <div style={{ marginBottom: 20 }}>
-                                <h1 style={{ fontSize: 22, fontWeight: 800, color: "#1a3a1f", marginBottom: 4 }}>Tabungan</h1>
+                            <div style={{ marginBottom: 12 }}>
+                                <h1 style={{ fontSize: 26, fontWeight: 800, color: "#1a3a1f", marginBottom: 2 }}>Tabungan</h1>
                                 <p style={{ fontSize: 13, color: "#9ca3af" }}>Kelola dan Pantau Progres Menabungmu</p>
                             </div>
 
                             {/* Stats Cards */}
-                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginBottom: 24 }}>
-                                <div style={{ background: "white", borderRadius: 12, padding: "14px 14px", border: "1px solid #f0f0f0" }}>
-                                    <p style={{ fontSize: 10, color: "#9ca3af", marginBottom: 4 }}>Total Saldo</p>
-                                    <p style={{ fontSize: 13, fontWeight: 800, color: "#1a3a1f" }}>{fmt(totalTerkumpul)}</p>
+                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginBottom: 18 }}>
+                                <div style={{ background: "#172619", borderRadius: 12, padding: "12px 14px", border: "1px solid #f0f0f0" }}>
+                                    <p style={{ fontSize: 10, color: "#9FF782", marginBottom: 3 }}>Total Saldo</p>
+                                    <p style={{ fontSize: 14, fontWeight: 800, color: "#9FF782" }}>{fmt(totalTerkumpul)}</p>
                                 </div>
-                                <div style={{ background: "#1a3a1f", borderRadius: 12, padding: "14px 14px" }}>
-                                    <p style={{ fontSize: 10, color: "rgba(255,255,255,0.5)", marginBottom: 4 }}>Target Aktif</p>
-                                    <p style={{ fontSize: 18, fontWeight: 800, color: "#9FF782" }}>{aktifCount} Target</p>
+                                <div style={{ background: "#172619", borderRadius: 12, padding: "12px 14px" }}>
+                                    <p style={{ fontSize: 10, color: "#9FF782", marginBottom: 3 }}>Target Aktif</p>
+                                    <p style={{ fontSize: 20, fontWeight: 800, color: "#9FF782" }}>{aktifCount}</p>
                                 </div>
-                                <div style={{ background: "#1a3a1f", borderRadius: 12, padding: "14px 14px" }}>
-                                    <p style={{ fontSize: 10, color: "rgba(255,255,255,0.5)", marginBottom: 4 }}>Bulan Ini</p>
-                                    <p style={{ fontSize: 13, fontWeight: 800, color: "#9FF782" }}>+{fmt(bulanIni)}</p>
+                                <div style={{ background: "#172619", borderRadius: 12, padding: "12px 14px" }}>
+                                    <p style={{ fontSize: 10, color: "#9FF782", marginBottom: 3 }}>Bulan Ini</p>
+                                    <p style={{ fontSize: 14, fontWeight: 800, color: "#9FF782" }}>+{fmt(bulanIni)}</p>
                                 </div>
                             </div>
 
                             {/* Saldo Tersedia */}
                             {balances.length > 0 && (
-                                <div style={{ background: "white", borderRadius: 14, padding: "14px 16px", marginBottom: 20, border: "1px solid #f0f0f0" }}>
-                                    <p style={{ fontSize: 11, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 }}>Saldo Tersedia</p>
+                                <div style={{ background: "white", borderRadius: 14, padding: "12px 16px", marginBottom: 16, border: "1px solid #f0f0f0" }}>
+                                    <p style={{ fontSize: 11, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>Saldo Tersedia</p>
                                     <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 4 }}>
                                         {balances.map(b => (
-                                            <div key={b.id} style={{ flexShrink: 0, background: "#f8fdf8", borderRadius: 10, padding: "8px 14px", border: "1px solid #e8fce0" }}>
+                                            <div key={b.id} style={{ flexShrink: 0, background: "#f8fdf8", borderRadius: 10, padding: "8px 12px", border: "1px solid #e8fce0" }}>
                                                 <p style={{ fontSize: 10, color: "#9ca3af", marginBottom: 2 }}>{b.name}</p>
-                                                <p style={{ fontSize: 12, fontWeight: 700, color: "#1a3a1f" }}>{fmt(b.balance)}</p>
+                                                <p style={{ fontSize: 13, fontWeight: 700, color: "#1a3a1f" }}>{fmt(b.balance)}</p>
                                             </div>
                                         ))}
                                     </div>
@@ -545,11 +545,11 @@ export default function Tabungan() {
                             )}
 
                             {/* Filter Tabs */}
-                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-                                <h2 style={{ fontSize: 16, fontWeight: 700, color: "#1a3a1f" }}>Daftar Target Tabungan</h2>
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+                                <h2 style={{ fontSize: 17, fontWeight: 700, color: "#1a3a1f" }}>Daftar Target Tabungan</h2>
                                 <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
                                     <button onClick={() => setShowCreate(true)}
-                                        style={{ background: "#1a3a1f", color: "#9FF782", border: "none", borderRadius: 8, padding: "8px 16px", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "Plus Jakarta Sans, sans-serif", transition: "all 0.2s" }}>
+                                        style={{ background: "#1a3a1f", color: "#9FF782", border: "none", borderRadius: 8, padding: "7px 14px", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "Plus Jakarta Sans, sans-serif", transition: "all 0.2s" }}>
                                         + Tambah Target
                                     </button>
                                     <div style={{ display: "flex", gap: 6 }}>
@@ -569,18 +569,18 @@ export default function Tabungan() {
 
                             {/* Target Grid */}
                             {loading ? (
-                                <div style={{ textAlign: "center", padding: 48, color: "#9ca3af" }}>Loading...</div>
+                                <div style={{ textAlign: "center", padding: 40, color: "#9ca3af" }}>Loading...</div>
                             ) : filtered.length === 0 ? (
-                                <div style={{ textAlign: "center", padding: 48, color: "#9ca3af" }}>
-                                    <p style={{ fontSize: 40, marginBottom: 12 }}>🎯</p>
-                                    <p style={{ fontSize: 14, marginBottom: 16 }}>Belum ada target tabungan.</p>
+                                <div style={{ textAlign: "center", padding: 40, color: "#9ca3af" }}>
+                                    <p style={{ fontSize: 40, marginBottom: 10 }}>🎯</p>
+                                    <p style={{ fontSize: 14, marginBottom: 14 }}>Belum ada target tabungan.</p>
                                     <button onClick={() => setShowCreate(true)}
-                                        style={{ background: "#1a3a1f", color: "#9FF782", border: "none", borderRadius: 10, padding: "12px 24px", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "Plus Jakarta Sans, sans-serif" }}>
+                                        style={{ background: "#1a3a1f", color: "#9FF782", border: "none", borderRadius: 10, padding: "10px 20px", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "Plus Jakarta Sans, sans-serif" }}>
                                         + Tambah Target Pertama
                                     </button>
                                 </div>
                             ) : (
-                                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+                                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                                     {filtered.map(t => (
                                         <TargetCard key={t.id} target={t} onClick={setSelected} />
                                     ))}

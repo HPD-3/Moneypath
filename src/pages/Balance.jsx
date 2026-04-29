@@ -88,12 +88,13 @@ function Toast({ message, type, onClose }) {
 function Modal({ title, onClose, children }) {
     return (
         <div className="fixed inset-0 z-40 flex items-end sm:items-center justify-center bg-black/40 px-4 pb-4 sm:pb-0">
-            <div className="bg-white dark:bg-gray-900 rounded-2xl w-full max-w-md shadow-2xl">
-                <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-gray-100 dark:border-gray-800">
-                    <h3 className="font-semibold text-gray-900 dark:text-gray-100">{title}</h3>
+            <div style={{ background: "#172619" }} className="rounded-2xl w-full max-w-md shadow-2xl border border-9FF782">
+                <div style={{ borderBottomColor: "#9FF782" }} className="flex items-center justify-between px-5 pt-5 pb-3 border-b">
+                    <h3 style={{ color: "#9FF782" }} className="font-semibold">{title}</h3>
                     <button
                         onClick={onClose}
-                        className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-xl leading-none"
+                        style={{ color: "#9FF782" }}
+                        className="hover:opacity-70 text-xl leading-none transition"
                     >×</button>
                 </div>
                 <div className="px-5 py-4">{children}</div>
@@ -108,10 +109,11 @@ function InputField({ label, error, ...props }) {
             {label && <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{label}</label>}
             <input
                 {...props}
-                className={`w-full rounded-xl border px-3 py-2.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 outline-none focus:ring-2 transition
+                style={{ background: "white", borderColor: "#9FF782", color: "#1a3a1f" }}
+                className={`w-full rounded-xl border px-3 py-2.5 text-sm outline-none focus:ring-2 transition
                     ${error
-                        ? "border-red-400 focus:ring-red-200 dark:focus:ring-red-900"
-                        : "border-gray-200 dark:border-gray-700 focus:ring-emerald-200 dark:focus:ring-emerald-900 focus:border-emerald-400"
+                        ? "focus:ring-red-200 dark:focus:ring-red-900"
+                        : "focus:ring-emerald-200 dark:focus:ring-emerald-900"
                     }`}
             />
             {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
@@ -125,7 +127,8 @@ function SelectField({ label, children, ...props }) {
             {label && <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{label}</label>}
             <select
                 {...props}
-                className="w-full rounded-xl border border-gray-200 dark:border-gray-700 px-3 py-2.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 outline-none focus:ring-2 focus:ring-emerald-200 dark:focus:ring-emerald-900 focus:border-emerald-400 transition"
+                style={{ background: "white", borderColor: "#9FF782", color: "#1a3a1f" }}
+                className="w-full rounded-xl border px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-200 dark:focus:ring-emerald-900 transition"
             >
                 {children}
             </select>
@@ -454,7 +457,7 @@ export default function Balance() {
                                                         </div>
                                                         <div style={{ textAlign: "right" }}>
                                                             <p style={{ fontWeight: 700, color: "#1a3a1f", fontSize: 16, marginBottom: 4 }}>{formatRp(b.balance)}</p>
-                                                            <button 
+                                                            <button
                                                                 onClick={() => handleDeleteCategory(b.id)}
                                                                 style={{ fontSize: 11, color: "#ef4444", fontWeight: 600, background: "none", border: "none", cursor: "pointer", padding: 0 }}>
                                                                 Hapus
@@ -472,12 +475,12 @@ export default function Balance() {
                                                                 placeholder="Masukkan batas anggaran"
                                                                 style={{ flex: 1, borderRadius: 8, border: "1px solid #d1d5db", padding: "8px 12px", fontSize: 13, outline: "none" }}
                                                             />
-                                                            <button 
+                                                            <button
                                                                 onClick={() => handleUpdateLimit(b.id)}
                                                                 style={{ padding: "8px 16px", borderRadius: 8, background: "#10b981", color: "white", border: "none", cursor: "pointer", fontWeight: 600, fontSize: 12 }}>
                                                                 Simpan
                                                             </button>
-                                                            <button 
+                                                            <button
                                                                 onClick={() => { setEditLimitId(null); setLimitValue(""); }}
                                                                 style={{ padding: "8px 16px", borderRadius: 8, background: "#e5e7eb", color: "#6b7280", border: "none", cursor: "pointer", fontWeight: 600, fontSize: 12 }}>
                                                                 Batal
@@ -488,14 +491,14 @@ export default function Balance() {
                                                             {b.budgetLimit ? (
                                                                 <>
                                                                     <span style={{ color: "#9ca3af" }}>Limit: {formatRp(b.budgetLimit)}</span>
-                                                                    <button 
+                                                                    <button
                                                                         onClick={() => { setEditLimitId(b.id); setLimitValue(b.budgetLimit || ""); }}
                                                                         style={{ color: "#0ea5e9", fontWeight: 600, background: "none", border: "none", cursor: "pointer", padding: 0 }}>
                                                                         Edit Limit
                                                                     </button>
                                                                 </>
                                                             ) : (
-                                                                <button 
+                                                                <button
                                                                     onClick={() => { setEditLimitId(b.id); setLimitValue(""); }}
                                                                     style={{ color: "#9ca3af", fontWeight: 600, background: "none", border: "none", cursor: "pointer", padding: 0 }}>
                                                                     + Tambah Limit Anggaran
@@ -602,7 +605,7 @@ export default function Balance() {
                                     const filteredTx = selectedBalanceFilter === "all"
                                         ? transactions
                                         : transactions.filter(tx => tx.balanceId === selectedBalanceFilter);
-                                    
+
                                     const itemsPerPage = 5;
                                     const totalPages = Math.ceil(filteredTx.length / itemsPerPage);
                                     const startIdx = (currentPage - 1) * itemsPerPage;
@@ -629,9 +632,9 @@ export default function Balance() {
                                                     </thead>
                                                     <tbody>
                                                         {paginatedTx.map((tx, idx) => (
-                                                            <tr 
+                                                            <tr
                                                                 key={tx.id}
-                                                                style={{ 
+                                                                style={{
                                                                     borderBottom: "1px solid #e5e7eb",
                                                                     background: idx % 2 === 0 ? "white" : "#f9fafb",
                                                                     transition: "background 0.2s"
@@ -648,10 +651,10 @@ export default function Balance() {
                                                                 <td style={{ padding: "12px 16px", fontSize: 13, color: "#6b7280" }}>
                                                                     {tx.balanceName}
                                                                 </td>
-                                                                <td style={{ 
-                                                                    padding: "12px 16px", 
+                                                                <td style={{
+                                                                    padding: "12px 16px",
                                                                     textAlign: "right",
-                                                                    fontSize: 13, 
+                                                                    fontSize: 13,
                                                                     fontWeight: 700,
                                                                     color: tx.type === "income" ? "#059669" : "#dc2626"
                                                                 }}>
@@ -854,8 +857,8 @@ export default function Balance() {
                                                                 label: 'Pengeluaran'
                                                             }
                                                         ]}
-                                                        xAxis={[{ 
-                                                            data: categorySpending.map(c => c.name), 
+                                                        xAxis={[{
+                                                            data: categorySpending.map(c => c.name),
                                                             scaleType: 'band',
                                                             categoryGapRatio: 0.5
                                                         }]}
@@ -1027,7 +1030,8 @@ export default function Balance() {
                                     <button
                                         type="submit"
                                         disabled={submitting}
-                                        className="w-full bg-emerald-500 hover:bg-emerald-600 disabled:opacity-60 text-white py-3 rounded-xl font-semibold text-sm transition"
+                                        style={{ background: "white", color: "#172619" }}
+                                        className="w-full disabled:opacity-60 text-white py-3 rounded-xl font-semibold text-sm transition hover:opacity-90"
                                     >
                                         {submitting ? "Menyimpan..." : "Simpan Transaksi"}
                                     </button>
@@ -1074,7 +1078,8 @@ export default function Balance() {
                                     <button
                                         type="submit"
                                         disabled={submitting}
-                                        className="w-full bg-emerald-500 hover:bg-emerald-600 disabled:opacity-60 text-white py-3 rounded-xl font-semibold text-sm transition"
+                                        style={{ background: "white", color: "#172619" }}
+                                        className="w-full disabled:opacity-60 text-white py-3 rounded-xl font-semibold text-sm transition hover:opacity-90"
                                     >
                                         {submitting ? "Menyimpan..." : "Buat Sumber Dana"}
                                     </button>
