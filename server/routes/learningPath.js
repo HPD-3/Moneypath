@@ -119,9 +119,9 @@ router.get("/:pathId", verifyToken, async (req, res) => {
 
 router.post("/", verifyAdmin, async (req, res) => {
     try {
-        const { title, description, category, difficulty, estimatedTime } = req.body;
+        const { title, description, category, difficulty, estimatedTime, photoUrl } = req.body;
         const ref = await db.collection("learningPaths").add({
-            title, description, category, difficulty, estimatedTime,
+            title, description, category, difficulty, estimatedTime, photoUrl: photoUrl || null,
             totalModules: 0, createdAt: new Date().toISOString(), createdBy: req.user.uid
         });
         res.json({ id: ref.id, title });
@@ -130,9 +130,10 @@ router.post("/", verifyAdmin, async (req, res) => {
 
 router.put("/:pathId", verifyAdmin, async (req, res) => {
     try {
-        const { title, description, category, difficulty, estimatedTime } = req.body;
-        await db.collection("learningPaths").doc(req.params.pathId)
-            .update({ title, description, category, difficulty, estimatedTime, updatedAt: new Date().toISOString() });
+        const { title, description, category, difficulty, estimatedTime, photoUrl } = req.body;
+        const updateData = { title, description, category, difficulty, estimatedTime, updatedAt: new Date().toISOString() };
+        if (photoUrl !== undefined) updateData.photoUrl = photoUrl || null;
+        await db.collection("learningPaths").doc(req.params.pathId).update(updateData);
         res.json({ message: "Path updated" });
     } catch (err) { res.status(500).json({ error: err.message }); }
 });

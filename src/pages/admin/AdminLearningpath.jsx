@@ -197,7 +197,7 @@ function ModuleEditor({ pathId, modules, onRefresh }) {
 
 // ── Main Admin Learning Path ──────────────────────────────────
 export default function AdminLearningPath({ paths = [], loading, onRefresh }) {
-    const EMPTY_P = { title: "", description: "", category: "budgeting", difficulty: "beginner", estimatedTime: "" };
+    const EMPTY_P = { title: "", description: "", category: "budgeting", difficulty: "beginner", estimatedTime: "", photoUrl: "" };
     const [form, setForm] = useState(EMPTY_P);
     const [editId, setEditId] = useState(null);
     const [showForm, setShowForm] = useState(false);
@@ -205,7 +205,7 @@ export default function AdminLearningPath({ paths = [], loading, onRefresh }) {
     const [expanded, setExpanded] = useState(null);
 
     const handleEdit = p => {
-        setForm({ title: p.title, description: p.description, category: p.category, difficulty: p.difficulty, estimatedTime: p.estimatedTime || "" });
+        setForm({ title: p.title, description: p.description, category: p.category, difficulty: p.difficulty, estimatedTime: p.estimatedTime || "", photoUrl: p.photoUrl || "" });
         setEditId(p.id); setShowForm(true);
     };
 
@@ -219,12 +219,20 @@ export default function AdminLearningPath({ paths = [], loading, onRefresh }) {
         e.preventDefault();
         setSaving(true);
         try {
-            editId
-                ? await API.put(`/learningpath/${editId}`, form)
-                : await API.post("/learningpath", form);
+            const payload = { ...form };
+            if (editId) {
+                const response = await API.put(`/learningpath/${editId}`, payload);
+                console.log("Update response:", response.data);
+            } else {
+                const response = await API.post("/learningpath", payload);
+                console.log("Create response:", response.data);
+            }
             setForm(EMPTY_P); setEditId(null); setShowForm(false);
             onRefresh();
-        } catch (err) { console.error(err); }
+        } catch (err) { 
+            console.error("Submit error:", err);
+            alert("Gagal menyimpan: " + err.message);
+        }
         finally { setSaving(false); }
     };
 
@@ -248,6 +256,20 @@ export default function AdminLearningPath({ paths = [], loading, onRefresh }) {
                                 <label className="form-label">Judul Learning Path *</label>
                                 <input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} required
                                     className="form-input" placeholder="cth: Panduan Budgeting untuk Pemula" />
+                            </div>
+                            <div className="form-group full">
+                                <label className="form-label">URL Foto</label>
+                                <input value={form.photoUrl} onChange={e => setForm({ ...form, photoUrl: e.target.value })}
+                                    className="form-input" placeholder="https://..." />
+                                {form.photoUrl && (
+                                    <div style={{ marginTop: 12, borderRadius: 8, overflow: "hidden", border: "1px solid #d1fae5" }}>
+                                        <img src={form.photoUrl} alt="Preview" style={{ width: "100%", height: 180, objectFit: "cover" }} 
+                                            onError={e => { e.target.style.display = "none"; }} />
+                                        <div style={{ display: "none", fontSize: 12, color: "#ef4444", padding: 12, background: "#fee2e2", textAlign: "center" }} id={`preview-error-${Date.now()}`}>
+                                            Gagal memuat preview foto
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                             <div className="form-group">
                                 <label className="form-label">Kategori</label>

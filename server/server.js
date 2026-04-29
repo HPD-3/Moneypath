@@ -51,7 +51,7 @@ app.use("/personal", personalRoutes);
 app.use("/balance", balanceRoutes);
 app.use("/admin", adminRoutes);
 app.use("/video", videoRoutes);
-app.use("/learningPath", learningPathRoutes);
+app.use("/learningpath", learningPathRoutes);
 app.use("/quiz", quizRoutes);
 app.use("/tabungan", tabunganRoutes);
 app.post("/api/send-email", sendEmailHandler);
