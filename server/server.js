@@ -1,4 +1,5 @@
 import express from "express";
+import cors from "cors";
 import authRoutes from "./routes/auth.js";
 import personalRoutes from "./routes/personal.js";
 import balanceRoutes from "./routes/balance.js";
@@ -21,30 +22,28 @@ app.get("/", (req, res) => {
     res.send("Welcome to the Moneypath backend side.");
 });
 
-app.use((req, res, next) => {
-    const allowedOrigins = [
-        "https://moneypath-7777.firebaseapp.com",
-        "https://moneypath-7777.web.app",
-        "http://localhost:5173",
-        "http://localhost:3000"
-    ];
+const allowedOrigins = new Set([
+    "https://moneypath-7777.firebaseapp.com",
+    "https://moneypath-7777.web.app",
+    "http://localhost:5173",
+    "http://localhost:3000",
+]);
 
-    const origin = req.headers.origin;
+const corsOptions = {
+    origin: (origin, callback) => {
+        // Non-browser clients (curl/server-to-server) may not send Origin
+        if (!origin) return callback(null, true);
+        return callback(null, allowedOrigins.has(origin));
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    optionsSuccessStatus: 204,
+};
 
-    if (allowedOrigins.includes(origin)) {
-        res.setHeader("Access-Control-Allow-Origin", origin);
-    }
-
-    res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-    res.setHeader("Access-Control-Allow-Credentials", "true");
-
-    if (req.method === "OPTIONS") {
-        return res.sendStatus(204);
-    }
-
-    next();
-});
+app.use(cors(corsOptions));
+// Express v5's path-to-regexp doesn't accept "*" as a path pattern.
+app.options(/.*/, cors(corsOptions));
 
 app.use(express.json());
 app.use("/auth", authRoutes);

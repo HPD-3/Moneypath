@@ -7,6 +7,23 @@ import { db } from '../firebaseAdmin.js';
 
 class AnalyticsService {
   /**
+   * Build a Firestore timestamp range from period or (month, year).
+   * If month+year are provided, they take precedence.
+   * @private
+   */
+  _getDateRange(period = 'month', month, year) {
+    if (Number.isInteger(month) && Number.isInteger(year)) {
+      // month is 1-12
+      const start = new Date(year, month - 1, 1, 0, 0, 0, 0);
+      const end = new Date(year, month, 1, 0, 0, 0, 0);
+      return { start, end };
+    }
+
+    const start = this._getCutoffDate(period);
+    return { start, end: null };
+  }
+
+  /**
    * Get most active users by transaction count or activity frequency
    * @param {number} limit - Number of top users to return
    * @param {string} period - 'week', 'month', 'all'
@@ -14,11 +31,10 @@ class AnalyticsService {
    */
   async getMostActiveUsers(limit = 10, period = 'month') {
     try {
-      const cutoffDate = this._getCutoffDate(period);
-      const snapshot = await db
-        .collection('transactions')
-        .where('timestamp', '>=', cutoffDate)
-        .get();
+      const { start, end } = this._getDateRange(period);
+      let query = db.collection('transactions').where('timestamp', '>=', start);
+      if (end) query = query.where('timestamp', '<', end);
+      const snapshot = await query.get();
 
       const userActivity = {};
 
@@ -47,11 +63,10 @@ class AnalyticsService {
    */
   async getPeakActivityTimes(period = 'month') {
     try {
-      const cutoffDate = this._getCutoffDate(period);
-      const snapshot = await db
-        .collection('transactions')
-        .where('timestamp', '>=', cutoffDate)
-        .get();
+      const { start, end } = this._getDateRange(period);
+      let query = db.collection('transactions').where('timestamp', '>=', start);
+      if (end) query = query.where('timestamp', '<', end);
+      const snapshot = await query.get();
 
       const hourlyPattern = {};
       const dailyPattern = {};
@@ -95,11 +110,10 @@ class AnalyticsService {
    */
   async getPopularCategories(period = 'month', limit = 10) {
     try {
-      const cutoffDate = this._getCutoffDate(period);
-      const snapshot = await db
-        .collection('transactions')
-        .where('timestamp', '>=', cutoffDate)
-        .get();
+      const { start, end } = this._getDateRange(period);
+      let query = db.collection('transactions').where('timestamp', '>=', start);
+      if (end) query = query.where('timestamp', '<', end);
+      const snapshot = await query.get();
 
       const categoryData = {};
 
@@ -145,16 +159,19 @@ class AnalyticsService {
    * @param {string} period - 'week', 'month', 'all'
    * @returns {Promise<Object>}
    */
-  async getAggregateStatistics(userId = 'all', period = 'month') {
+  async getAggregateStatistics(userId = 'all', period = 'month', options = {}) {
     try {
-      const cutoffDate = this._getCutoffDate(period);
+      const month = options?.month != null ? Number(options.month) : undefined;
+      const year = options?.year != null ? Number(options.year) : undefined;
+      const { start, end } = this._getDateRange(period, month, year);
       let query = db.collection('transactions');
 
       if (userId !== 'all') {
         query = query.where('userId', '==', userId);
       }
 
-      query = query.where('timestamp', '>=', cutoffDate);
+      query = query.where('timestamp', '>=', start);
+      if (end) query = query.where('timestamp', '<', end);
       const snapshot = await query.get();
 
       if (snapshot.empty) {
@@ -208,15 +225,17 @@ class AnalyticsService {
    * @param {string} period - 'week', 'month'
    * @returns {Promise<Array>} Array of { date, amount, category }
    */
-  async getUserSpendingTrends(userId, period = 'month') {
+  async getUserSpendingTrends(userId, period = 'month', options = {}) {
     try {
-      const cutoffDate = this._getCutoffDate(period);
-      const snapshot = await db
+      const month = options?.month != null ? Number(options.month) : undefined;
+      const year = options?.year != null ? Number(options.year) : undefined;
+      const { start, end } = this._getDateRange(period, month, year);
+      let query = db
         .collection('transactions')
         .where('userId', '==', userId)
-        .where('timestamp', '>=', cutoffDate)
-        .orderBy('timestamp', 'asc')
-        .get();
+        .where('timestamp', '>=', start);
+      if (end) query = query.where('timestamp', '<', end);
+      const snapshot = await query.orderBy('timestamp', 'asc').get();
 
       const trends = snapshot.docs.map((doc) => {
         const data = doc.data();
@@ -278,14 +297,17 @@ class AnalyticsService {
    * @param {string} period
    * @returns {Promise<Array>}
    */
-  async getUserCategoryBreakdown(userId, period = 'month') {
+  async getUserCategoryBreakdown(userId, period = 'month', options = {}) {
     try {
-      const cutoffDate = this._getCutoffDate(period);
-      const snapshot = await db
+      const month = options?.month != null ? Number(options.month) : undefined;
+      const year = options?.year != null ? Number(options.year) : undefined;
+      const { start, end } = this._getDateRange(period, month, year);
+      let query = db
         .collection('transactions')
         .where('userId', '==', userId)
-        .where('timestamp', '>=', cutoffDate)
-        .get();
+        .where('timestamp', '>=', start);
+      if (end) query = query.where('timestamp', '<', end);
+      const snapshot = await query.get();
 
       const categoryBreakdown = {};
 

@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../firebase.js";
 import API from "../services/api.js";
 import Sidebar from "../components/Sidebar.jsx";
@@ -11,7 +10,6 @@ export default function Profile() {
     const [profile, setProfile] = useState(null);
     const [personal, setPersonal] = useState(null);
     const [error, setError] = useState(null);
-    const [loadingPersonal, setLoadingPersonal] = useState(true);
     const [showEdit, setShowEdit] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [showAll, setShowAll] = useState(false);
@@ -23,6 +21,12 @@ export default function Profile() {
     const [activeNav, setActiveNav] = useState("profil");
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+    // Firebase token helper (for Postman testing)
+    const [firebaseIdToken, setFirebaseIdToken] = useState("");
+    const [firebaseTokenLoading, setFirebaseTokenLoading] = useState(false);
+    const [showFirebaseToken, setShowFirebaseToken] = useState(false);
+    const [firebaseTokenError, setFirebaseTokenError] = useState("");
 
     // Edit profile form state
     const [editForm, setEditForm] = useState({
@@ -60,6 +64,44 @@ export default function Profile() {
     const handleLogout = async () => {
         await auth.signOut();
         navigate("/login");
+    };
+
+    const handleGenerateToken = async () => {
+        try {
+            setFirebaseTokenError("");
+            setFirebaseTokenLoading(true);
+            const user = auth.currentUser;
+            if (!user) {
+                setFirebaseTokenError("User belum login.");
+                return;
+            }
+            const token = await user.getIdToken(true);
+            setFirebaseIdToken(token);
+            setShowFirebaseToken(true);
+        } catch (e) {
+            setFirebaseTokenError(e?.message || "Gagal mengambil token Firebase.");
+        } finally {
+            setFirebaseTokenLoading(false);
+        }
+    };
+
+    const handleCopyToken = async () => {
+        if (!firebaseIdToken) return;
+        try {
+            await navigator.clipboard.writeText(firebaseIdToken);
+        } catch {
+            // ignore (clipboard may be blocked)
+        }
+    };
+
+    const handleCopyUid = async () => {
+        const uid = profile?.uid || auth.currentUser?.uid;
+        if (!uid) return;
+        try {
+            await navigator.clipboard.writeText(uid);
+        } catch {
+            // ignore (clipboard may be blocked)
+        }
     };
 
     // 🔹 Open edit modal with current data
@@ -190,7 +232,7 @@ export default function Profile() {
                     console.error(err);
                 }
             } finally {
-                setLoadingPersonal(false);
+                // no-op
             }
         };
 
@@ -237,13 +279,6 @@ export default function Profile() {
     const { totalBalance, totalTabungan, totalPemasukan, totalPengeluaran, completedTabungan } = calculateStats();
 
     const fmt = (n) => `Rp ${(n || 0).toLocaleString("id-ID")}`;
-
-    // Get recent transactions
-    const recentActivities = transactions.slice(0, 4).map(tx => ({
-        amount: tx.amount,
-        description: tx.description,
-        type: tx.type
-    }));
 
     if (error) return <div className="text-center p-5 text-red-600">Error: {error}</div>;
 
@@ -299,6 +334,68 @@ export default function Profile() {
                                     </div>
                                 </div>
                             )}
+
+                            {/* FIREBASE ID TOKEN (Postman helper) */}
+                            <div className="bg-white p-6 rounded-2xl shadow-md mb-6">
+                                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                                    <div>
+                                        <h3 className="text-xl font-bold text-gray-900">Firebase ID Token</h3>
+                                        <p className="text-xs text-gray-500 mt-1">
+                                            Untuk testing endpoint di Postman (Header: <b>Authorization</b> = <b>Bearer</b> token).
+                                        </p>
+                                        <div className="mt-2 text-xs text-gray-600">
+                                            <span className="font-semibold">UID:</span>{" "}
+                                            <span className="font-mono break-all">{profile?.uid || auth.currentUser?.uid || "-"}</span>
+                                        </div>
+                                    </div>
+                                    <div className="flex gap-2 flex-wrap">
+                                        <button
+                                            onClick={handleCopyUid}
+                                            disabled={!(profile?.uid || auth.currentUser?.uid)}
+                                            className="px-4 py-2 rounded-full bg-gray-100 text-gray-800 font-semibold hover:bg-gray-200 transition-all text-xs md:text-sm disabled:opacity-50"
+                                        >
+                                            Copy UID
+                                        </button>
+                                        <button
+                                            onClick={handleGenerateToken}
+                                            disabled={firebaseTokenLoading}
+                                            className="px-4 py-2 rounded-full bg-green-900 text-white font-semibold hover:bg-green-800 transition-all text-xs md:text-sm disabled:opacity-50"
+                                        >
+                                            {firebaseTokenLoading ? "Mengambil..." : "Generate Token"}
+                                        </button>
+                                        <button
+                                            onClick={() => setShowFirebaseToken((v) => !v)}
+                                            disabled={!firebaseIdToken}
+                                            className="px-4 py-2 rounded-full bg-gray-100 text-gray-800 font-semibold hover:bg-gray-200 transition-all text-xs md:text-sm disabled:opacity-50"
+                                        >
+                                            {showFirebaseToken ? "Sembunyikan" : "Tampilkan"}
+                                        </button>
+                                        <button
+                                            onClick={handleCopyToken}
+                                            disabled={!firebaseIdToken}
+                                            className="px-4 py-2 rounded-full bg-[#9FF782] text-green-900 font-semibold hover:bg-green-300 transition-all text-xs md:text-sm disabled:opacity-50"
+                                        >
+                                            Copy
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {firebaseTokenError && (
+                                    <div className="mt-3 p-3 bg-red-100 text-red-700 rounded-lg text-sm">
+                                        {firebaseTokenError}
+                                    </div>
+                                )}
+
+                                {showFirebaseToken && firebaseIdToken && (
+                                    <div className="mt-3">
+                                        <textarea
+                                            readOnly
+                                            value={firebaseIdToken}
+                                            className="w-full min-h-28 p-3 border border-gray-200 rounded-lg text-xs text-gray-800 bg-gray-50"
+                                        />
+                                    </div>
+                                )}
+                            </div>
 
                             {/* THREE COLUMN LAYOUT */}
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">

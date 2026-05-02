@@ -6,6 +6,39 @@
 import { db } from '../firebaseAdmin.js';
 
 class PredictionService {
+  _getMonthRange(month, year) {
+    const m = Number(month);
+    const y = Number(year);
+    if (!Number.isInteger(m) || !Number.isInteger(y)) return null;
+    if (m < 1 || m > 12) return null;
+    const start = new Date(y, m - 1, 1, 0, 0, 0, 0);
+    const end = new Date(y, m, 1, 0, 0, 0, 0);
+    return { start, end };
+  }
+
+  async _getTransactionsForRange(userId, start, end) {
+    try {
+      // Preferred query (more selective) — may require composite index in Firestore
+      return await db
+        .collection('transactions')
+        .where('userId', '==', userId)
+        .where('timestamp', '>=', start)
+        .where('timestamp', '<', end)
+        .get();
+    } catch (e) {
+      // Fallback: avoid composite index by querying only timestamp range,
+      // then filter by userId in memory.
+      const snapshot = await db
+        .collection('transactions')
+        .where('timestamp', '>=', start)
+        .where('timestamp', '<', end)
+        .get();
+
+      const filteredDocs = snapshot.docs.filter((doc) => doc.data()?.userId === userId);
+      return { empty: filteredDocs.length === 0, docs: filteredDocs, forEach: (fn) => filteredDocs.forEach(fn) };
+    }
+  }
+
   /**
    * Detect users at risk of churning (inactivity)
    * Churn = no transactions in 30 days
@@ -76,95 +109,176 @@ class PredictionService {
    * @param {string} userId
    * @returns {Promise<Array>}
    */
-  async detectAnomalies(userId) {
+  async detectAnomalies(userId, options = {}) {
     try {
+      const range = this._getMonthRange(options?.month, options?.year);
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
       // Get user's transaction history
-      const snapshot = await db
-        .collection('transactions')
-        .where('userId', '==', userId)
-        .where('timestamp', '>=', thirtyDaysAgo)
-        .orderBy('timestamp', 'desc')
-        .get();
+      let query = db.collection('transactions').where('userId', '==', userId);
+      if (range) {
+        // Use helper with index-safe fallback
+        // eslint-disable-next-line no-unused-vars
+        const snapshot = await this._getTransactionsForRange(userId, range.start, range.end);
 
-      if (snapshot.empty) {
-        return [];
+        if (snapshot.empty) {
+          return [];
+        }
+
+        const transactions = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+          date: doc.data().timestamp.toDate(),
+        }));
+
+        // Calculate statistics
+        const amounts = transactions.map((t) => t.amount);
+        const avgAmount = amounts.reduce((a, b) => a + b, 0) / amounts.length;
+        const stdDev = this._calculateStdDeviation(amounts, avgAmount);
+
+        // Get user's typical categories
+        const categoryFrequency = {};
+        transactions.forEach((t) => {
+          const cat = t.category || 'Uncategorized';
+          categoryFrequency[cat] = (categoryFrequency[cat] || 0) + 1;
+        });
+
+        const typicalCategories = Object.keys(categoryFrequency);
+
+        // Detect anomalies
+        const anomalies = [];
+
+        transactions.forEach((transaction) => {
+          const anomalyReasons = [];
+
+          // Rule 1: High spending (> mean + 2*stdDev)
+          if (transaction.amount > avgAmount + 2 * stdDev) {
+            anomalyReasons.push(
+              `High spending (${(transaction.amount / avgAmount).toFixed(1)}x average)`
+            );
+          }
+
+          // Rule 2: Unusual category
+          if (
+            !typicalCategories.includes(transaction.category) &&
+            categoryFrequency[transaction.category] < 2
+          ) {
+            anomalyReasons.push(`Unusual category: ${transaction.category}`);
+          }
+
+          // Rule 3: Time-based anomaly (weekend vs weekday pattern change)
+          const dayOfWeek = transaction.date.getDay();
+          const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+          // If user typically doesn't spend on weekends but does now, flag it
+          const weekendTransactions = transactions.filter((t) => {
+            const d = t.date.getDay();
+            return d === 0 || d === 6;
+          }).length;
+          if (weekendTransactions < 2 && isWeekend) {
+            anomalyReasons.push('Unusual time (weekend spending)');
+          }
+
+          if (anomalyReasons.length > 0) {
+            anomalies.push({
+              transactionId: transaction.id,
+              amount: transaction.amount,
+              category: transaction.category,
+              description: transaction.description,
+              date: transaction.date.toISOString(),
+              avgUserSpending: parseFloat(avgAmount.toFixed(2)),
+              anomalyScore: this._calculateAnomalyScore(
+                transaction.amount,
+                avgAmount,
+                stdDev
+              ),
+              reasons: anomalyReasons,
+            });
+          }
+        });
+
+        return anomalies.sort((a, b) => b.anomalyScore - a.anomalyScore);
+      } else {
+        query = query.where('timestamp', '>=', thirtyDaysAgo).orderBy('timestamp', 'desc');
+        const snapshot = await query.get();
+
+        if (snapshot.empty) {
+          return [];
+        }
+
+        const transactions = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+          date: doc.data().timestamp.toDate(),
+        }));
+
+        // Calculate statistics
+        const amounts = transactions.map((t) => t.amount);
+        const avgAmount = amounts.reduce((a, b) => a + b, 0) / amounts.length;
+        const stdDev = this._calculateStdDeviation(amounts, avgAmount);
+
+        // Get user's typical categories
+        const categoryFrequency = {};
+        transactions.forEach((t) => {
+          const cat = t.category || 'Uncategorized';
+          categoryFrequency[cat] = (categoryFrequency[cat] || 0) + 1;
+        });
+
+        const typicalCategories = Object.keys(categoryFrequency);
+
+        // Detect anomalies
+        const anomalies = [];
+
+        transactions.forEach((transaction) => {
+          const anomalyReasons = [];
+
+          // Rule 1: High spending (> mean + 2*stdDev)
+          if (transaction.amount > avgAmount + 2 * stdDev) {
+            anomalyReasons.push(
+              `High spending (${(transaction.amount / avgAmount).toFixed(1)}x average)`
+            );
+          }
+
+          // Rule 2: Unusual category
+          if (
+            !typicalCategories.includes(transaction.category) &&
+            categoryFrequency[transaction.category] < 2
+          ) {
+            anomalyReasons.push(`Unusual category: ${transaction.category}`);
+          }
+
+          // Rule 3: Time-based anomaly (weekend vs weekday pattern change)
+          const dayOfWeek = transaction.date.getDay();
+          const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+          // If user typically doesn't spend on weekends but does now, flag it
+          const weekendTransactions = transactions.filter((t) => {
+            const d = t.date.getDay();
+            return d === 0 || d === 6;
+          }).length;
+          if (weekendTransactions < 2 && isWeekend) {
+            anomalyReasons.push('Unusual time (weekend spending)');
+          }
+
+          if (anomalyReasons.length > 0) {
+            anomalies.push({
+              transactionId: transaction.id,
+              amount: transaction.amount,
+              category: transaction.category,
+              description: transaction.description,
+              date: transaction.date.toISOString(),
+              avgUserSpending: parseFloat(avgAmount.toFixed(2)),
+              anomalyScore: this._calculateAnomalyScore(
+                transaction.amount,
+                avgAmount,
+                stdDev
+              ),
+              reasons: anomalyReasons,
+            });
+          }
+        });
+
+        return anomalies.sort((a, b) => b.anomalyScore - a.anomalyScore);
       }
-
-      const transactions = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-        date: doc.data().timestamp.toDate(),
-      }));
-
-      // Calculate statistics
-      const amounts = transactions.map((t) => t.amount);
-      const avgAmount = amounts.reduce((a, b) => a + b, 0) / amounts.length;
-      const stdDev = this._calculateStdDeviation(amounts, avgAmount);
-
-      // Get user's typical categories
-      const categoryFrequency = {};
-      transactions.forEach((t) => {
-        const cat = t.category || 'Uncategorized';
-        categoryFrequency[cat] = (categoryFrequency[cat] || 0) + 1;
-      });
-
-      const typicalCategories = Object.keys(categoryFrequency);
-
-      // Detect anomalies
-      const anomalies = [];
-
-      transactions.forEach((transaction) => {
-        const anomalyReasons = [];
-
-        // Rule 1: High spending (> mean + 2*stdDev)
-        if (transaction.amount > avgAmount + 2 * stdDev) {
-          anomalyReasons.push(
-            `High spending (${(transaction.amount / avgAmount).toFixed(1)}x average)`
-          );
-        }
-
-        // Rule 2: Unusual category
-        if (
-          !typicalCategories.includes(transaction.category) &&
-          categoryFrequency[transaction.category] < 2
-        ) {
-          anomalyReasons.push(`Unusual category: ${transaction.category}`);
-        }
-
-        // Rule 3: Time-based anomaly (weekend vs weekday pattern change)
-        const dayOfWeek = transaction.date.getDay();
-        const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-        // If user typically doesn't spend on weekends but does now, flag it
-        const weekendTransactions = transactions.filter((t) => {
-          const d = t.date.getDay();
-          return d === 0 || d === 6;
-        }).length;
-        if (weekendTransactions < 2 && isWeekend) {
-          anomalyReasons.push('Unusual time (weekend spending)');
-        }
-
-        if (anomalyReasons.length > 0) {
-          anomalies.push({
-            transactionId: transaction.id,
-            amount: transaction.amount,
-            category: transaction.category,
-            description: transaction.description,
-            date: transaction.date.toISOString(),
-            avgUserSpending: parseFloat(avgAmount.toFixed(2)),
-            anomalyScore: this._calculateAnomalyScore(
-              transaction.amount,
-              avgAmount,
-              stdDev
-            ),
-            reasons: anomalyReasons,
-          });
-        }
-      });
-
-      return anomalies.sort((a, b) => b.anomalyScore - a.anomalyScore);
     } catch (error) {
       console.error('Error detecting anomalies:', error);
       throw error;
@@ -399,8 +513,86 @@ class PredictionService {
    * @param {string} userId
    * @returns {Promise<Array>}
    */
-  async detectSpendingPatternChanges(userId) {
+  async detectSpendingPatternChanges(userId, options = {}) {
     try {
+      const range = this._getMonthRange(options?.month, options?.year);
+      if (range) {
+        const prevMonthStart = new Date(range.start);
+        prevMonthStart.setMonth(prevMonthStart.getMonth() - 1);
+        const prevMonthEnd = new Date(range.start);
+
+        const [thisSnap, prevSnap] = await Promise.all([
+          this._getTransactionsForRange(userId, range.start, range.end),
+          this._getTransactionsForRange(userId, prevMonthStart, prevMonthEnd),
+        ]);
+
+        if (thisSnap.empty && prevSnap.empty) return [];
+
+        const sumByCategory = (snapshot) => {
+          const by = {};
+          snapshot.forEach((doc) => {
+            const d = doc.data();
+            const cat = d.category || 'Uncategorized';
+            by[cat] = (by[cat] || 0) + (d.amount || 0);
+          });
+          return by;
+        };
+
+        const thisBy = sumByCategory(thisSnap);
+        const prevBy = sumByCategory(prevSnap);
+        const all = new Set([...Object.keys(thisBy), ...Object.keys(prevBy)]);
+
+        const changes = [];
+        all.forEach((category) => {
+          const lastWeekAmount = prevBy[category] || 0; // kept key for UI compatibility
+          const thisWeekAmount = thisBy[category] || 0; // kept key for UI compatibility
+
+          if (lastWeekAmount === 0 && thisWeekAmount > 0) {
+            changes.push({
+              category,
+              changeType: 'new_category',
+              thisWeekAmount: parseFloat(thisWeekAmount.toFixed(2)),
+              lastWeekAmount: 0,
+              percentageChange: null,
+              changeAmount: parseFloat(thisWeekAmount.toFixed(2)),
+            });
+            return;
+          }
+
+          if (lastWeekAmount > 0 && thisWeekAmount === 0) {
+            changes.push({
+              category,
+              changeType: 'category_abandoned',
+              thisWeekAmount: 0,
+              lastWeekAmount: parseFloat(lastWeekAmount.toFixed(2)),
+              percentageChange: null,
+              changeAmount: parseFloat((-lastWeekAmount).toFixed(2)),
+            });
+            return;
+          }
+
+          if (lastWeekAmount > 0 && thisWeekAmount > 0) {
+            const percentChange =
+              ((thisWeekAmount - lastWeekAmount) / lastWeekAmount) * 100;
+            if (Math.abs(percentChange) > 25) {
+              changes.push({
+                category,
+                changeType: percentChange > 0 ? 'increase' : 'decrease',
+                thisWeekAmount: parseFloat(thisWeekAmount.toFixed(2)),
+                lastWeekAmount: parseFloat(lastWeekAmount.toFixed(2)),
+                percentageChange: parseFloat(percentChange.toFixed(1)),
+                changeAmount: parseFloat((thisWeekAmount - lastWeekAmount).toFixed(2)),
+              });
+            }
+          }
+        });
+
+        return changes.sort(
+          (a, b) =>
+            Math.abs(b.percentageChange || 0) - Math.abs(a.percentageChange || 0)
+        );
+      }
+
       const today = new Date();
       const sevenDaysAgo = new Date();
       sevenDaysAgo.setDate(today.getDate() - 7);

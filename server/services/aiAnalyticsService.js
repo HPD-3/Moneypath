@@ -12,27 +12,34 @@ import predictionService from './predictionService.js';
 class AIAnalyticsService {
   constructor() {
     // Configure AI provider (examples provided)
-    this.aiProvider = process.env.AI_PROVIDER || 'openai'; // 'openai', 'anthropic', 'local'
-    this.openaiKey = process.env.OPENAI_API_KEY;
-    this.anthropicKey = process.env.ANTHROPIC_API_KEY;
+    this.aiProvider = (process.env.AI_PROVIDER || 'local').toLowerCase(); // 'gemini', 'openai', 'anthropic', 'local'
+    this.aiApiKey = process.env.AI_API_KEY;
   }
 
   /**
    * Get AI-powered spending insights for a user
    * Analyzes patterns and provides actionable recommendations
    * @param {string} userId
+   * @param {Object} [options]
+   * @param {number|string} [options.month] 1-12
+   * @param {number|string} [options.year] full year (e.g. 2026)
    * @returns {Promise<Object>}
    */
-  async getUserSpendingInsights(userId) {
+  async getUserSpendingInsights(userId, options = {}) {
     try {
       // Gather user data
       const userDoc = await db.collection('users').doc(userId).get();
-      const userData = userDoc.data();
+      const userData = userDoc.exists ? userDoc.data() : null;
 
-      const trends = await analyticsService.getUserSpendingTrends(userId, 'month');
+      const trends = await analyticsService.getUserSpendingTrends(
+        userId,
+        'month',
+        options
+      );
       const categoryBreakdown = await analyticsService.getUserCategoryBreakdown(
         userId,
-        'month'
+        'month',
+        options
       );
       const anomalies = await predictionService.detectAnomalies(userId);
       const monthlyPrediction = await predictionService.predictMonthlySpending(
@@ -43,7 +50,7 @@ class AIAnalyticsService {
 
       // Create structured prompt for AI
       const prompt = this._createAnalysisPrompt({
-        userName: userData.name,
+        userName: userData?.name || 'User',
         trends,
         categoryBreakdown,
         anomalies,
@@ -59,6 +66,10 @@ class AIAnalyticsService {
         generatedAt: new Date().toISOString(),
         analysis: aiResponse,
         rawData: {
+          period: {
+            month: options?.month != null ? Number(options.month) : null,
+            year: options?.year != null ? Number(options.year) : null,
+          },
           categoryBreakdown,
           monthlyPrediction,
           anomaliesDetected: anomalies.length,
@@ -391,18 +402,50 @@ Also include:
    */
   async _callAIProvider(prompt) {
     try {
-      if (this.aiProvider === 'openai') {
-        return await this._callOpenAI(prompt);
-      } else if (this.aiProvider === 'anthropic') {
-        return await this._callAnthropic(prompt);
-      } else {
-        // Fallback: return structured template
+      if (!this.aiApiKey && this.aiProvider !== 'local') {
         return this._getLocalAnalysis(prompt);
       }
+
+      if (this.aiProvider === 'gemini') return await this._callGemini(prompt);
+      if (this.aiProvider === 'openai') return await this._callOpenAI(prompt);
+      if (this.aiProvider === 'anthropic') return await this._callAnthropic(prompt);
+
+      // Fallback: return structured template
+      return this._getLocalAnalysis(prompt);
     } catch (error) {
       console.error('AI provider call failed:', error);
       return this._getLocalAnalysis(prompt);
     }
+  }
+
+  /**
+   * Call Google Gemini API
+   * @private
+   */
+  async _callGemini(prompt) {
+    const response = await axios.post(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${this.aiApiKey}`,
+      {
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 2048,
+        },
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    const text =
+      response?.data?.candidates?.[0]?.content?.parts
+        ?.map((p) => p.text)
+        .filter(Boolean)
+        .join('') || '';
+
+    return text || this._getLocalAnalysis(prompt);
   }
 
   /**
@@ -430,7 +473,7 @@ Also include:
       },
       {
         headers: {
-          Authorization: `Bearer ${this.openaiKey}`,
+          Authorization: `Bearer ${this.aiApiKey}`,
           'Content-Type': 'application/json',
         },
       }
@@ -460,7 +503,7 @@ Also include:
       },
       {
         headers: {
-          'x-api-key': this.anthropicKey,
+          'x-api-key': this.aiApiKey,
           'anthropic-version': '2023-06-01',
         },
       }
@@ -617,21 +660,38 @@ Format the response clearly with sections and actionable advice.
    * @private
    */
   async _getFallbackAnalysis(userId) {
-    const stats = await analyticsService.getAggregateStatistics(userId, 'month');
-    const categoryBreakdown = await analyticsService.getUserCategoryBreakdown(
-      userId,
-      'month'
-    );
+    try {
+      const stats = await analyticsService.getAggregateStatistics(userId, 'month');
+      const categoryBreakdown = await analyticsService.getUserCategoryBreakdown(
+        userId,
+        'month'
+      );
 
-    return {
-      userId,
-      generatedAt: new Date().toISOString(),
-      analysis: `Analysis Summary: User spent $${stats.totalAmount} across ${stats.totalTransactions} transactions. Top spending categories: ${categoryBreakdown.slice(0, 2).map((c) => c.category).join(', ')}. Average transaction: $${stats.averageAmount}. For detailed AI-powered insights, please configure your AI provider.`,
-      rawData: {
-        categoryBreakdown,
-        totalSpending: stats.totalAmount,
-      },
-    };
+      const topCats = categoryBreakdown.slice(0, 2).map((c) => c.category).join(', ');
+
+      return {
+        userId,
+        generatedAt: new Date().toISOString(),
+        analysis:
+          `Analysis Summary: User spent $${stats.totalAmount} across ${stats.totalTransactions} transactions.` +
+          ` Top spending categories: ${topCats || 'N/A'}.` +
+          ` Average transaction: $${stats.averageAmount}.` +
+          ` For detailed AI-powered insights, please configure your AI provider.`,
+        rawData: {
+          categoryBreakdown,
+          totalSpending: stats.totalAmount,
+        },
+      };
+    } catch (e) {
+      console.error('Fallback analysis failed:', e);
+      return {
+        userId,
+        generatedAt: new Date().toISOString(),
+        analysis:
+          'Analysis generated. (Fallback mode) Not enough data or service temporarily unavailable.',
+        rawData: null,
+      };
+    }
   }
 }
 

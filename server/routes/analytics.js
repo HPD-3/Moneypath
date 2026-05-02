@@ -184,13 +184,17 @@ router.get('/predictions/churn-risk', verifyToken, async (req, res) => {
 router.get('/predictions/anomalies/:userId', verifyToken, async (req, res) => {
   try {
     const { userId } = req.params;
+    const { month, year } = req.query;
 
     // Verify authorization
     if (req.user.uid !== userId && !req.user.isAdmin) {
       return res.status(403).json({ error: 'Unauthorized' });
     }
 
-    const anomalies = await predictionService.detectAnomalies(userId);
+    const anomalies = await predictionService.detectAnomalies(userId, {
+      month: month != null ? Number(month) : undefined,
+      year: year != null ? Number(year) : undefined,
+    });
 
     res.json({
       userId,
@@ -279,12 +283,16 @@ router.get('/predictions/goals', verifyToken, async (req, res) => {
 router.get('/predictions/pattern-changes/:userId', verifyToken, async (req, res) => {
   try {
     const { userId } = req.params;
+    const { month, year } = req.query;
 
     if (req.user.uid !== userId && !req.user.isAdmin) {
       return res.status(403).json({ error: 'Unauthorized' });
     }
 
-    const changes = await predictionService.detectSpendingPatternChanges(userId);
+    const changes = await predictionService.detectSpendingPatternChanges(userId, {
+      month: month != null ? Number(month) : undefined,
+      year: year != null ? Number(year) : undefined,
+    });
 
     res.json({
       userId,
@@ -307,12 +315,16 @@ router.get('/predictions/pattern-changes/:userId', verifyToken, async (req, res)
 router.get('/insights/spending/:userId', verifyToken, async (req, res) => {
   try {
     const { userId } = req.params;
+    const { month, year } = req.query;
 
     if (req.user.uid !== userId && !req.user.isAdmin) {
       return res.status(403).json({ error: 'Unauthorized' });
     }
 
-    const insights = await aiAnalyticsService.getUserSpendingInsights(userId);
+    const insights = await aiAnalyticsService.getUserSpendingInsights(userId, {
+      month: month != null ? Number(month) : undefined,
+      year: year != null ? Number(year) : undefined,
+    });
 
     res.json(insights);
   } catch (error) {

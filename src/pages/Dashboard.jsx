@@ -13,13 +13,6 @@ function calcLevel(totalExp = 0) {
     return { level, currentExp, expToNext: 100, progress: currentExp };
 }
 
-function greeting() {
-    const h = new Date().getHours();
-    if (h < 12) return "Selamat Pagi";
-    if (h < 17) return "Selamat Siang";
-    return "Selamat Malam";
-}
-
 // Fetch module details from Firestore
 async function getModuleDetails(moduleId) {
     try {
@@ -36,8 +29,56 @@ async function getModuleDetails(moduleId) {
     }
 }
 
+// New: Analytics Card Helper
+function AnalyticsCard({ analytic, loading }) {
+    if (loading) {
+        return (
+            <div style={{
+                background: "#f3f4f6",
+                borderRadius: 16,
+                padding: 18,
+                border: "2px solid #9FF782",
+                minHeight: 90,
+                marginBottom: 6,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center"
+            }}>
+                <div style={{
+                    width: 24, height: 24, border: "3px solid #9FF782", borderTopColor: "transparent",
+                    borderRadius: "50%", animation: "spin 0.8s linear infinite"
+                }} />
+                <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+            </div>
+        );
+    }
+    if (!analytic)
+        return null;
+
+    return (
+        <div style={{
+            background: "#edffe9",
+            borderRadius: 16,
+            padding: 18,
+            border: "2px solid #A3F181",
+            marginBottom: 8,
+            color: "#13320c",
+            fontSize: 15,
+            lineHeight: 1.5,
+            boxShadow: "0 4px 18px rgba(159, 247, 130, 0.07)"
+        }}>
+            {typeof analytic === "string" ? (
+                <span dangerouslySetInnerHTML={{ __html: analytic.replaceAll("\n", "<br/>") }} />
+            ) : (
+                <pre style={{ whiteSpace: "pre-wrap", margin: 0 }}>{JSON.stringify(analytic, null, 2)}</pre>
+            )}
+        </div>
+    )
+}
+
 export default function Dashboard() {
     const navigate = useNavigate();
+    const now = new Date();
     const [profile, setProfile] = useState(null);
     const [personal, setPersonal] = useState(null);
     const [quizStats, setQuizStats] = useState(null);
@@ -47,6 +88,26 @@ export default function Dashboard() {
     const [activeNav, setActiveNav] = useState("beranda");
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+    // Analytics/AI insights state
+    const [analyticAIInsights, setAnalyticAIInsights] = useState(null);
+    const [analyticAIInsightsRaw, setAnalyticAIInsightsRaw] = useState(null);
+    const [analyticAILoading, setAnalyticAILoading] = useState(false);
+
+    const [analyticPatternChanges, setAnalyticPatternChanges] = useState(null);
+    const [analyticPatternLoading, setAnalyticPatternLoading] = useState(false);
+
+    const [analyticAnomalies, setAnalyticAnomalies] = useState(null);
+    const [analyticAnomalyLoading, setAnalyticAnomalyLoading] = useState(false);
+
+    // Analytics filter (month/year) + manual refresh trigger
+    const [analyticMonth, setAnalyticMonth] = useState(now.getMonth() + 1); // 1-12
+    const [analyticYear, setAnalyticYear] = useState(now.getFullYear());
+    const [analyticRefreshNonce, setAnalyticRefreshNonce] = useState(0);
+
+    // Financial health assessment
+    const [financialHealth, setFinancialHealth] = useState(null);
+    const [financialHealthLoading, setFinancialHealthLoading] = useState(false);
 
     useEffect(() => {
         const fetchAll = async () => {
@@ -112,8 +173,65 @@ export default function Dashboard() {
                 setLoading(false);
             }
         };
+
         fetchAll();
     }, [navigate]);
+
+    // Fetch analytics on main effect, after loading, and when profile/personal available
+    useEffect(() => {
+        // Only fetch analytics if login is OK and profile is known
+        if (
+            !loading &&
+            profile &&
+            profile.uid &&
+            personal &&
+            personal.id
+        ) {
+            // AI Insights analytics
+            setAnalyticAILoading(true);
+            setAnalyticAIInsights(null);
+            setAnalyticAIInsightsRaw(null);
+            API.get(`/analytics/insights/spending/${profile.uid}?month=${analyticMonth}&year=${analyticYear}`)
+                .then(res => {
+                    setAnalyticAIInsights(res.data.analysis || res.data.recommendations || "-");
+                    setAnalyticAIInsightsRaw(res.data.rawData || null);
+                })
+                .catch(() => {
+                    setAnalyticAIInsights("Gagal mengambil insight AI");
+                })
+                .finally(() => {
+                    setAnalyticAILoading(false);
+                });
+
+            // Pattern changes
+            setAnalyticPatternLoading(true);
+            setAnalyticPatternChanges(null);
+            API.get(`/analytics/predictions/pattern-changes/${profile.uid}?month=${analyticMonth}&year=${analyticYear}`)
+                .then(res => setAnalyticPatternChanges(res.data.changes || res.data))
+                .catch(() => setAnalyticPatternChanges([]))
+                .finally(() => setAnalyticPatternLoading(false));
+
+            // Anomalies
+            setAnalyticAnomalyLoading(true);
+            setAnalyticAnomalies(null);
+            API.get(`/analytics/predictions/anomalies/${profile.uid}?month=${analyticMonth}&year=${analyticYear}`)
+                .then(res => setAnalyticAnomalies(res.data.anomalies || res.data))
+                .catch(() => setAnalyticAnomalies([]))
+                .finally(() => setAnalyticAnomalyLoading(false));
+
+            // Financial health (rekap-based)
+            setFinancialHealthLoading(true);
+            setFinancialHealth(null);
+            API.get(`/rekap/health?month=${analyticMonth}&year=${analyticYear}`)
+                .then((res) => setFinancialHealth(res.data))
+                .catch(() => setFinancialHealth({ error: true }))
+                .finally(() => setFinancialHealthLoading(false));
+        }
+    }, [loading, profile, personal, analyticMonth, analyticYear, analyticRefreshNonce]);
+
+    const handleRefreshAnalytics = () => {
+        setAnalyticRefreshNonce((n) => n + 1);
+    };
 
     const handleLogout = async () => {
         try {
@@ -151,7 +269,7 @@ export default function Dashboard() {
         </div>
     );
 
-    const { level, currentExp, expToNext, progress } = calcLevel(quizStats?.totalExp || 0);
+    calcLevel(quizStats?.totalExp || 0);
 
     return (
         <div className="flex h-screen bg-white overflow-hidden w-full" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
@@ -442,6 +560,127 @@ export default function Dashboard() {
                                     <p style={{ fontSize: 11, color: "#9ca3af" }}>champion</p>
                                 </div>
                             </div>
+                        </div>
+
+                        {/* ── AI ANALYTIC (moved to bottom) ──────────────────────── */}
+                        <div style={{ marginBottom: 18 }}>
+                            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap", marginBottom: 10 }}>
+                                <p style={{
+                                    fontSize: 12, fontWeight: 700, color: "#b4e99b",
+                                    textTransform: "uppercase", letterSpacing: 1.7,
+                                    marginBottom: 0, background: "#19291f", display: "inline-block",
+                                    borderRadius: 9, padding: "4px 20px"
+                                }}>
+                                    AI Analytic Insights
+                                </p>
+
+                                <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                                    <label style={{ fontSize: 12, color: "#14532d", fontWeight: 700 }}>
+                                        Bulan{" "}
+                                        <select
+                                            value={analyticMonth}
+                                            onChange={(e) => setAnalyticMonth(Number(e.target.value))}
+                                            style={{ marginLeft: 6, padding: "6px 10px", borderRadius: 10, border: "1px solid #bbf7d0", background: "white", fontSize: 12 }}
+                                        >
+                                            {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+                                                <option key={m} value={m}>{m}</option>
+                                            ))}
+                                        </select>
+                                    </label>
+
+                                    <label style={{ fontSize: 12, color: "#14532d", fontWeight: 700 }}>
+                                        Tahun{" "}
+                                        <select
+                                            value={analyticYear}
+                                            onChange={(e) => setAnalyticYear(Number(e.target.value))}
+                                            style={{ marginLeft: 6, padding: "6px 10px", borderRadius: 10, border: "1px solid #bbf7d0", background: "white", fontSize: 12 }}
+                                        >
+                                            {Array.from({ length: 5 }, (_, i) => (new Date().getFullYear() - 2 + i)).map((y) => (
+                                                <option key={y} value={y}>{y}</option>
+                                            ))}
+                                        </select>
+                                    </label>
+
+                                    <button
+                                        onClick={handleRefreshAnalytics}
+                                        style={{
+                                            padding: "7px 14px",
+                                            borderRadius: 10,
+                                            border: "1px solid #86efac",
+                                            background: "#16a34a",
+                                            color: "white",
+                                            fontSize: 12,
+                                            fontWeight: 800,
+                                            cursor: "pointer",
+                                            opacity: (analyticAILoading || analyticPatternLoading || analyticAnomalyLoading) ? 0.7 : 1
+                                        }}
+                                        disabled={analyticAILoading || analyticPatternLoading || analyticAnomalyLoading}
+                                    >
+                                        Refresh
+                                    </button>
+                                </div>
+                            </div>
+                            <AnalyticsCard analytic={analyticAIInsights} loading={analyticAILoading} />
+                            {analyticAIInsightsRaw && (
+                                <div style={{
+                                    padding: "7px 17px",
+                                    background: "rgba(225,245,215,0.29)",
+                                    color: "#224a29",
+                                    borderRadius: 7,
+                                    fontSize: 13,
+                                    marginTop: 4,
+                                    marginBottom: 8,
+                                }}>
+                                    <div><b>AI Stats Ringkasan:</b></div>
+                                    <pre style={{ whiteSpace: "pre-wrap", fontSize: 12, background: "none", margin: 0 }}>
+                                        {JSON.stringify(analyticAIInsightsRaw, null, 2)}
+                                    </pre>
+                                </div>
+                            )}
+
+                            <p style={{
+                                fontSize: 12, fontWeight: 800, color: "#0f172a",
+                                marginTop: 16, marginBottom: 6
+                            }}>💡 Kondisi Keuangan</p>
+                            <AnalyticsCard
+                                loading={financialHealthLoading}
+                                analytic={
+                                    financialHealth?.error
+                                        ? "Gagal mengambil penilaian kondisi keuangan."
+                                        : financialHealth
+                                            ? `Status: <b>${(financialHealth.status || "-").toUpperCase()}</b> (Skor: ${financialHealth.score ?? "-"} / 100)
+Net: Rp${(financialHealth.summary?.netBalance || 0).toLocaleString()}
+Pemasukan: Rp${(financialHealth.summary?.totalIncome || 0).toLocaleString()} | Pengeluaran: Rp${(financialHealth.summary?.totalExpense || 0).toLocaleString()}
+
+Saran:
+${(financialHealth.suggestions || []).map((s, i) => `${i + 1}. ${s}`).join("\n")}`
+                                            : null
+                                }
+                            />
+                            <p style={{
+                                fontSize: 12, fontWeight: 700, color: "#fbbf24",
+                                marginTop: 16, marginBottom: 6
+                            }}>🔁 Perubahan Pola Pengeluaran</p>
+                            <AnalyticsCard analytic={
+                                (analyticPatternChanges && analyticPatternChanges.length > 0)
+                                    ? analyticPatternChanges.map((chg, i) =>
+                                        `${i + 1}. [${chg.category}] ${chg.changeType === "increase" ? "⬆️" : (chg.changeType === "decrease" ? "⬇️" : "•")} 
+  Rp${(chg.thisWeekAmount || 0).toLocaleString()} (${chg.percentageChange ? chg.percentageChange + "%" : "n/a"})`
+                                    ).join("<br/>")
+                                    : "Tidak ada perubahan signifikan minggu ini."
+                            } loading={analyticPatternLoading} />
+                            <p style={{
+                                fontSize: 12, fontWeight: 700, color: "#F56236",
+                                marginTop: 16, marginBottom: 6
+                            }}>⚠️ Deteksi Transaksi Tidak Biasa</p>
+                            <AnalyticsCard analytic={
+                                analyticAnomalies && analyticAnomalies.length > 0
+                                    ? analyticAnomalies.slice(0, 5).map(
+                                        (a, idx) =>
+                                            `${idx + 1}. Rp${(a.amount || 0).toLocaleString()} (${a.category || "Kategori"}) - ${a.reasons ? a.reasons.join(", ") : "-"}`
+                                    ).join("<br/>")
+                                    : "Tidak ada anomali terdeteksi."
+                            } loading={analyticAnomalyLoading} />
                         </div>
 
                     </div>

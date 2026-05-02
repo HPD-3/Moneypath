@@ -11,6 +11,86 @@ function getMonthRange(year, month) {
     return { start, end };
 }
 
+function clamp(n, min, max) {
+    return Math.max(min, Math.min(max, n));
+}
+
+function computeFinancialHealth({ totalIncome, totalExpense, totalSetoran = 0, byCategory = {} }) {
+    const income = Number(totalIncome) || 0;
+    const expense = Number(totalExpense) || 0;
+    const setoran = Number(totalSetoran) || 0;
+    const net = income - expense;
+
+    const expenseRatio = income > 0 ? expense / income : (expense > 0 ? 2 : 0);
+    const savingsRate = income > 0 ? net / income : 0;
+
+    // Heuristic score 0-100
+    let score = 50;
+    // net balance
+    if (net > 0) score += 20;
+    else if (net < 0) score -= 25;
+    // expense ratio
+    if (expenseRatio <= 0.7) score += 15;
+    else if (expenseRatio <= 0.9) score += 5;
+    else if (expenseRatio <= 1.0) score -= 5;
+    else score -= 15;
+    // savings rate
+    if (savingsRate >= 0.2) score += 10;
+    else if (savingsRate >= 0.1) score += 5;
+    else if (savingsRate <= 0) score -= 10;
+    // consistent saving / setoran
+    if (setoran > 0) score += 5;
+
+    score = clamp(Math.round(score), 0, 100);
+
+    const status =
+        score >= 70 ? "baik" :
+            score >= 45 ? "cukup" :
+                "buruk";
+
+    const suggestions = [];
+
+    if (income <= 0 && expense <= 0) {
+        suggestions.push("Belum ada transaksi di periode ini. Mulai catat pemasukan/pengeluaran untuk mendapatkan analisis yang akurat.");
+        return { score, status, netBalance: net, expenseRatio, savingsRate, suggestions };
+    }
+
+    if (income <= 0 && expense > 0) {
+        suggestions.push("Pengeluaran tercatat, tapi pemasukan belum ada. Pastikan pemasukan dicatat agar perhitungan kondisi keuangan akurat.");
+    }
+
+    if (net < 0) {
+        suggestions.push("Pengeluaran lebih besar dari pemasukan. Prioritaskan pemangkasan pengeluaran tidak wajib dan tetapkan batas belanja mingguan.");
+    }
+
+    if (expenseRatio > 0.9) {
+        suggestions.push("Rasio pengeluaran terhadap pemasukan tinggi. Coba targetkan pengeluaran maksimal 70–80% dari pemasukan.");
+    }
+
+    if (income > 0 && savingsRate < 0.1) {
+        suggestions.push("Tingkat tabungan rendah. Coba otomatisasi tabungan minimal 10% dari pemasukan tiap menerima uang.");
+    }
+
+    // Top expense category
+    const expenseCats = Object.entries(byCategory)
+        .map(([cat, v]) => ({ category: cat, expense: Number(v?.expense) || 0 }))
+        .filter((c) => c.expense > 0)
+        .sort((a, b) => b.expense - a.expense);
+
+    if (expenseCats.length > 0) {
+        const top = expenseCats[0];
+        suggestions.push(`Kategori pengeluaran terbesar: ${top.category}. Buat budget khusus kategori ini dan review transaksi kategori tersebut setiap minggu.`);
+    }
+
+    if (setoran <= 0 && income > 0) {
+        suggestions.push("Belum ada setoran tabungan bulan ini. Pertimbangkan membuat target tabungan dan setor rutin (mis. harian atau mingguan).");
+    }
+
+    suggestions.push("Lakukan review bulanan: kurangi langganan/biaya berulang yang tidak terpakai dan alihkan ke tabungan atau kebutuhan prioritas.");
+
+    return { score, status, netBalance: net, expenseRatio, savingsRate, suggestions };
+}
+
 // ── GET rekap data for a specific month ───────────────────────
 // GET /rekap?year=2026&month=3
 router.get("/", verifyToken, async (req, res) => {
@@ -113,6 +193,76 @@ router.get("/", verifyToken, async (req, res) => {
             transactions: monthTx.sort((a, b) =>
                 new Date(b.date) - new Date(a.date)
             ).slice(0, 50), // max 50 for email
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ── GET financial health assessment for a specific month ───────
+// GET /rekap/health?year=2026&month=3
+router.get("/health", verifyToken, async (req, res) => {
+    try {
+        const uid = req.user.uid;
+        const now = new Date();
+        const year = parseInt(req.query.year) || now.getFullYear();
+        const month = parseInt(req.query.month) || now.getMonth() + 1;
+
+        const { start, end } = getMonthRange(year, month);
+
+        const [txSnap, tabSnap] = await Promise.all([
+            db.collection("users").doc(uid).collection("transactions").get(),
+            db.collection("users").doc(uid).collection("tabungan").get(),
+        ]);
+
+        const allTx = txSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const monthTx = allTx.filter(tx => {
+            const d = tx.date || tx.createdAt || "";
+            return d >= start && d <= end;
+        });
+
+        const totalIncome = monthTx.filter(t => t.type === "income")
+            .reduce((s, t) => s + (t.amount || 0), 0);
+        const totalExpense = monthTx.filter(t => t.type === "expense")
+            .reduce((s, t) => s + (t.amount || 0), 0);
+
+        const byCategory = {};
+        monthTx.forEach(tx => {
+            const cat = tx.balanceName || "Lainnya";
+            if (!byCategory[cat]) byCategory[cat] = { income: 0, expense: 0 };
+            if (tx.type === "income") byCategory[cat].income += tx.amount || 0;
+            if (tx.type === "expense") byCategory[cat].expense += tx.amount || 0;
+        });
+
+        const tabungan = await Promise.all(
+            tabSnap.docs.map(async (tabDoc) => {
+                const riwayatSnap = await tabDoc.ref.collection("riwayat").get();
+                const monthRiwayat = riwayatSnap.docs
+                    .map(r => ({ id: r.id, ...r.data() }))
+                    .filter(r => (r.date || "") >= start && (r.date || "") <= end);
+                return monthRiwayat.reduce((s, r) => s + (r.amount || 0), 0);
+            })
+        );
+        const totalSetoran = tabungan.reduce((s, n) => s + (n || 0), 0);
+
+        const assessment = computeFinancialHealth({
+            totalIncome,
+            totalExpense,
+            totalSetoran,
+            byCategory,
+        });
+
+        res.json({
+            year,
+            month,
+            ...assessment,
+            summary: {
+                totalIncome,
+                totalExpense,
+                totalSetoran,
+                netBalance: totalIncome - totalExpense,
+                totalTransaksi: monthTx.length,
+            },
         });
     } catch (err) {
         res.status(500).json({ error: err.message });
