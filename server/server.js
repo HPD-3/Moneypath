@@ -12,6 +12,7 @@ import rekapRoutes from "./routes/rekap.js";
 import cronRoutes from "./routes/cron.js";
 import sharedBalanceRoutes from "./routes/sharedbalance.js";
 import sharedTabunganRoutes from "./routes/sharedTabungan.js";
+import analyticsRoutes from "./routes/analytics.js";
 
 
 const app = express();
@@ -59,5 +60,6 @@ app.use("/rekap", rekapRoutes);
 app.use("/cron", cronRoutes);
 app.use("/shared-balance", sharedBalanceRoutes);
 app.use("/shared-tabungan", sharedTabunganRoutes);
+app.use("/analytics", analyticsRoutes);
 
 export default app;
