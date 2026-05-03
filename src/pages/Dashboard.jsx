@@ -76,6 +76,127 @@ function AnalyticsCard({ analytic, loading }) {
     )
 }
 
+// Health Summary Card Component
+function HealthSummaryCard({ health, loading }) {
+    if (loading) {
+        return (
+            <div style={{
+                background: "white",
+                borderRadius: 16,
+                padding: "20px",
+                border: "2px solid #d1d5db",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                minHeight: 160
+            }}>
+                <div style={{
+                    width: 24, height: 24, border: "3px solid #10b981", borderTopColor: "transparent",
+                    borderRadius: "50%", animation: "spin 0.8s linear infinite"
+                }} />
+                <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+            </div>
+        );
+    }
+
+    if (!health || health.error) {
+        return (
+            <div style={{
+                background: "white",
+                borderRadius: 16,
+                padding: "20px",
+                border: "2px solid #fecaca",
+            }}>
+                <p style={{ color: "#991b1b", fontSize: 14, fontWeight: 600, margin: "0 0 8px 0" }}>⚠️ Gagal memuat kondisi kesehatan keuangan</p>
+                {health?.details && (
+                    <p style={{ color: "#7f1d1d", fontSize: 12, margin: 0, fontFamily: "monospace", whiteSpace: "pre-wrap" }}>
+                        {health.details}
+                    </p>
+                )}
+            </div>
+        );
+    }
+
+    const score = health.score || 0;
+    const status = (health.status || "unknown").toUpperCase();
+    const statusColor =
+        health.status === "baik" ? "#10b981" :
+        health.status === "cukup" ? "#f59e0b" :
+        "#ef4444";
+
+    const statusBg =
+        health.status === "baik" ? "#d1fae5" :
+        health.status === "cukup" ? "#fef3c7" :
+        "#fee2e2";
+
+    return (
+        <div style={{
+            background: "white",
+            borderRadius: 16,
+            padding: "20px",
+            border: "2px solid #e5e7eb",
+            cursor: "pointer",
+            transition: "all 0.2s"
+        }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+                <div>
+                    <p style={{ fontSize: 12, fontWeight: 700, color: "#9ca3af", marginBottom: 6, textTransform: "uppercase", letterSpacing: 1 }}>
+                        Kesehatan Keuangan Bulan Ini
+                    </p>
+                    <p style={{ fontSize: 28, fontWeight: 800, color: "#1a3a1f", margin: 0 }}>{score}/100</p>
+                </div>
+                <div style={{
+                    width: 100,
+                    height: 100,
+                    borderRadius: "50%",
+                    background: statusBg,
+                    border: `3px solid ${statusColor}`,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexDirection: "column"
+                }}>
+                    <p style={{ fontSize: 24, margin: 0, marginBottom: 4 }}>
+                        {health.status === "baik" ? "✨" : health.status === "cukup" ? "⚠️" : "📉"}
+                    </p>
+                    <p style={{ fontSize: 13, fontWeight: 700, color: statusColor, margin: 0, textAlign: "center" }}>
+                        {status}
+                    </p>
+                </div>
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 14 }}>
+                <div style={{ background: "#f9fafb", borderRadius: 12, padding: "12px", textAlign: "center" }}>
+                    <p style={{ fontSize: 11, color: "#9ca3af", margin: "0 0 4px 0", fontWeight: 600 }}>PEMASUKAN</p>
+                    <p style={{ fontSize: 16, fontWeight: 800, color: "#1a3a1f", margin: 0 }}>Rp{(health.summary?.totalIncome || 0).toLocaleString()}</p>
+                </div>
+                <div style={{ background: "#f9fafb", borderRadius: 12, padding: "12px", textAlign: "center" }}>
+                    <p style={{ fontSize: 11, color: "#9ca3af", margin: "0 0 4px 0", fontWeight: 600 }}>PENGELUARAN</p>
+                    <p style={{ fontSize: 16, fontWeight: 800, color: "#ef4444", margin: 0 }}>Rp{(health.summary?.totalExpense || 0).toLocaleString()}</p>
+                </div>
+            </div>
+
+            <div style={{ background: "#f0fdf4", borderRadius: 12, padding: "12px", marginBottom: 12, borderLeft: "4px solid #10b981" }}>
+                <p style={{ fontSize: 11, color: "#166534", fontWeight: 600, margin: "0 0 4px 0" }}>NETO</p>
+                <p style={{ fontSize: 16, fontWeight: 800, color: health.summary?.netBalance >= 0 ? "#10b981" : "#ef4444", margin: 0 }}>
+                    Rp{(health.summary?.netBalance || 0).toLocaleString()}
+                </p>
+            </div>
+
+            <div style={{ borderTop: "1px solid #e5e7eb", paddingTop: 12 }}>
+                <p style={{ fontSize: 11, fontWeight: 700, color: "#6b7280", margin: "0 0 8px 0", textTransform: "uppercase" }}>💡 Saran:</p>
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                    {(health.suggestions || []).slice(0, 3).map((suggestion, idx) => (
+                        <p key={idx} style={{ fontSize: 12, color: "#374151", margin: 0, lineHeight: 1.4 }}>
+                            • {suggestion}
+                        </p>
+                    ))}
+                </div>
+            </div>
+        </div>
+    );
+}
+
 export default function Dashboard() {
     const navigate = useNavigate();
     const now = new Date();
@@ -179,6 +300,38 @@ export default function Dashboard() {
 
     // Fetch analytics on main effect, after loading, and when profile/personal available
     useEffect(() => {
+        // Fetch health data separately - don't wait for personal data
+        if (!loading && profile && profile.uid) {
+            console.log("[DEBUG] Conditions met for health fetch - loading:", loading, "profile:", !!profile, "uid:", profile?.uid);
+            
+            // Financial health (rekap-based)
+            setFinancialHealthLoading(true);
+            setFinancialHealth(null);
+            console.log(`[DEBUG] Fetching health: /rekap/health?month=${analyticMonth}&year=${analyticYear}`);
+            console.log(`[DEBUG] API Base URL: ${API.defaults.baseURL}`);
+            API.get(`/rekap/health?month=${analyticMonth}&year=${analyticYear}`)
+                .then((res) => {
+                    console.log("[DEBUG] Health API Success:", res.data);
+                    setFinancialHealth(res.data);
+                })
+                .catch((err) => {
+                    console.error("[DEBUG] Health API Error:", {
+                        status: err.response?.status,
+                        statusText: err.response?.statusText,
+                        data: err.response?.data,
+                        message: err.message,
+                        config: err.config?.url
+                    });
+                    setFinancialHealth({ error: true, details: err.response?.data?.error || err.message });
+                })
+                .finally(() => setFinancialHealthLoading(false));
+        } else {
+            console.log("[DEBUG] Conditions NOT met - loading:", loading, "profile:", !!profile);
+        }
+    }, [loading, profile, analyticMonth, analyticYear, analyticRefreshNonce]);
+
+    // Fetch other analytics only if personal data is available
+    useEffect(() => {
         // Only fetch analytics if login is OK and profile is known
         if (
             !loading &&
@@ -218,14 +371,6 @@ export default function Dashboard() {
                 .then(res => setAnalyticAnomalies(res.data.anomalies || res.data))
                 .catch(() => setAnalyticAnomalies([]))
                 .finally(() => setAnalyticAnomalyLoading(false));
-
-            // Financial health (rekap-based)
-            setFinancialHealthLoading(true);
-            setFinancialHealth(null);
-            API.get(`/rekap/health?month=${analyticMonth}&year=${analyticYear}`)
-                .then((res) => setFinancialHealth(res.data))
-                .catch(() => setFinancialHealth({ error: true }))
-                .finally(() => setFinancialHealthLoading(false));
         }
     }, [loading, profile, personal, analyticMonth, analyticYear, analyticRefreshNonce]);
 
@@ -560,6 +705,12 @@ export default function Dashboard() {
                                     <p style={{ fontSize: 11, color: "#9ca3af" }}>champion</p>
                                 </div>
                             </div>
+                        </div>
+
+                        {/* ── HEALTH SUMMARY CARD ──────────────────────── */}
+                        <div style={{ marginBottom: 24 }}>
+                            <p style={{ fontSize: 11, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 12 }}>📊 KESEHATAN KEUANGAN</p>
+                            <HealthSummaryCard health={financialHealth} loading={financialHealthLoading} />
                         </div>
 
                         {/* ── AI ANALYTIC (moved to bottom) ──────────────────────── */}
