@@ -70,9 +70,19 @@ function GlobalStyles() {
                 padding: 40px 24px;
                 border-radius: 10px;
                 cursor: pointer;
-                transition: all 0.25s ease;
                 border: 1px solid #e5e7eb;
                 text-align: center;
+                /* Ensure card will not disappear on click */
+                display: block;
+                visibility: visible;
+                opacity: 1;
+                transition: background 0.3s, color 0.3s, box-shadow 0.3s, transform 0.3s, opacity 0.3s;
+            }
+
+            .feature-card:active {
+                /* Optionally, you may want to give feedback on click, but do not hide card */
+                opacity: 0.93;
+                /* Card is still visible and doesn't disappear */
             }
 
             .feature-card:hover {
@@ -107,6 +117,9 @@ function GlobalStyles() {
                 color: white;
                 transform: scale(1.02);
                 box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+                /* no hiding/disappearing on active */
+                opacity: 1;
+                visibility: visible;
             }
 
             .feature-card.active .icon-box {
@@ -120,6 +133,7 @@ function GlobalStyles() {
             .feature-card.active p {
                 color: rgba(255,255,255,0.85);
             }
+   
         `}</style>
     );
 }
@@ -359,7 +373,7 @@ function Features() {
             description:
                 "Halaman ini menampilkan daftar modul belajar keuangan berdasarkan kategori dan tingkat kesulitan, lengkap dengan jumlah materi dan durasi, serta fitur untuk memilih dan memulai pembelajaran.",
             icon: {
-                bgColor: "bg-white/20",
+                bgColor: "bg-black",
                 element: (
                     <svg
                         className="w-7 h-7 text-white"
@@ -460,7 +474,7 @@ function Features() {
                 Take control of your financial future with simplicity.
             </p>
 
-            <div className="grid md:grid-cols-3 gap-0 mt-16 max-w-5xl mx-auto border rounded-xl overflow-hidden">
+            <div className="grid md:grid-cols-3 gap-0 mt-16 max-w-5xl mx-auto  overflow-hidden">
                 {featureCards.map((card, index) => (
                     <FeatureCard
                         key={index}
