@@ -335,68 +335,6 @@ export default function Profile() {
                                 </div>
                             )}
 
-                            {/* FIREBASE ID TOKEN (Postman helper) */}
-                            <div className="bg-white p-6 rounded-2xl shadow-md mb-6">
-                                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-                                    <div>
-                                        <h3 className="text-xl font-bold text-gray-900">Firebase ID Token</h3>
-                                        <p className="text-xs text-gray-500 mt-1">
-                                            Untuk testing endpoint di Postman (Header: <b>Authorization</b> = <b>Bearer</b> token).
-                                        </p>
-                                        <div className="mt-2 text-xs text-gray-600">
-                                            <span className="font-semibold">UID:</span>{" "}
-                                            <span className="font-mono break-all">{profile?.uid || auth.currentUser?.uid || "-"}</span>
-                                        </div>
-                                    </div>
-                                    <div className="flex gap-2 flex-wrap">
-                                        <button
-                                            onClick={handleCopyUid}
-                                            disabled={!(profile?.uid || auth.currentUser?.uid)}
-                                            className="px-4 py-2 rounded-full bg-gray-100 text-gray-800 font-semibold hover:bg-gray-200 transition-all text-xs md:text-sm disabled:opacity-50"
-                                        >
-                                            Copy UID
-                                        </button>
-                                        <button
-                                            onClick={handleGenerateToken}
-                                            disabled={firebaseTokenLoading}
-                                            className="px-4 py-2 rounded-full bg-green-900 text-white font-semibold hover:bg-green-800 transition-all text-xs md:text-sm disabled:opacity-50"
-                                        >
-                                            {firebaseTokenLoading ? "Mengambil..." : "Generate Token"}
-                                        </button>
-                                        <button
-                                            onClick={() => setShowFirebaseToken((v) => !v)}
-                                            disabled={!firebaseIdToken}
-                                            className="px-4 py-2 rounded-full bg-gray-100 text-gray-800 font-semibold hover:bg-gray-200 transition-all text-xs md:text-sm disabled:opacity-50"
-                                        >
-                                            {showFirebaseToken ? "Sembunyikan" : "Tampilkan"}
-                                        </button>
-                                        <button
-                                            onClick={handleCopyToken}
-                                            disabled={!firebaseIdToken}
-                                            className="px-4 py-2 rounded-full bg-[#9FF782] text-green-900 font-semibold hover:bg-green-300 transition-all text-xs md:text-sm disabled:opacity-50"
-                                        >
-                                            Copy
-                                        </button>
-                                    </div>
-                                </div>
-
-                                {firebaseTokenError && (
-                                    <div className="mt-3 p-3 bg-red-100 text-red-700 rounded-lg text-sm">
-                                        {firebaseTokenError}
-                                    </div>
-                                )}
-
-                                {showFirebaseToken && firebaseIdToken && (
-                                    <div className="mt-3">
-                                        <textarea
-                                            readOnly
-                                            value={firebaseIdToken}
-                                            className="w-full min-h-28 p-3 border border-gray-200 rounded-lg text-xs text-gray-800 bg-gray-50"
-                                        />
-                                    </div>
-                                )}
-                            </div>
-
                             {/* THREE COLUMN LAYOUT */}
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
 
