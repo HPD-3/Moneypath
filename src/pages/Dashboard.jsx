@@ -124,13 +124,13 @@ function HealthSummaryCard({ health, loading }) {
     const status = (health.status || "unknown").toUpperCase();
     const statusColor =
         health.status === "baik" ? "#10b981" :
-        health.status === "cukup" ? "#f59e0b" :
-        "#ef4444";
+            health.status === "cukup" ? "#f59e0b" :
+                "#ef4444";
 
     const statusBg =
         health.status === "baik" ? "#d1fae5" :
-        health.status === "cukup" ? "#fef3c7" :
-        "#fee2e2";
+            health.status === "cukup" ? "#fef3c7" :
+                "#fee2e2";
 
     return (
         <div style={{
@@ -159,7 +159,7 @@ function HealthSummaryCard({ health, loading }) {
                     justifyContent: "center",
                     flexDirection: "column"
                 }}>
-                    <iconify-icon 
+                    <iconify-icon
                         icon={health.status === "baik" ? "mdi:emoticon-happy-outline" : health.status === "cukup" ? "mdi:emoticon-neutral-outline" : "mdi:emoticon-sad-outline"}
                         style={{ fontSize: 40, color: statusColor, marginBottom: 4 }}
                     ></iconify-icon>
@@ -463,7 +463,7 @@ export default function Dashboard() {
 
                         {/* ── HEALTH SUMMARY CARD ──────────────────────── */}
                         <div style={{ marginBottom: 24 }}>
-                            <p style={{ fontSize: 11, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 12 }}>📊 KESEHATAN KEUANGAN</p>
+                            <p style={{ fontSize: 11, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 12 }}><iconify-icon icon="mdi:chart-box-outline" style={{ fontSize: 40, marginBottom: 12, color: "#1a3a1f" }}></iconify-icon> KESEHATAN KEUANGAN</p>
                             <HealthSummaryCard health={financialHealth} loading={financialHealthLoading} />
                         </div>
 
