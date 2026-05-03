@@ -929,19 +929,19 @@ export default function Balance() {
                                                     data: chartData.map(d => d.income),
                                                     label: 'Pemasukan',
                                                     color: '#10b981',
-                                                    valueFormatter: (value) => `Rp ${value.toLocaleString('id-ID')}`,
+                                                    valueFormatter: (value) => value ? `Rp ${value.toLocaleString('id-ID')}` : '-',
                                                 },
                                                 {
                                                     data: chartData.map(d => d.expense),
                                                     label: 'Pengeluaran',
                                                     color: '#ef4444',
-                                                    valueFormatter: (value) => `Rp ${value.toLocaleString('id-ID')}`,
+                                                    valueFormatter: (value) => value ? `Rp ${value.toLocaleString('id-ID')}` : '-',
                                                 },
                                                 {
                                                     data: chartData.map(d => d.net),
                                                     label: 'Arus Bersih',
                                                     color: '#0ea5e9',
-                                                    valueFormatter: (value) => `Rp ${value.toLocaleString('id-ID')}`,
+                                                    valueFormatter: (value) => value ? `Rp ${value.toLocaleString('id-ID')}` : '-',
                                                 }
                                             ]}
                                             xAxis={[{

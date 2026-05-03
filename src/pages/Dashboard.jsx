@@ -462,8 +462,11 @@ export default function Dashboard() {
                         </div>
 
                         {/* ── HEALTH SUMMARY CARD ──────────────────────── */}
-                        <div style={{ marginBottom: 24 }}>
-                            <p style={{ fontSize: 11, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 12 }}><iconify-icon icon="mdi:chart-box-outline" style={{ fontSize: 40, marginBottom: 12, color: "#1a3a1f" }}></iconify-icon> KESEHATAN KEUANGAN</p>
+                        <div style={{ marginTop: 24, marginBottom: 24 }}>
+                            <p style={{ fontSize: 11, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 16 }}>
+                                <iconify-icon icon="mdi:chart-box-outline" style={{ marginRight: 8, fontSize: 14, verticalAlign: "middle" }}></iconify-icon>
+                                KESEHATAN KEUANGAN
+                            </p>
                             <HealthSummaryCard health={financialHealth} loading={financialHealthLoading} />
                         </div>
 

@@ -44,7 +44,6 @@ function GlobalStyles() {
                 width: 0%;
                 height: 3px;
                 background-color: #B7FF9F;
-                transition: 0.3s ease;
                 border-radius: 2px;
             }
 

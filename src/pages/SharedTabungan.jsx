@@ -535,7 +535,7 @@ export default function SharedTabungan() {
 
                         {/* Header with Back Button */}
                         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
-                            <button onClick={() => navigate("/")} style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", padding: 0 }}>←</button>
+                            <button onClick={() => navigate("/dashboard")} style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", padding: 0 }}>←</button>
                             <div>
                                 <h1 style={{ fontSize: 28, fontWeight: 800, color: "#1a3a1f", marginBottom: 4 }}>Tabungan Bersama</h1>
                                 <p style={{ fontSize: 13, color: "#6b7280" }}>Buat Taget sekarang bersama teman-teman mu!</p>
