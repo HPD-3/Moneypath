@@ -302,31 +302,17 @@ export default function Dashboard() {
     useEffect(() => {
         // Fetch health data separately - don't wait for personal data
         if (!loading && profile && profile.uid) {
-            console.log("[DEBUG] Conditions met for health fetch - loading:", loading, "profile:", !!profile, "uid:", profile?.uid);
-            
-            // Financial health (rekap-based)
             setFinancialHealthLoading(true);
             setFinancialHealth(null);
-            console.log(`[DEBUG] Fetching health: /rekap/health?month=${analyticMonth}&year=${analyticYear}`);
-            console.log(`[DEBUG] API Base URL: ${API.defaults.baseURL}`);
             API.get(`/rekap/health?month=${analyticMonth}&year=${analyticYear}`)
                 .then((res) => {
-                    console.log("[DEBUG] Health API Success:", res.data);
                     setFinancialHealth(res.data);
                 })
                 .catch((err) => {
-                    console.error("[DEBUG] Health API Error:", {
-                        status: err.response?.status,
-                        statusText: err.response?.statusText,
-                        data: err.response?.data,
-                        message: err.message,
-                        config: err.config?.url
-                    });
+                    console.error("Error fetching financial health:", err);
                     setFinancialHealth({ error: true, details: err.response?.data?.error || err.message });
                 })
                 .finally(() => setFinancialHealthLoading(false));
-        } else {
-            console.log("[DEBUG] Conditions NOT met - loading:", loading, "profile:", !!profile);
         }
     }, [loading, profile, analyticMonth, analyticYear, analyticRefreshNonce]);
 
@@ -466,6 +452,12 @@ export default function Dashboard() {
                                     <div style={{ width: `${((quizStats?.totalExp || 0) % 100)}%`, height: "100%", borderRadius: 6, background: "linear-gradient(90deg, #9FF782, #5dd672)", transition: "width 0.8s ease" }} />
                                 </div>
                             </div>
+                        </div>
+
+                        {/* ── HEALTH SUMMARY CARD ──────────────────────── */}
+                        <div style={{ marginBottom: 24 }}>
+                            <p style={{ fontSize: 11, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 12 }}>📊 KESEHATAN KEUANGAN</p>
+                            <HealthSummaryCard health={financialHealth} loading={financialHealthLoading} />
                         </div>
 
                         {/* ── DAILY QUIZ & LEARNING PATH CARDS ──────────────────────── */}
@@ -705,12 +697,6 @@ export default function Dashboard() {
                                     <p style={{ fontSize: 11, color: "#9ca3af" }}>champion</p>
                                 </div>
                             </div>
-                        </div>
-
-                        {/* ── HEALTH SUMMARY CARD ──────────────────────── */}
-                        <div style={{ marginBottom: 24 }}>
-                            <p style={{ fontSize: 11, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 12 }}>📊 KESEHATAN KEUANGAN</p>
-                            <HealthSummaryCard health={financialHealth} loading={financialHealthLoading} />
                         </div>
 
                         {/* ── AI ANALYTIC (moved to bottom) ──────────────────────── */}
