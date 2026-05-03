@@ -107,7 +107,10 @@ function HealthSummaryCard({ health, loading }) {
                 padding: "20px",
                 border: "2px solid #fecaca",
             }}>
-                <p style={{ color: "#991b1b", fontSize: 14, fontWeight: 600, margin: "0 0 8px 0" }}>⚠️ Gagal memuat kondisi kesehatan keuangan</p>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                    <iconify-icon icon="mdi:alert-circle" style={{ fontSize: 20, color: "#991b1b" }}></iconify-icon>
+                    <p style={{ color: "#991b1b", fontSize: 14, fontWeight: 600, margin: 0 }}>Gagal memuat kondisi kesehatan keuangan</p>
+                </div>
                 {health?.details && (
                     <p style={{ color: "#7f1d1d", fontSize: 12, margin: 0, fontFamily: "monospace", whiteSpace: "pre-wrap" }}>
                         {health.details}
@@ -156,9 +159,10 @@ function HealthSummaryCard({ health, loading }) {
                     justifyContent: "center",
                     flexDirection: "column"
                 }}>
-                    <p style={{ fontSize: 24, margin: 0, marginBottom: 4 }}>
-                        {health.status === "baik" ? "✨" : health.status === "cukup" ? "⚠️" : "📉"}
-                    </p>
+                    <iconify-icon 
+                        icon={health.status === "baik" ? "mdi:emoticon-happy-outline" : health.status === "cukup" ? "mdi:emoticon-neutral-outline" : "mdi:emoticon-sad-outline"}
+                        style={{ fontSize: 40, color: statusColor, marginBottom: 4 }}
+                    ></iconify-icon>
                     <p style={{ fontSize: 13, fontWeight: 700, color: statusColor, margin: 0, textAlign: "center" }}>
                         {status}
                     </p>
@@ -184,7 +188,10 @@ function HealthSummaryCard({ health, loading }) {
             </div>
 
             <div style={{ borderTop: "1px solid #e5e7eb", paddingTop: 12 }}>
-                <p style={{ fontSize: 11, fontWeight: 700, color: "#6b7280", margin: "0 0 8px 0", textTransform: "uppercase" }}>💡 Saran:</p>
+                <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
+                    <iconify-icon icon="mdi:lightbulb-outline" style={{ fontSize: 16, color: "#6b7280" }}></iconify-icon>
+                    <p style={{ fontSize: 11, fontWeight: 700, color: "#6b7280", margin: 0, textTransform: "uppercase" }}>Saran:</p>
+                </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                     {(health.suggestions || []).slice(0, 3).map((suggestion, idx) => (
                         <p key={idx} style={{ fontSize: 12, color: "#374151", margin: 0, lineHeight: 1.4 }}>
