@@ -4,11 +4,14 @@ import API from "../../services/api.js";
 const EMPTY = { title: "", description: "", category: "budgeting", videoUrl: "", content: "", difficulty: "beginner" };
 
 export default function AdminKontenEdukasi({ modules, loading, onRefresh }) {
-    const [form, setForm]         = useState(EMPTY);
-    const [editId, setEditId]     = useState(null);
+    const [form, setForm] = useState(EMPTY);
+    const [editId, setEditId] = useState(null);
     const [showForm, setShowForm] = useState(false);
-    const [saving, setSaving]     = useState(false);
-    const [preview, setPreview]   = useState(null);
+    const [saving, setSaving] = useState(false);
+    const [preview, setPreview] = useState(null);
+    const [searchTerm, setSearchTerm] = useState("");
+    const [filterCategory, setFilterCategory] = useState("all");
+    const [filterDifficulty, setFilterDifficulty] = useState("all");
 
     const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -38,6 +41,16 @@ export default function AdminKontenEdukasi({ modules, loading, onRefresh }) {
         finally { setSaving(false); }
     };
 
+    // Filter modules based on search and filters
+    const filteredModules = modules.filter(mod => {
+        const matchesSearch = mod.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            mod.description.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesCategory = filterCategory === "all" || mod.category === filterCategory;
+        const matchesDifficulty = filterDifficulty === "all" || mod.difficulty === filterDifficulty;
+
+        return matchesSearch && matchesCategory && matchesDifficulty;
+    });
+
     if (loading) return <div className="p-6"><p style={{ color: "#9ca3af" }}>Loading...</p></div>;
 
     return (
@@ -58,14 +71,55 @@ export default function AdminKontenEdukasi({ modules, loading, onRefresh }) {
                 </button>
             </div>
 
-            {/* SEARCH */}
-            <div className="flex mb-6">
-                <div className="flex border rounded-xl overflow-hidden bg-white w-[350px] shadow">
-                    <input type="text"
-                        placeholder="cari artikel atau sumber belajar"
-                        className="flex-1 px-4 py-2 text-sm outline-none" />
+            {/* SEARCH & FILTERS */}
+            <div className="bg-white rounded-xl shadow p-4 mb-6">
+                {/* Search */}
+                <div className="flex items-center gap-4 mb-4">
+                    <input
+                        type="text"
+                        placeholder="Cari judul atau deskripsi konten..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-green-500"
+                    />
+                    <button
+                        onClick={() => setSearchTerm("")}
+                        className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-sm font-semibold transition-all"
+                    >
+                        Reset
+                    </button>
+                </div>
 
-                    <button className="bg-[#0f2e1c] text-white px-4">Cari</button>
+                {/* Filters */}
+                <div className="grid grid-cols-2 gap-4">
+                    <div>
+                        <label className="text-sm font-semibold text-gray-900 mb-2 block">Kategori</label>
+                        <select
+                            value={filterCategory}
+                            onChange={(e) => setFilterCategory(e.target.value)}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-green-500"
+                        >
+                            <option value="all">Semua Kategori</option>
+                            <option value="budgeting">Budgeting</option>
+                            <option value="investing">Investing</option>
+                            <option value="saving">Saving</option>
+                            <option value="debt">Debt</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label className="text-sm font-semibold text-gray-900 mb-2 block">Tingkat Kesulitan</label>
+                        <select
+                            value={filterDifficulty}
+                            onChange={(e) => setFilterDifficulty(e.target.value)}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-green-500"
+                        >
+                            <option value="all">Semua Level</option>
+                            <option value="beginner">Beginner</option>
+                            <option value="intermediate">Intermediate</option>
+                            <option value="advanced">Advanced</option>
+                        </select>
+                    </div>
                 </div>
             </div>
 
@@ -176,7 +230,7 @@ export default function AdminKontenEdukasi({ modules, loading, onRefresh }) {
                     </thead>
 
                     <tbody>
-                        {modules.map((mod, i) => (
+                        {filteredModules.map((mod, i) => (
                             <tr key={mod.id} className="border-t hover:bg-gray-50">
                                 <td className="px-4 py-3 font-semibold">{mod.title}</td>
                                 <td className="px-4 py-3">
@@ -186,16 +240,18 @@ export default function AdminKontenEdukasi({ modules, loading, onRefresh }) {
                                 <td className="px-4 py-3 flex gap-2">
                                     <button
                                         onClick={() => handleEdit(mod)}
-                                        className="text-blue-500 hover:text-blue-700 font-semibold text-xs"
+                                        className="text-blue-500 hover:text-blue-700 font-semibold text-xs flex items-center gap-1"
                                     >
-                                        ✏️ Edit
+                                        <iconify-icon icon="mdi:pencil" className="text-sm"></iconify-icon>
+                                        Edit
                                     </button>
 
                                     <button
                                         onClick={() => handleDelete(mod.id)}
-                                        className="text-red-500 hover:text-red-700 font-semibold text-xs"
+                                        className="text-red-500 hover:text-red-700 font-semibold text-xs flex items-center gap-1"
                                     >
-                                        🗑️ Hapus
+                                        <iconify-icon icon="mdi:trash-can" className="text-sm"></iconify-icon>
+                                        Hapus
                                     </button>
                                 </td>
                             </tr>
@@ -206,6 +262,12 @@ export default function AdminKontenEdukasi({ modules, loading, onRefresh }) {
                 {modules.length === 0 && (
                     <div className="text-center py-8 text-gray-500">
                         Belum ada konten. Tambahkan konten pertama!
+                    </div>
+                )}
+
+                {modules.length > 0 && filteredModules.length === 0 && (
+                    <div className="text-center py-8 text-gray-500">
+                        Tidak ada konten yang sesuai dengan filter pencarian Anda.
                     </div>
                 )}
             </div>

@@ -6,7 +6,7 @@ import 'swiper/css/pagination';
 import { TestimonialCard } from './TestimonialCard';
 import lingkaran from '../assets/lingkaran.png';
 import { db } from '../firebase';
-import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
+import { collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
 
 /**
  * TestimonialPremium - Premium carousel section with glassmorphic cards
@@ -49,14 +49,18 @@ export function TestimonialPremium() {
       try {
         setLoading(true);
         const reviewsRef = collection(db, 'reviews');
-        const q = query(reviewsRef, orderBy('createdAt', 'desc'), limit(20));
+        const q = query(reviewsRef, where('approved', '==', true), limit(20));
         const querySnapshot = await getDocs(q);
-        
+
         const reviews = querySnapshot.docs.map((doc) => ({
           ...doc.data(),
           id: doc.id,
-        }));
-        
+        })).sort((a, b) => {
+          // Sort by createdAt in JavaScript (newest first)
+          return new Date(b.createdAt?.toDate?.() || b.createdAt) - 
+                 new Date(a.createdAt?.toDate?.() || a.createdAt);
+        });
+
         setUserReviews(reviews);
       } catch (error) {
         console.error('Error fetching reviews:', error);
@@ -164,8 +168,7 @@ export function TestimonialPremium() {
                   spaceBetween: 24,
                 },
               }}
-              className="testimonial-swiper"
-              paginationClass="testimonial-pagination"
+              className="testimonial-swiper testimonial-pagination"
             >
               {allTestimonials.map((testimonial, index) => (
                 <SwiperSlide key={index} className="pb-12">

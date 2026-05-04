@@ -125,7 +125,7 @@ export default function Profile() {
                 return;
             }
 
-            // Add review to Firestore
+            // Add review to Firestore - requires admin approval
             await addDoc(collection(db, "reviews"), {
                 name: reviewData.name,
                 review: reviewData.review,
@@ -133,10 +133,11 @@ export default function Profile() {
                 userId: user.uid,
                 userEmail: user.email,
                 createdAt: serverTimestamp(),
-                approved: true, // Auto-approve for now, can be changed to manual approval
+                approved: false,
+                status: "pending",
             });
 
-            setReviewMessage("✅ Review Anda berhasil dikirim! Terima kasih atas feedback Anda.");
+            setReviewMessage("✅ Review Anda berhasil dikirim! Review Anda akan ditampilkan setelah disetujui admin.");
             setTimeout(() => {
                 setReviewMessage("");
             }, 3000);

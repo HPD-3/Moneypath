@@ -143,6 +143,7 @@ export default function Balance() {
     const [summary, setSummary] = useState(null);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState("overview");
+    const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
     const [selectedMonth, setSelectedMonth] = useState(currentMonth());
     const [selectedBalanceFilter, setSelectedBalanceFilter] = useState("all");
     const [currentPage, setCurrentPage] = useState(1);
@@ -375,8 +376,19 @@ export default function Balance() {
                             )}
                         </div>
 
-                        {/* Month picker and action buttons */}
+                        {/* Month & Year picker and action buttons */}
                         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24, flexWrap: "wrap" }}>
+                            <label style={{ fontSize: 13, color: "#6b7280", whiteSpace: "nowrap" }}>Tahun :</label>
+                            <select
+                                value={selectedYear}
+                                onChange={e => setSelectedYear(parseInt(e.target.value))}
+                                style={{ fontSize: 13, border: "1px solid #1a3a1f", borderRadius: 8, padding: "8px 12px", background: "white", color: "#1a3a1f", fontWeight: 600, cursor: "pointer" }}
+                            >
+                                {[2024, 2025, 2026, 2027, 2028].map(year => (
+                                    <option key={year} value={year}>{year}</option>
+                                ))}
+                            </select>
+
                             <label style={{ fontSize: 13, color: "#6b7280", whiteSpace: "nowrap" }}>Bulan :</label>
                             <select
                                 value={selectedMonth}

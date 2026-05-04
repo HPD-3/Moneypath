@@ -38,7 +38,7 @@ export default function AdminDashboard() {
             const vRes = await API.get("/video");
             const pRes = await API.get("/auth/profile");
             const pathRes = await API.get("/learningpath");
-            
+
             setUsers(uRes.data);
             setModules(mRes.data);
             setVideos(vRes.data);
@@ -52,7 +52,7 @@ export default function AdminDashboard() {
             }
             console.error("Error fetching admin data:", err.message);
         }
-        
+
         try {
             const qRes = await API.get("/quiz/questions");
             setQuizQuestions(qRes.data);
@@ -60,7 +60,7 @@ export default function AdminDashboard() {
             console.error("Error fetching quiz questions:", err.message);
             setQuizQuestions([]);
         }
-        
+
         try {
             const tRes = await API.get("/admin/transactions");
             setTransactions(tRes.data);
@@ -68,7 +68,7 @@ export default function AdminDashboard() {
             setTransactions([]);
             console.error("Error fetching transactions:", err.message);
         }
-        
+
         setLoading(false);
     };
 
@@ -139,9 +139,9 @@ export default function AdminDashboard() {
                             {/* DROPDOWN */}
                             {isProfileOpen && (
                                 <div className="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-md overflow-hidden z-50">
-                                    <button onClick={() => navigate("/profil")} className="block w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2 text-gray-900 text-sm">
+                                    <button onClick={() => navigate("/dashboard")} className="block w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2 text-gray-900 text-sm">
                                         <iconify-icon icon="mdi:account-cog"></iconify-icon>
-                                        Kelola Profil
+                                        Kembali Ke User Dashboard
                                     </button>
                                 </div>
                             )}
