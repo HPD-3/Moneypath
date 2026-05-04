@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { auth } from "../firebase.js";
+import { auth, db } from "../firebase.js";
 import API from "../services/api.js";
 import Sidebar from "../components/Sidebar.jsx";
 import Navbar from "../components/Navbar.jsx";
+import { ReviewForm } from "../components/ReviewForm.jsx";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
 export default function Profile() {
     const navigate = useNavigate();
@@ -50,6 +52,12 @@ export default function Profile() {
     const [passwordMessage, setPasswordMessage] = useState("");
     const [editError, setEditError] = useState("");
     const [passwordError, setPasswordError] = useState("");
+
+    // Review submission state
+    const [reviewLoading, setReviewLoading] = useState(false);
+    const [reviewMessage, setReviewMessage] = useState("");
+    const [reviewError, setReviewError] = useState("");
+    const [showReviewModal, setShowReviewModal] = useState(false);
 
     const handleNavigation = (navId) => {
         const routes = {
@@ -101,6 +109,42 @@ export default function Profile() {
             await navigator.clipboard.writeText(uid);
         } catch {
             // ignore (clipboard may be blocked)
+        }
+    };
+
+    // Handle review submission
+    const handleReviewSubmit = async (reviewData) => {
+        try {
+            setReviewError("");
+            setReviewMessage("");
+            setReviewLoading(true);
+
+            const user = auth.currentUser;
+            if (!user) {
+                setReviewError("Anda harus login untuk mengirim review");
+                return;
+            }
+
+            // Add review to Firestore
+            await addDoc(collection(db, "reviews"), {
+                name: reviewData.name,
+                review: reviewData.review,
+                rating: reviewData.rating,
+                userId: user.uid,
+                userEmail: user.email,
+                createdAt: serverTimestamp(),
+                approved: true, // Auto-approve for now, can be changed to manual approval
+            });
+
+            setReviewMessage("✅ Review Anda berhasil dikirim! Terima kasih atas feedback Anda.");
+            setTimeout(() => {
+                setReviewMessage("");
+            }, 3000);
+        } catch (error) {
+            console.error("Error submitting review:", error);
+            setReviewError("❌ Gagal mengirim review. Silakan coba lagi.");
+        } finally {
+            setReviewLoading(false);
         }
     };
 
@@ -331,6 +375,17 @@ export default function Profile() {
                                         >
                                             <iconify-icon icon="mdi:lock"></iconify-icon> Ubah Password
                                         </button>
+
+                                        <button
+                                            onClick={() => {
+                                                setReviewError("");
+                                                setReviewMessage("");
+                                                setShowReviewModal(true);
+                                            }}
+                                            className="flex-1 md:flex-none px-3 md:px-4 py-2 rounded-full bg-[#9FF782] text-green-900 font-semibold hover:bg-green-300 transition-all text-xs md:text-sm flex items-center gap-2 justify-center"
+                                        >
+                                            <iconify-icon icon="mdi:star"></iconify-icon> Bagikan Review
+                                        </button>
                                     </div>
                                 </div>
                             )}
@@ -393,7 +448,7 @@ export default function Profile() {
 
                                     <div className="grid grid-cols-2 gap-4 mb-6">
                                         {/* Total Tabungan */}
-                                        <div className="bg-green-900 text-white p-4 rounded-xl flex flex-col gap-2">
+                                        <div className="bg-[#172619] text-white p-4 rounded-xl flex flex-col gap-2">
                                             <span className="text-xs font-semibold bg-green-400 text-green-900 px-3 py-1 rounded-full w-fit">
                                                 Total Tabungan
                                             </span>
@@ -401,7 +456,7 @@ export default function Profile() {
                                         </div>
 
                                         {/* Total Pengeluaran */}
-                                        <div className="bg-green-900 text-white p-4 rounded-xl flex flex-col gap-2">
+                                        <div className="bg-[#172619] text-white p-4 rounded-xl flex flex-col gap-2">
                                             <span className="text-xs font-semibold bg-green-400 text-green-900 px-3 py-1 rounded-full w-fit">
                                                 Total Pengeluaran
                                             </span>
@@ -409,7 +464,7 @@ export default function Profile() {
                                         </div>
 
                                         {/* Total Pemasukan */}
-                                        <div className="bg-green-900 text-white p-4 rounded-xl flex flex-col gap-2">
+                                        <div className="bg-[#172619] text-white p-4 rounded-xl flex flex-col gap-2">
                                             <span className="text-xs font-semibold bg-green-400 text-green-900 px-3 py-1 rounded-full w-fit">
                                                 Total Pemasukan
                                             </span>
@@ -417,7 +472,7 @@ export default function Profile() {
                                         </div>
 
                                         {/* Target Keuangan */}
-                                        <div className="bg-green-900 text-white p-4 rounded-xl flex flex-col gap-2">
+                                        <div className="bg-[#172619] text-white p-4 rounded-xl flex flex-col gap-2">
                                             <span className="text-xs font-semibold bg-green-400 text-green-900 px-3 py-1 rounded-full w-fit">
                                                 Target Keuangan
                                             </span>
@@ -605,6 +660,33 @@ export default function Profile() {
                                 </div>
                             </div>
                         )}
+
+                        {/* MODAL REVIEW */}
+                        {showReviewModal && (
+                            <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50 backdrop-blur-sm">
+                                <div className="bg-[#0B2E1E] p-8 rounded-2xl w-full max-w-md shadow-2xl border border-white/10 text-white max-h-[90vh] overflow-y-auto">
+                                    <h3 className="text-lg font-bold text-white mb-2">Bagikan Review Anda</h3>
+                                    <p className="text-gray-300 text-sm mb-6">Bantu kami meningkatkan MoneyPath dengan review Anda</p>
+
+                                    {reviewError && <div className="mb-4 p-3 bg-red-900/50 text-red-300 rounded-lg text-sm border border-red-500/30">{reviewError}</div>}
+                                    {reviewMessage && <div className="mb-4 p-3 bg-green-900/50 text-green-300 rounded-lg text-sm border border-green-500/30">{reviewMessage}</div>}
+
+                                    <div className="mb-4">
+                                        <ReviewForm onSubmit={handleReviewSubmit} loading={reviewLoading} />
+                                    </div>
+
+                                    <button
+                                        onClick={() => setShowReviewModal(false)}
+                                        disabled={reviewLoading}
+                                        className="w-full p-3 bg-red-500 text-white font-semibold rounded-lg hover:bg-red-500 transition-all disabled:opacity-50"
+                                    >
+                                        Tutup
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* REMOVE OLD REVIEW SECTION */}
 
                     </div>
                 </div>

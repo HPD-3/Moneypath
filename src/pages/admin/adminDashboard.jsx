@@ -8,6 +8,7 @@ import AdminVideoEdukasi from "./AdminVideoEdukasi.jsx";
 import AdminLearningPath from "./AdminLearningPath.jsx";
 import AdminKontenEdukasi from "./AdminKontenEdukasi.jsx";
 import AdminDailyQuiz from "./AdminDailyQuiz.jsx";
+import AdminReviews from "./AdminReviews.jsx";
 import AdminAktivitas from "./AdminAktivitas.jsx";
 import Sidebar from "./AdminShared.jsx";
 
@@ -172,6 +173,9 @@ export default function AdminDashboard() {
                         )}
                         {active === "dailyquiz" && (
                             <AdminDailyQuiz questions={quizQuestions} loading={loading} onRefresh={fetchAll} />
+                        )}
+                        {active === "review" && (
+                            <AdminReviews />
                         )}
                         {active === "aktivitas" && (
                             <AdminAktivitas />

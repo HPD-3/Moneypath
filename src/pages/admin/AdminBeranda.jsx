@@ -82,7 +82,8 @@ export default function AdminBeranda({ users, modules, videos = [], paths = [], 
                 {[
                     { id: "video", icon: "mdi:play-circle", label: "Mengelola Video Edukasi" },
                     { id: "learning", icon: "mdi:chart-timeline-variant", label: "Mengelola Learning Path" },
-                    { id: "konten", icon: "mdi:file-document", label: "Mengelola Konten Edukasi" },
+                    { id: "dailyquiz", icon: "mdi:brain", label: "Mengelola Daily Quiz" },
+                    { id: "review", icon: "mdi:star", label: "Mengelola Review Pengguna" },
                 ].map(item => (
                     <div key={item.id} className="bg-white p-5 rounded-2xl shadow-md">
                         {/* ICON + TEXT */}

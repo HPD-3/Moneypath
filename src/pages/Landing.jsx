@@ -1,6 +1,9 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 
+// ── Component Imports ──────────────────────────────────────────
+import { TestimonialPremium } from "../components/TestimonialPremium";
+
 // ── Image Imports ─────────────────────────────────────────────
 import logo2 from "../assets/logo2.png";
 import phonemockup from "../assets/phone-mockup (2).png";
@@ -491,83 +494,12 @@ function Features() {
 }
 
 // ── Testimonial Card ──────────────────────────────────────────
-function TestimonialCard({ quote, name, role }) {
-    return (
-        <div className="bg-white text-black p-6 rounded-xl shadow-lg w-[420px]">
-            <p className="text-sm text-gray-700 leading-relaxed">{quote}</p>
-
-            <div className="flex items-center gap-3 mt-6">
-                <div className="w-12 h-12 rounded-full border-2 border-black flex items-center justify-center">
-                    <svg
-                        className="w-6 h-6"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24">
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                        />
-                    </svg>
-                </div>
-
-                <div>
-                    <p className="font-semibold text-sm">{name}</p>
-                    <p className="text-xs text-gray-500">{role}</p>
-                </div>
-            </div>
-        </div>
-    );
-}
+// DEPRECATED: Moved to src/components/TestimonialCard.jsx
+// Please use TestimonialPremium component instead
 
 // ── Testimonial Section ───────────────────────────────────────
-function Testimonial() {
-    return (
-        <section id="testimonial" className="relative bg-[#0B2E1E] text-white py-28 overflow-hidden">
-            <img
-                src={lingkaran}
-                className="absolute w-[800px] md:w-[1000px] opacity-60 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
-                alt=""
-            />
-
-            <div className="text-center">
-                <h2 className="text-sm text-green-300">Testimonial</h2>
-
-                <h3 className="text-4xl mt-3 leading-tight">
-                    Don't take our word for it.
-                    <br />
-                    Over 100+ people trust us
-                </h3>
-            </div>
-
-            <div className="mt-20 relative">
-                <div className="flex gap-8 w-[1400px] mx-auto overflow-x-auto pb-4">
-                    <TestimonialCard
-                        quote="Lebih terarah, bikin keuangan rapi sampai tujuan."
-                        name="Nadia"
-                        role="Student"
-                    />
-                    <TestimonialCard
-                        quote="Aplikasinya sangat membantu buat ngatur keuangan harian. Jadi lebih sadar pengeluaran dan bisa mulai nabung dengan teratur."
-                        name="Hannah"
-                        role="Product engineer"
-                    />
-                    <TestimonialCard
-                        quote="Web ini keren banget! Tampilannya simpel tapi fiturnya lengkap, mulai dari catat keuangan, tabungan, sampai learning path."
-                        name="Ammar"
-                        role="Programmer"
-                    />
-                    <TestimonialCard
-                        quote="Rekap bulanan membantu memahami keuangan lebih baik."
-                        name="Lilya"
-                        role="Programmer"
-                    />
-                </div>
-            </div>
-        </section>
-    );
-}
+// DEPRECATED: Moved to src/components/TestimonialPremium.jsx
+// Please use TestimonialPremium component instead
 
 function ImportantStuff() {
     const [expandedItem, setExpandedItem] = useState(2);
@@ -711,7 +643,7 @@ export default function LandingPage() {
                 />
                 <Hero />
                 <Features />
-                <Testimonial />
+                <TestimonialPremium />
                 <ImportantStuff />
                 <CTA onGetStarted={() => navigate("/register")} />
                 <Footer />

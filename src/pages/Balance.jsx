@@ -106,7 +106,7 @@ function Modal({ title, onClose, children }) {
 function InputField({ label, error, ...props }) {
     return (
         <div>
-            {label && <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{label}</label>}
+            {label && <label className="block text-sm font-medium text-[#9FF782] dark:text-[#9FF782] mb-1">{label}</label>}
             <input
                 {...props}
                 style={{ background: "white", borderColor: "#9FF782", color: "#1a3a1f" }}
@@ -124,7 +124,7 @@ function InputField({ label, error, ...props }) {
 function SelectField({ label, children, ...props }) {
     return (
         <div>
-            {label && <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{label}</label>}
+            {label && <label className="block text-sm font-medium text-text-[#9FF782] dark:text-[#9FF782] mb-1">{label}</label>}
             <select
                 {...props}
                 style={{ background: "white", borderColor: "#9FF782", color: "#1a3a1f" }}
@@ -883,7 +883,7 @@ export default function Balance() {
                                             { label: 'Total Saldo', value: balances.reduce((sum, b) => sum + (b.balance || 0), 0), color: 'bg-purple-600 dark:bg-purple-700', textColor: 'text-white dark:text-purple-100' }
                                         ].map((stat, idx) => (
                                             <div key={idx} className={`${stat.color} border border-gray-100 dark:border-gray-800 rounded-2xl p-4`}>
-                                                <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">{stat.label}</p>
+                                                <p className="text-xs text-white dark:text-white mb-1">{stat.label}</p>
                                                 <p className={`font-bold text-lg ${stat.textColor}`}>{formatRp(stat.value)}</p>
                                             </div>
                                         ));
@@ -1014,7 +1014,7 @@ export default function Balance() {
                                     <button
                                         type="submit"
                                         disabled={submitting}
-                                        style={{ background: "white", color: "#172619" }}
+                                        style={{ background: "#9FF782", color: "#172619" }}
                                         className="w-full disabled:opacity-60 text-white py-3 rounded-xl font-semibold text-sm transition hover:opacity-90"
                                     >
                                         {submitting ? "Menyimpan..." : "Simpan Transaksi"}
@@ -1062,7 +1062,7 @@ export default function Balance() {
                                     <button
                                         type="submit"
                                         disabled={submitting}
-                                        style={{ background: "white", color: "#172619" }}
+                                        style={{ background: "#9FF782", color: "#172619" }}
                                         className="w-full disabled:opacity-60 text-white py-3 rounded-xl font-semibold text-sm transition hover:opacity-90"
                                     >
                                         {submitting ? "Menyimpan..." : "Buat Sumber Dana"}
