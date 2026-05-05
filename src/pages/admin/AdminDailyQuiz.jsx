@@ -75,80 +75,111 @@ export default function AdminDailyQuiz({ questions = [], loading, onRefresh }) {
 
                 {/* Form */}
                 {showForm && (
-                    <form onSubmit={handleSubmit} style={{ background: "#f8fdf8", border: "1px solid #d1fae5", borderRadius: 10, padding: 16, marginBottom: 20 }}>
-                        <div className="form-group full" style={{ marginBottom: 12 }}>
-                            <label className="form-label">Pertanyaan *</label>
+                    <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sm:p-8 mb-8">
+                        <h3 className="text-2xl font-bold text-gray-900 mb-6">{editId ? "Edit Soal" : "Tambah Soal Baru"}</h3>
+
+                        <div className="mb-6">
+                            <label className="text-sm font-semibold text-gray-700 mb-2 block">Pertanyaan *</label>
                             <textarea value={form.question} onChange={e => setForm({ ...form, question: e.target.value })}
-                                required className="form-input" rows={2} placeholder="Tulis pertanyaan quiz..." />
+                                required className="w-full px-4 py-3 rounded-xl border border-gray-300 text-gray-900 text-sm outline-none focus:border-[#9FF782] focus:ring-2 focus:ring-[#9FF782]/20 transition-all resize-none"
+                                rows={3} placeholder="Tulis pertanyaan quiz..." />
                         </div>
 
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
-                            <div className="form-group">
-                                <label className="form-label">Kategori</label>
-                                <select value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} className="form-input">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
+                            <div>
+                                <label className="text-sm font-semibold text-gray-700 mb-2 block">Kategori</label>
+                                <select value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} 
+                                    className="w-full px-4 py-3 rounded-xl border border-gray-300 text-gray-900 text-sm outline-none focus:border-[#9FF782] focus:ring-2 focus:ring-[#9FF782]/20 transition-all">
                                     {CATEGORIES.map(c => <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</option>)}
                                 </select>
                             </div>
-                            <div className="form-group">
-                                <label className="form-label">Jawaban Benar</label>
-                                <select value={form.correctIndex} onChange={e => setForm({ ...form, correctIndex: parseInt(e.target.value) })} className="form-input">
+                            <div>
+                                <label className="text-sm font-semibold text-gray-700 mb-2 block">Jawaban Benar</label>
+                                <select value={form.correctIndex} onChange={e => setForm({ ...form, correctIndex: parseInt(e.target.value) })} 
+                                    className="w-full px-4 py-3 rounded-xl border border-gray-300 text-gray-900 text-sm outline-none focus:border-[#9FF782] focus:ring-2 focus:ring-[#9FF782]/20 transition-all">
                                     {["A", "B", "C", "D"].map((l, i) => <option key={i} value={i}>Pilihan {l}</option>)}
                                 </select>
                             </div>
                         </div>
 
-                        <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 12 }}>
-                            {form.options.map((opt, i) => (
-                                <div key={i} style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                                    <span style={{ width: 28, height: 28, borderRadius: "50%", background: form.correctIndex === i ? "#1a3a1f" : "#f3f4f6", color: form.correctIndex === i ? "#9FF782" : "#9ca3af", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, flexShrink: 0 }}>
-                                        {String.fromCharCode(65 + i)}
-                                    </span>
-                                    <input value={opt} onChange={e => handleOption(i, e.target.value)}
-                                        required className="form-input" placeholder={`Pilihan ${String.fromCharCode(65 + i)}`} />
-                                    {form.correctIndex === i && <span style={{ fontSize: 11, color: "#166534", fontWeight: 700, whiteSpace: "nowrap" }}>✓ Benar</span>}
-                                </div>
-                            ))}
+                        <div className="mb-6">
+                            <label className="text-sm font-semibold text-gray-700 mb-3 block">Pilihan Jawaban</label>
+                            <div className="space-y-3">
+                                {form.options.map((opt, i) => (
+                                    <div key={i} className="flex items-center gap-3">
+                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-sm ${
+                                            form.correctIndex === i 
+                                                ? 'bg-[#0f2e1c] text-[#9FF782]' 
+                                                : 'bg-gray-100 text-gray-600'
+                                        }`}>
+                                            {String.fromCharCode(65 + i)}
+                                        </div>
+                                        <input value={opt} onChange={e => handleOption(i, e.target.value)}
+                                            required className="flex-1 px-4 py-3 rounded-xl border border-gray-300 text-gray-900 text-sm outline-none focus:border-[#9FF782] focus:ring-2 focus:ring-[#9FF782]/20 transition-all"
+                                            placeholder={`Pilihan ${String.fromCharCode(65 + i)}`} />
+                                        {form.correctIndex === i && (
+                                            <span className="text-[#166534] font-bold text-sm whitespace-nowrap">✓ Benar</span>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
                         </div>
 
-                        <div className="form-actions">
-                            <button type="button" className="btn-cancel" onClick={() => { setShowForm(false); setEditId(null); }}>Batal</button>
-                            <button type="submit" disabled={saving} className="btn-save">{saving ? "Menyimpan..." : editId ? "Update Soal" : "Simpan Soal"}</button>
+                        <div className="flex flex-col sm:flex-row gap-3 justify-end">
+                            <button type="button" className="px-6 py-3 rounded-xl border border-gray-300 text-gray-700 font-semibold hover:bg-gray-50 transition-all"
+                                onClick={() => { setShowForm(false); setEditId(null); }}>Batal</button>
+                            <button type="submit" disabled={saving} 
+                                className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#9FF782] to-[#7dd65f] text-gray-900 font-semibold hover:shadow-lg hover:shadow-[#9FF782]/30 disabled:opacity-50 transition-all flex items-center justify-center gap-2">
+                                {saving && <iconify-icon icon="mdi:loading" className="animate-spin"></iconify-icon>}
+                                {saving ? "Menyimpan..." : editId ? "Update Soal" : "Simpan Soal"}
+                            </button>
                         </div>
                     </form>
                 )}
 
                 {/* Question List */}
-                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                <div className="space-y-4">
                     {questions.map((q, i) => (
-                        <div key={q.id} style={{ background: "white", border: "1px solid #f3f4f6", borderRadius: 10, padding: 14 }}>
-                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, marginBottom: 10 }}>
-                                <div style={{ flex: 1 }}>
-                                    <div style={{ display: "flex", gap: 8, marginBottom: 6 }}>
-                                        <span style={{ fontSize: 11, color: "#9ca3af" }}>#{i + 1}</span>
-                                        <span style={{ fontSize: 10, fontWeight: 600, background: "#e8fce0", color: "#166534", padding: "1px 6px", borderRadius: 20, textTransform: "capitalize" }}>{q.category}</span>
+                        <div key={q.id} className="bg-white border border-gray-200 rounded-2xl p-6 hover:border-gray-300 hover:shadow-md transition-all">
+                            <div className="flex justify-between items-start gap-4 mb-4">
+                                <div className="flex-1">
+                                    <div className="flex items-center gap-3 mb-2">
+                                        <span className="text-xs font-semibold text-gray-500">#{i + 1}</span>
+                                        <span className="px-3 py-1 text-xs font-semibold bg-[#e8fce0] text-[#166534] rounded-full capitalize">{q.category}</span>
                                     </div>
-                                    <p style={{ fontWeight: 600, fontSize: 14, color: "#1a3a1f" }}>{q.question}</p>
+                                    <p className="font-bold text-base text-gray-900 leading-relaxed">{q.question}</p>
                                 </div>
-                                <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
-                                    <button className="btn-edit" onClick={() => handleEdit(q)}>✏️ Edit</button>
-                                    <button className="btn-delete" onClick={() => handleDelete(q.id)}>🗑️</button>
+                                <div className="flex gap-2 flex-shrink-0">
+                                    <button onClick={() => handleEdit(q)} 
+                                        className="p-2 hover:bg-gray-100 rounded-lg text-gray-600 hover:text-gray-900 transition-all" title="Edit">
+                                        ✏️
+                                    </button>
+                                    <button onClick={() => handleDelete(q.id)} 
+                                        className="p-2 hover:bg-red-50 rounded-lg text-gray-400 hover:text-red-600 transition-all" title="Delete">
+                                        🗑️
+                                    </button>
                                 </div>
                             </div>
-                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 {q.options?.map((opt, j) => (
-                                    <div key={j} style={{ fontSize: 12, padding: "6px 10px", borderRadius: 6, background: j === q.correctIndex ? "#dcfce7" : "#f9fafb", color: j === q.correctIndex ? "#166534" : "#6b7280", border: j === q.correctIndex ? "1px solid #86efac" : "1px solid #f3f4f6", fontWeight: j === q.correctIndex ? 600 : 400, display: "flex", gap: 6 }}>
-                                        <span style={{ flexShrink: 0 }}>{String.fromCharCode(65 + j)}.</span>
-                                        <span>{opt}</span>
-                                        {j === q.correctIndex && <span style={{ marginLeft: "auto" }}>✓</span>}
+                                    <div key={j} className={`px-4 py-3 rounded-lg border-2 text-sm font-medium flex items-center gap-2 transition-all ${
+                                        j === q.correctIndex 
+                                            ? 'bg-[#dcfce7] border-[#86efac] text-[#166534]' 
+                                            : 'bg-gray-50 border-gray-200 text-gray-700'
+                                    }`}>
+                                        <span className="flex-shrink-0 font-bold">{String.fromCharCode(65 + j)}.</span>
+                                        <span className="flex-1">{opt}</span>
+                                        {j === q.correctIndex && <span className="flex-shrink-0">✓</span>}
                                     </div>
                                 ))}
                             </div>
                         </div>
                     ))}
                     {questions.length === 0 && (
-                        <div style={{ textAlign: "center", padding: 40, color: "#9ca3af" }}>
-                            <p style={{ fontSize: 36, marginBottom: 10 }}>📭</p>
-                            <p>Belum ada soal. Tambahkan soal pertama!</p>
+                        <div className="text-center py-16 text-gray-400">
+                            <p className="text-5xl mb-4">📭</p>
+                            <p className="text-base">Belum ada soal. Tambahkan soal pertama!</p>
                         </div>
                     )}
                 </div>

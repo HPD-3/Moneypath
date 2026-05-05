@@ -139,7 +139,7 @@ export default function AdminDashboard() {
                             {/* DROPDOWN */}
                             {isProfileOpen && (
                                 <div className="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-md overflow-hidden z-50">
-                                    <button onClick={() => navigate("/dashboard")} className="block w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2 text-gray-900 text-sm">
+                                    <button onClick={() => navigate("/dashboard")} className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2 text-gray-900 text-sm">
                                         <iconify-icon icon="mdi:account-cog"></iconify-icon>
                                         Kembali Ke User Dashboard
                                     </button>

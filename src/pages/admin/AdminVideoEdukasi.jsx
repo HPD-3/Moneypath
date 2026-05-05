@@ -82,37 +82,37 @@ export default function AdminVideoEdukasi({ loading, onRefresh, videos = [] }) {
     if (loading) return <div className="p-6"><p className="text-gray-400">Loading...</p></div>;
 
     return (
-        <div className="p-6 bg-gray-50 min-h-screen">
-            {/* TITLE */}
-            <div className="flex justify-between items-center mb-4">
+        <div className="p-4 sm:p-6 bg-gray-50 min-h-screen">
+            {/* HEADER */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
                 <div>
-                    <h2 className="heading text-lg">Manajemen Vidio Edukasi</h2>
-                    <p className="text-sm">Kelola semua vidio pembelajaran investasi</p>
+                    <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-1">Manajemen Video Edukasi</h1>
+                    <p className="text-gray-600 text-sm">Kelola semua video pembelajaran investasi</p>
                 </div>
 
                 <button
                     onClick={() => { setForm(EMPTY); setEditId(null); setShowForm(!showForm); setError(null); }}
-                    className="bg-[#0f2e1c] text-white px-5 py-2 rounded-lg flex items-center gap-2 shadow hover:opacity-90"
+                    className="w-full sm:w-auto bg-gradient-to-r from-[#9FF782] to-[#7dd65f] text-gray-900 px-6 py-3 rounded-xl font-semibold flex items-center justify-center gap-2 shadow-sm hover:shadow-md transition-all"
                 >
-                    <iconify-icon icon="mdi:plus"></iconify-icon>
-                    {showForm ? "Batal" : "Tambah Vidio"}
+                    <iconify-icon icon="mdi:plus" className="text-lg"></iconify-icon>
+                    {showForm ? "Batal" : "Tambah Video"}
                 </button>
             </div>
 
             {/* SEARCH + FILTER */}
-            <div className="bg-white rounded-xl shadow p-4 mb-6">
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-8">
                 {/* Search */}
-                <div className="flex items-center gap-4 mb-4">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mb-6">
                     <input 
                         type="text"
                         placeholder="Cari judul atau deskripsi video..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-green-500"
+                        className="flex-1 px-4 py-3 border border-gray-300 rounded-xl text-sm outline-none focus:border-[#9FF782] focus:ring-2 focus:ring-[#9FF782]/20 transition-all"
                     />
                     <button 
                         onClick={() => setSearchTerm("")}
-                        className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-sm font-semibold transition-all"
+                        className="px-6 py-3 bg-gray-100 hover:bg-gray-200 rounded-xl text-sm font-semibold transition-all whitespace-nowrap"
                     >
                         Reset
                     </button>
@@ -120,14 +120,14 @@ export default function AdminVideoEdukasi({ loading, onRefresh, videos = [] }) {
 
                 {/* Category Filter */}
                 <div>
-                    <label className="text-sm font-semibold text-gray-900 mb-2 block">Kategori</label>
+                    <label className="text-sm font-semibold text-gray-700 mb-3 block">Filter Kategori</label>
                     <div className="flex flex-wrap gap-2">
                         <button
                             onClick={() => setFilterCategory("all")}
-                            className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                                 filterCategory === "all" 
-                                    ? "bg-[#0f2e1c] text-white" 
-                                    : "bg-gray-200 text-gray-900 hover:bg-gray-300"
+                                    ? "bg-[#0f2e1c] text-white shadow-md" 
+                                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                             }`}
                         >
                             Semua
@@ -136,10 +136,10 @@ export default function AdminVideoEdukasi({ loading, onRefresh, videos = [] }) {
                             <button
                                 key={cat}
                                 onClick={() => setFilterCategory(cat)}
-                                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+                                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                                     filterCategory === cat 
-                                        ? "bg-[#0f2e1c] text-white" 
-                                        : "bg-gray-200 text-gray-900 hover:bg-gray-300"
+                                        ? "bg-[#0f2e1c] text-white shadow-md" 
+                                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                                 }`}
                             >
                                 {cat.charAt(0).toUpperCase() + cat.slice(1)}
@@ -151,11 +151,11 @@ export default function AdminVideoEdukasi({ loading, onRefresh, videos = [] }) {
 
             {/* FORM */}
             {showForm && (
-                <form onSubmit={handleSubmit} className="bg-[#0f2e1c] text-white rounded-xl p-6 shadow-lg mb-6">
-                    <h3 className="text-lg font-bold mb-4">{editId ? "Edit Video" : "Tambah Video Edukasi"}</h3>
+                <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-gray-100 mb-6">
+                    <h3 className="text-2xl font-bold text-gray-900 mb-6">{editId ? "Edit Video" : "Tambah Video Edukasi"}</h3>
 
-                    <div className="mb-4">
-                        <label className="text-sm">Judul Vidio *</label>
+                    <div className="mb-6">
+                        <label className="text-sm font-semibold text-gray-700 mb-2 block">Judul Video *</label>
                         <input
                             type="text"
                             name="title"
@@ -163,117 +163,125 @@ export default function AdminVideoEdukasi({ loading, onRefresh, videos = [] }) {
                             onChange={handleChange}
                             placeholder="Masukkan judul video"
                             required
-                            className="w-full mt-1 px-4 py-2 rounded bg-white text-black text-sm outline-none"
+                            className="w-full px-4 py-3 rounded-xl border border-gray-300 text-gray-900 text-sm outline-none focus:border-[#9FF782] focus:ring-2 focus:ring-[#9FF782]/20 transition-all"
                         />
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4 mb-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
                         <div>
-                            <label className="text-sm">Link Video</label>
+                            <label className="text-sm font-semibold text-gray-700 mb-2 block">Link YouTube</label>
                             <input
                                 type="text"
                                 name="youtubeUrl"
                                 value={form.youtubeUrl}
                                 onChange={handleChange}
-                                placeholder="Tuliskan link..."
+                                placeholder="https://youtube.com/watch?v=..."
                                 required
-                                className="w-full mt-1 px-3 py-2 rounded bg-white text-black text-sm outline-none"
+                                className="w-full px-4 py-3 rounded-xl border border-gray-300 text-gray-900 text-sm outline-none focus:border-[#9FF782] focus:ring-2 focus:ring-[#9FF782]/20 transition-all"
                             />
                         </div>
 
                         <div>
-                            <label className="text-sm">Durasi</label>
-                            <div className="flex items-center gap-2 mt-1">
-                                <input
-                                    type="text"
-                                    name="duration"
-                                    value={form.duration}
-                                    onChange={handleChange}
-                                    placeholder="00:00"
-                                    className="w-24 px-3 py-2 rounded bg-white text-black text-sm outline-none"
-                                />
-                                <span className="text-sm">Menit</span>
-                            </div>
+                            <label className="text-sm font-semibold text-gray-700 mb-2 block">Durasi (Menit)</label>
+                            <input
+                                type="text"
+                                name="duration"
+                                value={form.duration}
+                                onChange={handleChange}
+                                placeholder="00:00"
+                                className="w-full px-4 py-3 rounded-xl border border-gray-300 text-gray-900 text-sm outline-none focus:border-[#9FF782] focus:ring-2 focus:ring-[#9FF782]/20 transition-all"
+                            />
                         </div>
                     </div>
 
-                    <div className="mb-4">
-                        <label className="text-sm">Kategori</label>
+                    <div className="mb-6">
+                        <label className="text-sm font-semibold text-gray-700 mb-2 block">Kategori</label>
                         <select
                             name="category"
                             value={form.category}
                             onChange={handleChange}
-                            className="w-full mt-1 px-3 py-2 rounded bg-white text-black text-sm"
+                            className="w-full px-4 py-3 rounded-xl border border-gray-300 text-gray-900 text-sm outline-none focus:border-[#9FF782] focus:ring-2 focus:ring-[#9FF782]/20 transition-all"
                         >
                             {CATEGORIES.map(c => <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</option>)}
                         </select>
                     </div>
 
                     <div className="mb-6">
-                        <label className="text-sm">Deskripsi</label>
+                        <label className="text-sm font-semibold text-gray-700 mb-2 block">Deskripsi</label>
                         <textarea
                             name="description"
                             value={form.description}
                             onChange={handleChange}
-                            placeholder="Tulis deskripsi singkat"
-                            className="w-full mt-1 px-3 py-2 rounded bg-white text-black text-sm outline-none"
-                            rows={3}
+                            placeholder="Tulis deskripsi singkat tentang video..."
+                            className="w-full px-4 py-3 rounded-xl border border-gray-300 text-gray-900 text-sm outline-none focus:border-[#9FF782] focus:ring-2 focus:ring-[#9FF782]/20 transition-all resize-none"
+                            rows={4}
                         ></textarea>
                     </div>
 
                     {error && (
-                        <div className="bg-red-500/20 border border-red-500 text-red-300 px-4 py-2 rounded mb-4">
-                            ⚠️ {error}
+                        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-6 flex items-start gap-3">
+                            <iconify-icon icon="mdi:alert-circle" className="text-xl flex-shrink-0 mt-0.5"></iconify-icon>
+                            <span>{error}</span>
                         </div>
                     )}
 
-                    <div className="flex gap-3">
-                        <button
-                            type="submit"
-                            disabled={saving}
-                            className="bg-[#9FF782] text-black px-6 py-2 rounded font-semibold hover:opacity-90"
-                        >
-                            {saving ? "Menyimpan..." : editId ? "Update" : "Simpan"}
-                        </button>
-
+                    <div className="flex flex-col sm:flex-row gap-3 justify-end">
                         <button
                             type="button"
                             onClick={() => { setShowForm(false); setEditId(null); setError(null); }}
-                            className="border border-white px-6 py-2 rounded hover:bg-white/10"
+                            className="px-6 py-3 rounded-xl border border-gray-300 text-gray-700 font-semibold hover:bg-gray-50 transition-all"
                         >
                             Batal
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={saving}
+                            className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#9FF782] to-[#7dd65f] text-gray-900 font-semibold hover:shadow-lg hover:shadow-[#9FF782]/30 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
+                        >
+                            {saving && <iconify-icon icon="mdi:loading" className="animate-spin"></iconify-icon>}
+                            {saving ? "Menyimpan..." : editId ? "Update" : "Simpan"}
                         </button>
                     </div>
                 </form>
             )}
 
             {/* CARDS */}
-            <div className="grid grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredVideos.map(v => (
-                    <div key={v.id} className="bg-white p-4 rounded-xl shadow hover:shadow-lg transition">
-                        <img src={v.thumbnail} alt={v.title} className="mb-3 rounded-lg w-full aspect-video object-cover" />
+                    <div key={v.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-md hover:border-gray-200 transition-all overflow-hidden group">
+                        <div className="relative overflow-hidden">
+                            <img src={v.thumbnail} alt={v.title} className="w-full aspect-video object-cover group-hover:scale-105 transition-transform duration-300" />
+                            <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm px-3 py-1 rounded-full text-white text-xs font-semibold">
+                                {v.duration}
+                            </div>
+                        </div>
 
-                        <h3 className="font-semibold">{v.title}</h3>
-                        <p className="text-xs text-gray-500">Durasi : {v.duration || "—"}</p>
-                        <p className="text-xs text-gray-500 mb-2">Kategori : {v.category}</p>
+                        <div className="p-4">
+                            <h3 className="font-semibold text-gray-900 text-sm line-clamp-2 mb-2">{v.title}</h3>
+                            <p className="text-xs text-gray-500 mb-3 line-clamp-2">{v.description}</p>
+                            
+                            <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
+                                <span className="text-xs bg-[#9FF782]/10 text-[#0f2e1c] px-2 py-1 rounded-full font-medium capitalize">{v.category}</span>
+                            </div>
 
-                        <p className="text-xs text-gray-600 mb-3">{v.description}</p>
+                            {/* ACTION BUTTONS */}
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={() => handleEdit(v)}
+                                    className="flex-1 px-3 py-2 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold text-xs flex items-center justify-center gap-1 transition-all"
+                                >
+                                    <iconify-icon icon="mdi:pencil" className="text-sm"></iconify-icon>
+                                    Edit
+                                </button>
 
-                        {/* BUTTON */}
-                        <div className="flex gap-2">
-                            <button
-                                onClick={() => handleEdit(v)}
-                                className="bg-[#B7FF9F] px-3 py-1 text-sm rounded flex items-center gap-1 hover:opacity-80"
-                            >
-                                <iconify-icon icon="mdi:pencil"></iconify-icon> Edit
-                            </button>
-
-                            <button
-                                onClick={() => handleDelete(v.id)}
-                                className="bg-red-500 text-white px-3 py-1 text-sm rounded flex items-center gap-1 hover:bg-red-600"
-                            >
-                                <iconify-icon icon="mdi:trash-can"></iconify-icon> Hapus
-                            </button>
+                                <button
+                                    onClick={() => handleDelete(v.id)}
+                                    className="flex-1 px-3 py-2 rounded-lg bg-red-50 hover:bg-red-100 text-red-700 font-semibold text-xs flex items-center justify-center gap-1 transition-all"
+                                >
+                                    <iconify-icon icon="mdi:trash-can" className="text-sm"></iconify-icon>
+                                    Hapus
+                                </button>
+                            </div>
                         </div>
                     </div>
                 ))}
