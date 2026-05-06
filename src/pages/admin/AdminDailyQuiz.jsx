@@ -152,11 +152,11 @@ export default function AdminDailyQuiz({ questions = [], loading, onRefresh }) {
                                 <div className="flex gap-2 flex-shrink-0">
                                     <button onClick={() => handleEdit(q)} 
                                         className="p-2 hover:bg-gray-100 rounded-lg text-gray-600 hover:text-gray-900 transition-all" title="Edit">
-                                        ✏️
+                                        <iconify-icon icon="mdi:pen"></iconify-icon>
                                     </button>
                                     <button onClick={() => handleDelete(q.id)} 
                                         className="p-2 hover:bg-red-50 rounded-lg text-gray-400 hover:text-red-600 transition-all" title="Delete">
-                                        🗑️
+                                        <iconify-icon icon="mdi:trash-can"></iconify-icon>
                                     </button>
                                 </div>
                             </div>

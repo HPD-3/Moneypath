@@ -1,8 +1,7 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import API from "../../services/api.js";
 import RichTextEditor from "../../components/RichTextEditor.jsx";
-import StyledAlert, { useAlert, useConfirm, ConfirmDialog } from "../../components/StyledAlert.jsx";
+import StyledAlert, { useAlert } from "../../components/StyledAlert.jsx";
 
 const CATEGORIES = ["budgeting", "investing", "saving", "debt"];
 const DIFFICULTIES = ["beginner", "intermediate", "advanced"];
@@ -107,7 +106,6 @@ function ModuleEditor({ pathId, modules, onRefresh }) {
     const [show, setShow] = useState(false);
     const [saving, setSaving] = useState(false);
     const [expanded, setExpanded] = useState(null);
-    const { confirm, showConfirm, hideConfirm } = useConfirm();
 
     const handleEdit = m => {
         setForm({ title: m.title, content: m.content, order: m.order });
@@ -115,13 +113,9 @@ function ModuleEditor({ pathId, modules, onRefresh }) {
     };
 
     const handleDelete = async id => {
-        showConfirm(
-            "Hapus modul ini? Semua konten dan kuis akan dihapus.",
-            async () => {
-                await API.delete(`/learningpath/${pathId}/modules/${id}`);
-                onRefresh();
-            }
-        );
+        if (!confirm("Hapus modul ini? Semua konten dan kuis akan dihapus.")) return;
+        await API.delete(`/learningpath/${pathId}/modules/${id}`);
+        onRefresh();
     };
 
     const handleSubmit = async e => {
@@ -140,12 +134,6 @@ function ModuleEditor({ pathId, modules, onRefresh }) {
 
     return (
         <div style={{ marginTop: 18 }}>
-            <ConfirmDialog 
-                message={confirm?.message} 
-                onConfirm={confirm?.onConfirm}
-                onCancel={confirm?.onCancel}
-                onClose={hideConfirm}
-            />
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
                 <div>
                     <span style={{ fontSize: 14, fontWeight: 700, color: "#1a3a1f" }}>📦 Modul Pembelajaran</span>
@@ -184,7 +172,7 @@ function ModuleEditor({ pathId, modules, onRefresh }) {
                             />
                         </div>
                         <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
-                            <button type="button" style={{ fontSize: 12, background: "#f3f4f6", color: "#6b7280", border: "none", borderRadius: 8, padding: "8px 16px", cursor: "pointer", fontWeight: 600, fontFamily: "Plus Jakarta Sans, sans-serif", transition: "all 0.2s ease" }} 
+                            <button type="button" style={{ fontSize: 12, background: "#f3f4f6", color: "#6b7280", border: "none", borderRadius: 8, padding: "8px 16px", cursor: "pointer", fontWeight: 600, fontFamily: "Plus Jakarta Sans, sans-serif", transition: "all 0.2s ease" }}
                                 onClick={() => { setShow(false); setEditId(null); }}>Batal</button>
                             <button type="submit" disabled={saving} style={{ fontSize: 12, background: saving ? "#d1d5db" : "#9FF782", color: saving ? "#9ca3af" : "#0a1f10", border: "none", borderRadius: 8, padding: "8px 16px", cursor: saving ? "not-allowed" : "pointer", fontWeight: 600, fontFamily: "Plus Jakarta Sans, sans-serif", transition: "all 0.2s ease" }}>
                                 {saving ? "⏳ Menyimpan..." : editId ? "💾 Update Modul" : "💾 Simpan Modul"}
@@ -216,16 +204,16 @@ function ModuleEditor({ pathId, modules, onRefresh }) {
                                     </div>
                                 </div>
                                 <div style={{ display: "flex", gap: 8 }}>
-                                    <button 
+                                    <button
                                         style={{ background: "#eff6ff", color: "#0369a1", border: "1px solid #cffafe", borderRadius: 6, padding: "6px 10px", cursor: "pointer", fontSize: 11, fontWeight: 600, fontFamily: "Plus Jakarta Sans, sans-serif", transition: "all 0.2s ease" }}
                                         onMouseEnter={e => { e.target.style.background = "#0369a1"; e.target.style.color = "white"; }}
                                         onMouseLeave={e => { e.target.style.background = "#eff6ff"; e.target.style.color = "#0369a1"; }}
-                                        onClick={e => { e.stopPropagation(); handleEdit(m); }}>✏️ Edit</button>
-                                    <button 
+                                        onClick={e => { e.stopPropagation(); handleEdit(m); }}><iconify-icon icon="mdi:pen"></iconify-icon> Edit</button>
+                                    <button
                                         style={{ background: "#fee2e2", color: "#991b1b", border: "1px solid #fecaca", borderRadius: 6, padding: "6px 10px", cursor: "pointer", fontSize: 11, fontWeight: 600, fontFamily: "Plus Jakarta Sans, sans-serif", transition: "all 0.2s ease" }}
                                         onMouseEnter={e => { e.target.style.background = "#991b1b"; e.target.style.color = "white"; }}
                                         onMouseLeave={e => { e.target.style.background = "#fee2e2"; e.target.style.color = "#991b1b"; }}
-                                        onClick={e => { e.stopPropagation(); handleDelete(m.id); }}>🗑️ Hapus</button>
+                                        onClick={e => { e.stopPropagation(); handleDelete(m.id); }}><iconify-icon icon="mdi:trash-can"></iconify-icon> Hapus</button>
                                 </div>
                                 <span style={{ color: "#9ca3af", fontSize: 14, marginLeft: 4, transition: "transform 0.2s ease", transform: expanded === m.id ? "rotate(0deg)" : "rotate(0deg)" }}>{expanded === m.id ? "▲" : "▼"}</span>
                             </div>
@@ -249,32 +237,41 @@ function ModuleEditor({ pathId, modules, onRefresh }) {
 
 // ── Main Admin Learning Path ──────────────────────────────────
 export default function AdminLearningPath({ paths = [], loading, onRefresh }) {
-    const navigate = useNavigate();
     const EMPTY_P = { title: "", description: "", category: "budgeting", difficulty: "beginner", estimatedTime: "", photoUrl: "" };
     const [form, setForm] = useState(EMPTY_P);
+    const [editId, setEditId] = useState(null);
     const [showForm, setShowForm] = useState(false);
     const [saving, setSaving] = useState(false);
-    const { alert, showAlert, hideAlert } = useAlert();
-    const { confirm, showConfirm, hideConfirm } = useConfirm();
+    const [expanded, setExpanded] = useState(null);
 
-    const handleCreateNew = () => {
-        setForm(EMPTY_P);
-        setShowForm(true);
+    const handleEdit = p => {
+        setForm({ title: p.title, description: p.description, category: p.category, difficulty: p.difficulty, estimatedTime: p.estimatedTime || "", photoUrl: p.photoUrl || "" });
+        setEditId(p.id); setShowForm(true);
+    };
+
+    const handleDelete = async id => {
+        if (!confirm("Hapus learning path ini?")) return;
+        await API.delete(`/learningpath/${id}`);
+        onRefresh();
     };
 
     const handleSubmit = async e => {
         e.preventDefault();
         setSaving(true);
         try {
-            const response = await API.post("/learningpath", form);
-            console.log("Create response:", response.data);
-            setForm(EMPTY_P);
-            setShowForm(false);
-            showAlert("Learning path berhasil dibuat", "success");
+            const payload = { ...form };
+            if (editId) {
+                const response = await API.put(`/learningpath/${editId}`, payload);
+                console.log("Update response:", response.data);
+            } else {
+                const response = await API.post("/learningpath", payload);
+                console.log("Create response:", response.data);
+            }
+            setForm(EMPTY_P); setEditId(null); setShowForm(false);
             onRefresh();
         } catch (err) {
             console.error("Submit error:", err);
-            showAlert("Gagal membuat path: " + err.message, "error");
+            alert("Gagal menyimpan: " + err.message);
         }
         finally { setSaving(false); }
     };
@@ -283,13 +280,6 @@ export default function AdminLearningPath({ paths = [], loading, onRefresh }) {
 
     return (
         <div className="page">
-            <StyledAlert message={alert?.message} type={alert?.type} onClose={hideAlert} />
-            <ConfirmDialog 
-                message={confirm?.message} 
-                onConfirm={confirm?.onConfirm}
-                onCancel={confirm?.onCancel}
-                onClose={hideConfirm}
-            />
             <div className="panel">
                 <div className="panel-header">
                     <p className="section-title" style={{ margin: 0 }}>Kelola Learning Path</p>
@@ -302,7 +292,7 @@ export default function AdminLearningPath({ paths = [], loading, onRefresh }) {
                 {showForm && (
                     <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sm:p-8 mb-8">
                         <h3 className="text-2xl font-bold text-gray-900 mb-6">{editId ? "Edit Learning Path" : "Buat Learning Path Baru"}</h3>
-                        
+
                         <div className="grid grid-cols-1 gap-6 mb-6">
                             <div>
                                 <label className="text-sm font-semibold text-gray-700 mb-2 block">Judul Learning Path *</label>
@@ -318,7 +308,7 @@ export default function AdminLearningPath({ paths = [], loading, onRefresh }) {
                                     placeholder="https://..." />
                                 {form.photoUrl && (
                                     <div className="mt-4 rounded-2xl overflow-hidden border border-gray-200 shadow-sm">
-                                        <img src={form.photoUrl} alt="Preview" className="w-full h-48 object-cover" 
+                                        <img src={form.photoUrl} alt="Preview" className="w-full h-48 object-cover"
                                             onError={e => { e.target.style.display = "none"; }} />
                                     </div>
                                 )}
@@ -328,7 +318,7 @@ export default function AdminLearningPath({ paths = [], loading, onRefresh }) {
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
                             <div>
                                 <label className="text-sm font-semibold text-gray-700 mb-2 block">Kategori</label>
-                                <select value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} 
+                                <select value={form.category} onChange={e => setForm({ ...form, category: e.target.value })}
                                     className="w-full px-4 py-3 rounded-xl border border-gray-300 text-gray-900 text-sm outline-none focus:border-[#9FF782] focus:ring-2 focus:ring-[#9FF782]/20 transition-all">
                                     {CATEGORIES.map(c => <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</option>)}
                                 </select>
@@ -336,7 +326,7 @@ export default function AdminLearningPath({ paths = [], loading, onRefresh }) {
 
                             <div>
                                 <label className="text-sm font-semibold text-gray-700 mb-2 block">Tingkat Kesulitan</label>
-                                <select value={form.difficulty} onChange={e => setForm({ ...form, difficulty: e.target.value })} 
+                                <select value={form.difficulty} onChange={e => setForm({ ...form, difficulty: e.target.value })}
                                     className="w-full px-4 py-3 rounded-xl border border-gray-300 text-gray-900 text-sm outline-none focus:border-[#9FF782] focus:ring-2 focus:ring-[#9FF782]/20 transition-all">
                                     {DIFFICULTIES.map(d => <option key={d} value={d}>{d.charAt(0).toUpperCase() + d.slice(1)}</option>)}
                                 </select>
@@ -360,7 +350,7 @@ export default function AdminLearningPath({ paths = [], loading, onRefresh }) {
                         <div className="flex flex-col sm:flex-row gap-3 justify-end">
                             <button type="button" className="px-6 py-3 rounded-xl border border-gray-300 text-gray-700 font-semibold hover:bg-gray-50 transition-all"
                                 onClick={() => { setShowForm(false); setEditId(null); }}>Batal</button>
-                            <button type="submit" disabled={saving} 
+                            <button type="submit" disabled={saving}
                                 className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#9FF782] to-[#7dd65f] text-gray-900 font-semibold hover:shadow-lg hover:shadow-[#9FF782]/30 disabled:opacity-50 transition-all flex items-center justify-center gap-2">
                                 {saving && <iconify-icon icon="mdi:loading" className="animate-spin"></iconify-icon>}
                                 {saving ? "Menyimpan..." : editId ? "Update Path" : "Buat Path"}
@@ -387,8 +377,8 @@ export default function AdminLearningPath({ paths = [], loading, onRefresh }) {
                                 </div>
                             </div>
                             <div style={{ display: "flex", gap: 6 }}>
-                                <button className="btn-edit" onClick={e => { e.stopPropagation(); handleEdit(p); }}>✏️ Edit</button>
-                                <button className="btn-delete" onClick={e => { e.stopPropagation(); handleDelete(p.id); }}>🗑️</button>
+                                <button className="btn-edit" onClick={e => { e.stopPropagation(); handleEdit(p); }}> <iconify-icon icon="mdi:pen"></iconify-icon> Edit</button>
+                                <button className="btn-delete" onClick={e => { e.stopPropagation(); handleDelete(p.id); }}><iconify-icon icon="mdi:trash-can"></iconify-icon></button>
                             </div>
                             <span style={{ color: "#9ca3af", fontSize: 14 }}>{expanded === p.id ? "▲" : "▼"}</span>
                         </div>

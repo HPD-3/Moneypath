@@ -623,7 +623,6 @@ export default function Balance() {
                                                             <th style={{ padding: "12px 16px", textAlign: "left", fontSize: 12, fontWeight: 700, color: "#6b7280", textTransform: "uppercase", letterSpacing: 0.5 }}>Deskripsi</th>
                                                             <th style={{ padding: "12px 16px", textAlign: "left", fontSize: 12, fontWeight: 700, color: "#6b7280", textTransform: "uppercase", letterSpacing: 0.5 }}>Sumber</th>
                                                             <th style={{ padding: "12px 16px", textAlign: "right", fontSize: 12, fontWeight: 700, color: "#6b7280", textTransform: "uppercase", letterSpacing: 0.5 }}>Jumlah</th>
-                                                            <th style={{ padding: "12px 16px", textAlign: "center", fontSize: 12, fontWeight: 700, color: "#6b7280", textTransform: "uppercase", letterSpacing: 0.5 }}>Aksi</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
@@ -655,25 +654,6 @@ export default function Balance() {
                                                                     color: tx.type === "income" ? "#059669" : "#dc2626"
                                                                 }}>
                                                                     {tx.type === "income" ? "+" : "-"}{formatRp(tx.amount)}
-                                                                </td>
-                                                                <td style={{ padding: "12px 16px", textAlign: "center" }}>
-                                                                    <button
-                                                                        onClick={() => handleDeleteTx(tx)}
-                                                                        style={{
-                                                                            background: "none",
-                                                                            border: "none",
-                                                                            color: "#ef4444",
-                                                                            fontSize: 16,
-                                                                            cursor: "pointer",
-                                                                            fontWeight: 700,
-                                                                            transition: "color 0.2s"
-                                                                        }}
-                                                                        onMouseEnter={(e) => e.currentTarget.style.color = "#b91c1c"}
-                                                                        onMouseLeave={(e) => e.currentTarget.style.color = "#ef4444"}
-                                                                        title="Hapus transaksi"
-                                                                    >
-                                                                        ×
-                                                                    </button>
                                                                 </td>
                                                             </tr>
                                                         ))}
