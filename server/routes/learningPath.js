@@ -13,7 +13,20 @@ const router = Router();
 router.get("/", verifyToken, async (req, res) => {
     try {
         const snap  = await db.collection("learningPaths").get();
-        const paths = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const paths = snap.docs.map(doc => {
+            const data = doc.data();
+            return { 
+                id: doc.id, 
+                title: data.title,
+                description: data.description,
+                category: data.category,
+                difficulty: data.difficulty,
+                estimatedTime: data.estimatedTime,
+                photoUrl: data.photoUrl,
+                totalModules: data.totalModules || 0,
+                createdAt: data.createdAt
+            };
+        });
         paths.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         res.json(paths);
     } catch (err) { res.status(500).json({ error: err.message }); }

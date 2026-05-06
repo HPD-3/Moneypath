@@ -1,5 +1,6 @@
 import { useState } from "react";
 import API from "../../services/api.js";
+import StyledAlert, { useAlert, useConfirm, ConfirmDialog } from "../../components/StyledAlert.jsx";
 
 const EMPTY = {
     title: "", description: "", category: "budgeting",
@@ -23,6 +24,8 @@ export default function AdminVideoEdukasi({ loading, onRefresh, videos = [] }) {
     const [preview, setPreview]   = useState(null);
     const [searchTerm, setSearchTerm] = useState("");
     const [filterCategory, setFilterCategory] = useState("all");
+    const { alert, showAlert, hideAlert } = useAlert();
+    const { confirm, showConfirm, hideConfirm } = useConfirm();
 
     const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -40,13 +43,13 @@ export default function AdminVideoEdukasi({ loading, onRefresh, videos = [] }) {
     };
 
     const handleDelete = async id => {
-        if (!confirm("Hapus video ini?")) return;
-        try {
-            await API.delete(`/video/${id}`);
-            onRefresh();
-        } catch (err) {
-            alert("Gagal menghapus: " + err.message);
-        }
+        showConfirm(
+            "Hapus video ini?",
+            async () => {
+                await API.delete(`/video/${id}`);
+                onRefresh();
+            }
+        );
     };
 
     const handleSubmit = async e => {
@@ -83,6 +86,13 @@ export default function AdminVideoEdukasi({ loading, onRefresh, videos = [] }) {
 
     return (
         <div className="p-4 sm:p-6 bg-gray-50 min-h-screen">
+            <StyledAlert message={alert?.message} type={alert?.type} onClose={hideAlert} />
+            <ConfirmDialog 
+                message={confirm?.message} 
+                onConfirm={confirm?.onConfirm}
+                onCancel={confirm?.onCancel}
+                onClose={hideConfirm}
+            />
             {/* HEADER */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
                 <div>

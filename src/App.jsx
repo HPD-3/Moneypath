@@ -20,6 +20,7 @@ const RekapBulanan = lazy(() => import("./pages/RekapBulanan.jsx"));
 const SharedBalance = lazy(() => import("./pages/SharedBalance.jsx"));
 const SharedTabungan = lazy(() => import("./pages/SharedTabungan.jsx"));
 const AdminProfile = lazy(() => import("./pages/admin/AdminProfile.jsx"));
+const AdminLearningPathDetail = lazy(() => import("./pages/admin/AdminLearningPathDetail.jsx"));
 
 function LoadingFallback() {
   return (
@@ -102,6 +103,9 @@ function App() {
         } />
         <Route path="/admin/profile" element={
           <AdminRoute><AdminProfile /></AdminRoute>
+        } />
+        <Route path="/admin/learning-path/:pathId" element={
+          <AdminRoute><AdminLearningPathDetail /></AdminRoute>
         } />
         <Route path="/shared-balance" element={<ProtectedRoute><SharedBalance /></ProtectedRoute>} />
         <Route path="/shared-tabungan" element={<ProtectedRoute><SharedTabungan /></ProtectedRoute>} />

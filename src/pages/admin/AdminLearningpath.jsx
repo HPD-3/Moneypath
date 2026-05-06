@@ -1,6 +1,8 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import API from "../../services/api.js";
 import RichTextEditor from "../../components/RichTextEditor.jsx";
+import StyledAlert, { useAlert, useConfirm, ConfirmDialog } from "../../components/StyledAlert.jsx";
 
 const CATEGORIES = ["budgeting", "investing", "saving", "debt"];
 const DIFFICULTIES = ["beginner", "intermediate", "advanced"];
@@ -105,6 +107,7 @@ function ModuleEditor({ pathId, modules, onRefresh }) {
     const [show, setShow] = useState(false);
     const [saving, setSaving] = useState(false);
     const [expanded, setExpanded] = useState(null);
+    const { confirm, showConfirm, hideConfirm } = useConfirm();
 
     const handleEdit = m => {
         setForm({ title: m.title, content: m.content, order: m.order });
@@ -112,9 +115,13 @@ function ModuleEditor({ pathId, modules, onRefresh }) {
     };
 
     const handleDelete = async id => {
-        if (!confirm("Hapus modul ini? Semua konten dan kuis akan dihapus.")) return;
-        await API.delete(`/learningpath/${pathId}/modules/${id}`);
-        onRefresh();
+        showConfirm(
+            "Hapus modul ini? Semua konten dan kuis akan dihapus.",
+            async () => {
+                await API.delete(`/learningpath/${pathId}/modules/${id}`);
+                onRefresh();
+            }
+        );
     };
 
     const handleSubmit = async e => {
@@ -124,7 +131,7 @@ function ModuleEditor({ pathId, modules, onRefresh }) {
             editId
                 ? await API.put(`/learningpath/${pathId}/modules/${editId}`, form)
                 : await API.post(`/learningpath/${pathId}/modules`, form);
-            setForm({ ...EMPTY_M, order: modules.length + 2 });
+            setForm({ ...EMPTY_M, order: modules.length + 1 });
             setEditId(null); setShow(false);
             onRefresh();
         } catch (err) { console.error(err); }
@@ -133,6 +140,12 @@ function ModuleEditor({ pathId, modules, onRefresh }) {
 
     return (
         <div style={{ marginTop: 18 }}>
+            <ConfirmDialog 
+                message={confirm?.message} 
+                onConfirm={confirm?.onConfirm}
+                onCancel={confirm?.onCancel}
+                onClose={hideConfirm}
+            />
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
                 <div>
                     <span style={{ fontSize: 14, fontWeight: 700, color: "#1a3a1f" }}>📦 Modul Pembelajaran</span>
@@ -236,41 +249,32 @@ function ModuleEditor({ pathId, modules, onRefresh }) {
 
 // ── Main Admin Learning Path ──────────────────────────────────
 export default function AdminLearningPath({ paths = [], loading, onRefresh }) {
+    const navigate = useNavigate();
     const EMPTY_P = { title: "", description: "", category: "budgeting", difficulty: "beginner", estimatedTime: "", photoUrl: "" };
     const [form, setForm] = useState(EMPTY_P);
-    const [editId, setEditId] = useState(null);
     const [showForm, setShowForm] = useState(false);
     const [saving, setSaving] = useState(false);
-    const [expanded, setExpanded] = useState(null);
+    const { alert, showAlert, hideAlert } = useAlert();
+    const { confirm, showConfirm, hideConfirm } = useConfirm();
 
-    const handleEdit = p => {
-        setForm({ title: p.title, description: p.description, category: p.category, difficulty: p.difficulty, estimatedTime: p.estimatedTime || "", photoUrl: p.photoUrl || "" });
-        setEditId(p.id); setShowForm(true);
-    };
-
-    const handleDelete = async id => {
-        if (!confirm("Hapus learning path ini?")) return;
-        await API.delete(`/learningpath/${id}`);
-        onRefresh();
+    const handleCreateNew = () => {
+        setForm(EMPTY_P);
+        setShowForm(true);
     };
 
     const handleSubmit = async e => {
         e.preventDefault();
         setSaving(true);
         try {
-            const payload = { ...form };
-            if (editId) {
-                const response = await API.put(`/learningpath/${editId}`, payload);
-                console.log("Update response:", response.data);
-            } else {
-                const response = await API.post("/learningpath", payload);
-                console.log("Create response:", response.data);
-            }
-            setForm(EMPTY_P); setEditId(null); setShowForm(false);
+            const response = await API.post("/learningpath", form);
+            console.log("Create response:", response.data);
+            setForm(EMPTY_P);
+            setShowForm(false);
+            showAlert("Learning path berhasil dibuat", "success");
             onRefresh();
-        } catch (err) { 
+        } catch (err) {
             console.error("Submit error:", err);
-            alert("Gagal menyimpan: " + err.message);
+            showAlert("Gagal membuat path: " + err.message, "error");
         }
         finally { setSaving(false); }
     };
@@ -279,6 +283,13 @@ export default function AdminLearningPath({ paths = [], loading, onRefresh }) {
 
     return (
         <div className="page">
+            <StyledAlert message={alert?.message} type={alert?.type} onClose={hideAlert} />
+            <ConfirmDialog 
+                message={confirm?.message} 
+                onConfirm={confirm?.onConfirm}
+                onCancel={confirm?.onCancel}
+                onClose={hideConfirm}
+            />
             <div className="panel">
                 <div className="panel-header">
                     <p className="section-title" style={{ margin: 0 }}>Kelola Learning Path</p>

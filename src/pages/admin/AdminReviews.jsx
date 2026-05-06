@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { db } from "../../firebase";
 import { collection, query, orderBy, getDocs, updateDoc, deleteDoc, doc } from "firebase/firestore";
+import StyledAlert, { useAlert, useConfirm, ConfirmDialog } from "../../components/StyledAlert.jsx";
 
 export default function AdminReviews() {
     const [reviews, setReviews] = useState([]);
@@ -8,6 +9,8 @@ export default function AdminReviews() {
     const [filter, setFilter] = useState("all"); // all, pending, approved, rejected
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedReview, setSelectedReview] = useState(null);
+    const { alert, showAlert, hideAlert } = useAlert();
+    const { confirm, showConfirm, hideConfirm } = useConfirm();
 
     useEffect(() => {
         fetchReviews();
@@ -41,7 +44,7 @@ export default function AdminReviews() {
             fetchReviews();
         } catch (error) {
             console.error("Error approving review:", error);
-            alert("Gagal menyetujui review");
+            showAlert("Gagal menyetujui review", "error");
         }
     };
 
@@ -52,20 +55,19 @@ export default function AdminReviews() {
             fetchReviews();
         } catch (error) {
             console.error("Error rejecting review:", error);
-            alert("Gagal menolak review");
+            showAlert("Gagal menolak review", "error");
         }
     };
 
     const handleDelete = async (reviewId) => {
-        if (!confirm("Hapus review ini?")) return;
-        try {
-            await deleteDoc(doc(db, "reviews", reviewId));
-            fetchReviews();
-            setSelectedReview(null);
-        } catch (error) {
-            console.error("Error deleting review:", error);
-            alert("Gagal menghapus review");
-        }
+        showConfirm(
+            "Hapus review ini?",
+            async () => {
+                await deleteDoc(doc(db, "reviews", reviewId));
+                fetchReviews();
+                setSelectedReview(null);
+            }
+        );
     };
 
     const getReviewStatus = (review) => {
@@ -101,6 +103,13 @@ export default function AdminReviews() {
 
     return (
         <div className="p-6">
+            <StyledAlert message={alert?.message} type={alert?.type} onClose={hideAlert} />
+            <ConfirmDialog 
+                message={confirm?.message} 
+                onConfirm={confirm?.onConfirm}
+                onCancel={confirm?.onCancel}
+                onClose={hideConfirm}
+            />
             {/* HEADER */}
             <div className="flex justify-between items-center mb-6">
                 <div>
