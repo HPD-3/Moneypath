@@ -6,7 +6,7 @@ import { TestimonialPremium } from "../components/TestimonialPremium";
 
 // ── Image Imports ─────────────────────────────────────────────
 import logo2 from "../assets/logo2.png";
-import phonemockup from "../assets/phone-mockup (2).png";
+import phonemockup from "../assets/Handphone1.jpeg";
 import budget from "../assets/budget.png";
 import lingkaran from "../assets/lingkaran.png";
 
@@ -299,11 +299,19 @@ function Hero() {
                 </p>
             </div>
 
-            <div className="relative fade-up mt-10 md:mt-0">
-                <div className="absolute w-[400px] h-[400px] bg-green-400 opacity-20 blur-3xl rounded-full top-10 left-10"></div>
+            <div className="relative mt-10 md:mt-0 flex justify-center">
+                <div className="absolute w-[280px] h-[280px] bg-green-400/20 blur-3xl rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"></div>
+
                 <img
                     src={phonemockup}
-                    className="w-[360px] md:w-[500px] relative z-10 translate-y-10 md:translate-y-18"
+                    className="
+            relative z-10
+            w-[160px]
+            md:w-[240px]
+            lg:w-[280px]
+            object-contain
+            rounded-3xl
+        "
                     alt="Phone mockup"
                 />
             </div>

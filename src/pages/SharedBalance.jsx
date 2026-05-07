@@ -30,7 +30,7 @@ function GroupCard({ group, uid, onClick }) {
 
             <div style={{ flex: 1 }}>
                 <p style={{ fontWeight: 700, fontSize: 14, color: "#1a3a1f", marginBottom: 8 }}>{group.name}</p>
-                
+
                 <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                     {/* Member badge */}
                     <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
@@ -84,7 +84,7 @@ function CreateModal({ onClose, onCreate }) {
                 <div style={{ display: "flex", justifyContent: "center", marginBottom: 16 }}>
                     <div style={{ width: 40, height: 4, borderRadius: 2, background: "#e5e7eb" }} />
                 </div>
-                <h2 style={{ fontWeight: 700, fontSize: 18, color: "#1a3a1f", marginBottom: 20 }}>🤝 Buat Saldo Bersama</h2>
+                <h2 style={{ fontWeight: 700, fontSize: 18, color: "#1a3a1f", marginBottom: 20 }}>Buat Saldo Bersama</h2>
                 <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                     <div>
                         <label style={{ fontSize: 11, fontWeight: 600, color: "#4b5563", display: "block", marginBottom: 4 }}>Nama Grup *</label>

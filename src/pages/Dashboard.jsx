@@ -617,9 +617,30 @@ export default function Dashboard() {
                         </div>
 
                         {/* ── BOTTOM GRID: Recap + Other Features ──────────────────────── */}
-                        <div data-responsive-grid-2 style={{ display: "grid", gridTemplateColumns: "0.7fr 1.3fr", gap: 16, marginBottom: 24 }}>
+                        <div data-responsive-grid-2 style={{
+                            display: "grid",
+                            gridTemplateColumns: "0.7fr 1.3fr",
+                            gap: 16,
+                            marginBottom: 24,
+                            alignItems: "stretch"
+                        }}>
                             {/* Recap Card */}
-                            <div style={{ background: "white", borderRadius: 16, padding: "20px", border: "2px solid #d1d5db", cursor: "pointer", transition: "all 0.2s", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center" }}
+                            <div
+                                style={{
+                                    background: "white",
+                                    borderRadius: 16,
+                                    padding: "20px",
+                                    border: "2px solid #d1d5db",
+                                    cursor: "pointer",
+                                    transition: "all 0.2s",
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    textAlign: "center",
+                                    minHeight: 180,
+                                    height: "100%"
+                                }}
                                 onClick={() => navigate("/rekap")}
                                 onMouseEnter={e => {
                                     e.currentTarget.style.borderColor = "#9FF782";
@@ -638,7 +659,13 @@ export default function Dashboard() {
                             </div>
 
                             {/* Stats Section */}
-                            <div style={{ display: "grid", gridTemplateRows: "1fr 1fr", gap: 16 }}>
+                            <div
+                                style={{
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    height: "100%",
+                                }}
+                            >
                                 {/* XP History */}
                                 <div style={{ background: "#fff8e6", borderRadius: 16, padding: "16px", border: "2px solid #fde68a", cursor: "pointer", transition: "all 0.2s", minHeight: 180 }}
                                     onClick={() => navigate("/quiz")}
@@ -667,22 +694,6 @@ export default function Dashboard() {
                                             <p style={{ fontSize: 11, color: "#b45309", textAlign: "center", padding: "8px" }}>Belum ada riwayat XP</p>
                                         )}
                                     </div>
-                                </div>
-
-                                {/* Target Stats */}
-                                <div style={{ background: "#f0f9ff", borderRadius: 16, padding: "16px", border: "2px solid #bfdbfe", cursor: "pointer", transition: "all 0.2s", minHeight: 180, display: "flex", flexDirection: "column", justifyContent: "center" }}
-                                    onClick={() => navigate("/learning")}
-                                    onMouseEnter={e => {
-                                        e.currentTarget.style.borderColor = "#0284c7";
-                                        e.currentTarget.style.boxShadow = "0 8px 16px rgba(2, 132, 199, 0.1)";
-                                    }}
-                                    onMouseLeave={e => {
-                                        e.currentTarget.style.borderColor = "#bfdbfe";
-                                        e.currentTarget.style.boxShadow = "none";
-                                    }}>
-                                    <iconify-icon icon="mdi:trending-up" style={{ fontSize: 32, marginBottom: 8, color: "#0c4a6e" }}></iconify-icon>
-                                    <p style={{ fontSize: 14, fontWeight: 800, color: "#0c4a6e" }}>Belajar & Berkembang</p>
-                                    <p style={{ fontSize: 11, color: "#0284c7" }}>Akses Learning Path</p>
                                 </div>
                             </div>
                         </div>
