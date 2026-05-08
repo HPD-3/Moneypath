@@ -10,6 +10,7 @@ import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 export default function Profile() {
     const navigate = useNavigate();
     const [profile, setProfile] = useState(null);
+    const [quizStats, setQuizStats] = useState(null);
     const [personal, setPersonal] = useState(null);
     const [error, setError] = useState(null);
     const [showEdit, setShowEdit] = useState(false);
@@ -284,6 +285,22 @@ export default function Profile() {
         fetchPersonal();
     }, [profile, navigate]);
 
+    // 🔹 Fetch Quiz Stats for XP
+    useEffect(() => {
+        if (!profile) return;
+
+        const fetchQuizStats = async () => {
+            try {
+                const res = await API.get("/quiz/stats");
+                setQuizStats(res.data);
+            } catch (err) {
+                console.error("Error fetching quiz stats:", err);
+            }
+        };
+
+        fetchQuizStats();
+    }, [profile]);
+
     // 🔹 Fetch Financial Data
     useEffect(() => {
         const fetchFinancialData = async () => {
@@ -352,7 +369,7 @@ export default function Profile() {
                                             <p className="text-gray-200 m-0 text-sm md:text-base">{profile.email}</p>
                                             <div className="flex items-center gap-2 mt-2 justify-center sm:justify-start">
                                                 <span className="inline-block w-2 h-2 bg-green-400 rounded-full"></span>
-                                                <span className="text-xs md:text-sm text-green-200">Level 2 - Saving & Budgeting</span>
+                                                <span className="text-xs md:text-sm text-green-200">Total XP: {quizStats?.totalExp || 0}</span>
                                             </div>
                                         </div>
                                     </div>

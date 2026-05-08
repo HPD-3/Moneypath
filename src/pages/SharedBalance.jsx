@@ -591,11 +591,13 @@ export default function SharedBalance() {
 
                 <div className="flex-1 overflow-y-auto bg-gray-50">
                     <div style={{ maxWidth: 1200, margin: "0 auto", padding: "40px 20px" }}>
-
                         {/* Header Section */}
-                        <div style={{ marginBottom: 32 }}>
-                            <h1 style={{ fontSize: 28, fontWeight: 800, color: "#1a3a1f", marginBottom: 4 }}>Saldo Bersama</h1>
-                            <p style={{ fontSize: 13, color: "#6b7280" }}>Buat grup sekarang dan capai target keuanganmu bersama-teman-teman!</p>
+                        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
+                            <button onClick={() => navigate("/dashboard")} style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", padding: 0 }}>←</button>
+                            <div>
+                                <h1 style={{ fontSize: 28, fontWeight: 800, color: "#1a3a1f", marginBottom: 4 }}>Saldo Bersama</h1>
+                                <p style={{ fontSize: 13, color: "#6b7280" }}>Buat grup sekarang dan capai target keuanganmu bersama-teman-teman!</p>
+                            </div>
                         </div>
 
                         {/* Daftar Grup Section with Action Buttons */}

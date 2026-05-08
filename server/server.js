@@ -14,6 +14,7 @@ import cronRoutes from "./routes/cron.js";
 import sharedBalanceRoutes from "./routes/sharedbalance.js";
 import sharedTabunganRoutes from "./routes/sharedTabungan.js";
 import analyticsRoutes from "./routes/analytics.js";
+import rekapExportRoutes from "./routes/rekapExport.js";
 
 
 const app = express();
@@ -58,6 +59,7 @@ app.use("/quiz", quizRoutes);
 app.use("/tabungan", tabunganRoutes);
 app.post("/api/send-email", sendEmailHandler);
 app.use("/rekap", rekapRoutes);
+app.use("/rekap", rekapExportRoutes);
 app.use("/cron", cronRoutes);
 app.use("/shared-balance", sharedBalanceRoutes);
 app.use("/shared-tabungan", sharedTabunganRoutes);

@@ -19,6 +19,7 @@ export default function RekapBulanan() {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [sending, setSending] = useState(false);
+    const [exporting, setExporting] = useState(null);
     const [sent, setSent] = useState(false);
     const [error, setError] = useState(null);
     const [ready, setReady] = useState(false);
@@ -91,6 +92,61 @@ export default function RekapBulanan() {
             setSending(false);
         }
     };
+    const handleExportPdf = async () => {
+        if (!data) return;
+
+        setExporting("pdf");
+        try {
+            const response = await API.get("/rekap/export/pdf", {
+                params: { year, month },
+                responseType: "blob",
+            });
+
+            const blob = new Blob([response.data], { type: "application/pdf" });
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = `rekap-${MONTHS[month].toLowerCase()}-${year}.pdf`;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(url);
+        } catch (err) {
+            console.error("Error exporting PDF:", err);
+            setError(err.message || "Gagal export PDF");
+        } finally {
+            setExporting(null);
+        }
+    };
+
+    const handleExportExcel = async () => {
+        if (!data) return;
+
+        setExporting("excel");
+        try {
+            const response = await API.get("/rekap/export/excel", {
+                params: { year, month },
+                responseType: "blob",
+            });
+
+            const blob = new Blob([response.data], {
+                type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            });
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = `rekap-${MONTHS[month].toLowerCase()}-${year}.xlsx`;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(url);
+        } catch (err) {
+            console.error("Error exporting Excel:", err);
+            setError(err.message || "Gagal export Excel");
+        } finally {
+            setExporting(null);
+        }
+    };
 
     const handleNavigation = (navId) => {
         const routes = {
@@ -139,6 +195,26 @@ export default function RekapBulanan() {
                                     Lihat
                                 </button>
                             </div>
+
+                            {/* Export Buttons */}
+                            {!loading && data && (
+                                <div style={{ display: "flex", gap: 10, marginBottom: 20, flexWrap: "wrap" }}>
+                                    <button
+                                        onClick={handleExportPdf}
+                                        disabled={exporting === "pdf"}
+                                        style={{ flex: 1, minWidth: 160, background: exporting === "pdf" ? "#9ca3af" : "#0f2a18", color: "white", border: "none", borderRadius: 12, padding: "12px 16px", fontSize: 13, fontWeight: 700, cursor: exporting === "pdf" ? "not-allowed" : "pointer", fontFamily: "Plus Jakarta Sans, sans-serif" }}
+                                    >
+                                        {exporting === "pdf" ? "Mengekspor PDF..." : "📄 Export PDF"}
+                                    </button>
+                                    <button
+                                        onClick={handleExportExcel}
+                                        disabled={exporting === "excel"}
+                                        style={{ flex: 1, minWidth: 160, background: exporting === "excel" ? "#9ca3af" : "#166534", color: "white", border: "none", borderRadius: 12, padding: "12px 16px", fontSize: 13, fontWeight: 700, cursor: exporting === "excel" ? "not-allowed" : "pointer", fontFamily: "Plus Jakarta Sans, sans-serif" }}
+                                    >
+                                        {exporting === "excel" ? "Mengekspor Excel..." : "📊 Export Excel"}
+                                    </button>
+                                </div>
+                            )}
 
                             {/* Send Email Button */}
                             {!loading && data && (

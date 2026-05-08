@@ -53,17 +53,17 @@ function VideoCard({ video, onClick }) {
 }
 
 export default function VideoEdukasi() {
-    const navigate                    = useNavigate();
-    const [videos, setVideos]         = useState([]);
-    const [loading, setLoading]       = useState(true);
+    const navigate = useNavigate();
+    const [videos, setVideos] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [activeCategory, setActive] = useState("semua");
-    const [playing, setPlaying]       = useState(null);
-    const [search, setSearch]         = useState("");
-    
+    const [playing, setPlaying] = useState(null);
+    const [search, setSearch] = useState("");
+
     // New state for sidebar and navbar
-    const [profile, setProfile]         = useState(null);
-    const [personal, setPersonal]       = useState(null);
-    const [activeNav, setActiveNav]     = useState("edukasi");
+    const [profile, setProfile] = useState(null);
+    const [personal, setPersonal] = useState(null);
+    const [activeNav, setActiveNav] = useState("edukasi");
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -103,7 +103,7 @@ export default function VideoEdukasi() {
                 const res = await API.get("/video");
                 console.log("Full response:", res);
                 console.log("Response data:", res.data);
-                
+
                 // Handle both array and object responses
                 let videoArray = [];
                 if (Array.isArray(res.data)) {
@@ -112,7 +112,7 @@ export default function VideoEdukasi() {
                     // If data is an object, check for a videos property
                     videoArray = res.data.videos || [];
                 }
-                
+
                 console.log("Final video array:", videoArray);
                 setVideos(videoArray);
             } catch (err) {
@@ -126,10 +126,10 @@ export default function VideoEdukasi() {
     }, []);
 
     const filtered = videos.filter(v => {
-        const matchCat   = activeCategory === "semua" || (v && v.category === activeCategory);
-        const matchSearch = !search || 
-                           (v && v.title && v.title.toLowerCase().includes(search.toLowerCase())) ||
-                           (v && v.description && v.description.toLowerCase().includes(search.toLowerCase()));
+        const matchCat = activeCategory === "semua" || (v && v.category === activeCategory);
+        const matchSearch = !search ||
+            (v && v.title && v.title.toLowerCase().includes(search.toLowerCase())) ||
+            (v && v.description && v.description.toLowerCase().includes(search.toLowerCase()));
         return matchCat && matchSearch;
     });
 
