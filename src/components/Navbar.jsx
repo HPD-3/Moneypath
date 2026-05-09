@@ -249,7 +249,7 @@ export default function Navbar({ profile, personal, isSidebarOpen, setSidebarOpe
                         flex: "0 1 300px",
                         minWidth: 200,
                     }}>
-                        <input 
+                        <input
                             type="text"
                             placeholder={isMobile ? "Cari..." : "Cari Fitur..."}
                             value={searchQuery}
@@ -271,7 +271,7 @@ export default function Navbar({ profile, personal, isSidebarOpen, setSidebarOpe
                                 setTimeout(() => setShowSearchResults(false), 200);
                             }}
                         />
-                        <iconify-icon 
+                        <iconify-icon
                             icon="mdi:magnify"
                             style={{
                                 position: "absolute",
@@ -734,7 +734,7 @@ export default function Navbar({ profile, personal, isSidebarOpen, setSidebarOpe
                             to { opacity: 1; }
                         }
                     `}</style>
-                    
+
                     {/* Header */}
                     <div style={{
                         background: "white",
@@ -765,12 +765,12 @@ export default function Navbar({ profile, personal, isSidebarOpen, setSidebarOpe
                                 color: "#374151",
                             }}></iconify-icon>
                         </button>
-                        
+
                         <div style={{
                             position: "relative",
                             flex: 1,
                         }}>
-                            <input 
+                            <input
                                 type="text"
                                 placeholder="Cari Fitur..."
                                 value={searchQuery}
@@ -790,7 +790,7 @@ export default function Navbar({ profile, personal, isSidebarOpen, setSidebarOpe
                                 onFocus={e => e.currentTarget.style.borderColor = "#9FF782"}
                                 onBlur={e => e.currentTarget.style.borderColor = "#d1d5db"}
                             />
-                            <iconify-icon 
+                            <iconify-icon
                                 icon="mdi:magnify"
                                 style={{
                                     position: "absolute",

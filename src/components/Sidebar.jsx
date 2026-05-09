@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import logo2 from "/src/assets/logo2.png";
 
 export default function Sidebar({ active, setActive, handleLogout, isOpen, setOpen }) {
@@ -8,20 +8,36 @@ export default function Sidebar({ active, setActive, handleLogout, isOpen, setOp
     const NAV_ITEMS = [
         { id: "beranda", icon: "mdi:home-outline", label: "Beranda", path: "/dashboard" },
         { id: "edukasi", icon: "mdi:play-circle", label: "Edukasi", path: "/video" },
+        { id: "belajar", icon: "mdi:book-open-variant", label: "Belajar", path: "/learning" },
         { id: "tabungan", icon: "fa6-solid:sack-dollar", label: "Tabungan", path: "/tabungan" },
+        { id: "shared-tabungan", icon: "mdi:account-group", label: "Tabungan Bersama", path: "/shared-tabungan" },
+        { id: "shared-balance", icon: "mdi:bank", label: "Saldo Bersama", path: "/shared-balance" },
         { id: "balance", icon: "mdi:wallet", label: "Saldo", path: "/balance" },
         { id: "rekap", icon: "mdi:chart-box", label: "Rekap Bulanan", path: "/rekap" },
         { id: "profil", icon: "mdi:account", label: "Profil", path: "/profile" },
+        { id: "settings", icon: "mdi:cog", label: "Pengaturan", path: "/settings" },
     ];
 
+    const location = useLocation();
+
+    // If parent doesn't keep `active` in sync with location, derive current active from pathname
+    const currentActive = active ?? (NAV_ITEMS.find((i) => i.path === location.pathname)?.id);
+
+    useEffect(() => {
+        const match = NAV_ITEMS.find((i) => i.path === location.pathname);
+        if (match && typeof setActive === "function") {
+            setActive(match.id);
+        }
+    }, [location.pathname]);
+
     const handleNavClick = (id, path) => {
-        setActive(id);
-        setOpen(false);
+        if (typeof setActive === "function") setActive(id);
+        if (typeof setOpen === "function") setOpen(false);
         navigate(path);
     };
 
     const handleLogoutClick = () => {
-        setOpen(false);
+        if (typeof setOpen === "function") setOpen(false);
         handleLogout();
     };
 
@@ -31,7 +47,7 @@ export default function Sidebar({ active, setActive, handleLogout, isOpen, setOp
             {isOpen && (
                 <div
                     className="fixed inset-0 bg-black/50 md:hidden z-40"
-                    onClick={() => setOpen(false)}
+                    onClick={() => typeof setOpen === "function" && setOpen(false)}
                 />
             )}
 
@@ -50,7 +66,7 @@ export default function Sidebar({ active, setActive, handleLogout, isOpen, setOp
                                 key={item.id}
                                 onClick={() => handleNavClick(item.id, item.path)}
                                 className={`flex items-center w-full gap-3 px-4 py-2 transition-all duration-200
-                                    ${active === item.id
+                                    ${currentActive === item.id
                                         ? "hover:bg-white/10 text-white border border-white/40 "
                                         : "bg-[#9FF782] text-black font-semibold "}`}
                             >

@@ -172,6 +172,7 @@ function GroupDetail({ group, uid, personalBalances, sharedBalances, onClose, on
     const [copied, setCopied] = useState(false);
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(null);
+    const [historyFilter, setHistoryFilter] = useState("all");
 
     const members = Object.values(group.members || {});
     const myRole = group.members?.[uid]?.role;
@@ -229,6 +230,26 @@ function GroupDetail({ group, uid, personalBalances, sharedBalances, onClose, on
         } finally { setSaving(false); }
     };
 
+    const [refreshing, setRefreshing] = useState(false);
+    const [withdrawAmount, setWithdrawAmount] = useState("");
+    const [withdrawDest, setWithdrawDest] = useState("personal");
+    const [withdrawMemberId, setWithdrawMemberId] = useState("");
+    const [withdrawLoading, setWithdrawLoading] = useState(false);
+
+    const handleRefresh = async () => {
+        if (typeof onRefresh !== "function") return;
+        try {
+            setRefreshing(true);
+            await onRefresh(group.id);
+            setSuccess("Riwayat transaksi diperbarui");
+            setTimeout(() => setSuccess(null), 2000);
+        } catch (err) {
+            setError(err.message || "Gagal menyegarkan");
+        } finally {
+            setRefreshing(false);
+        }
+    };
+
     return (
         <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 100, display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
             <div onClick={e => e.stopPropagation()} style={{ background: "white", borderRadius: "20px 20px 0 0", width: "100%", maxWidth: 520, maxHeight: "92vh", overflowY: "auto" }}>
@@ -276,10 +297,16 @@ function GroupDetail({ group, uid, personalBalances, sharedBalances, onClose, on
                             <p style={{ fontSize: 10, color: "rgba(255,255,255,0.4)", marginBottom: 2 }}>Kode Undangan</p>
                             <p style={{ fontSize: 20, fontWeight: 800, color: "#9FF782", letterSpacing: 3, fontFamily: "monospace" }}>{group.inviteCode}</p>
                         </div>
-                        <button onClick={handleCopyCode}
-                            style={{ background: copied ? "#9FF782" : "rgba(255,255,255,0.15)", color: copied ? "#0a1f10" : "white", border: "none", borderRadius: 8, padding: "7px 14px", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "Plus Jakarta Sans, sans-serif" }}>
-                            {copied ? "✓ Disalin!" : "Copy"}
-                        </button>
+                        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                            <button onClick={handleCopyCode}
+                                style={{ background: copied ? "#9FF782" : "rgba(255,255,255,0.15)", color: copied ? "#0a1f10" : "white", border: "none", borderRadius: 8, padding: "7px 14px", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "Plus Jakarta Sans, sans-serif" }}>
+                                {copied ? "✓ Disalin!" : "Copy"}
+                            </button>
+                            <button onClick={handleRefresh} disabled={refreshing}
+                                style={{ background: "rgba(255,255,255,0.08)", color: "white", border: "none", borderRadius: 8, padding: "7px 12px", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
+                                {refreshing ? "Menyegarkan..." : "↻ Segarkan"}
+                            </button>
+                        </div>
                     </div>
 
                     {/* Alerts */}
@@ -364,19 +391,117 @@ function GroupDetail({ group, uid, personalBalances, sharedBalances, onClose, on
                     )}
 
                     {tab === "setor" && group.isCompleted && (
-                        <div style={{ textAlign: "center", padding: "24px 0" }}>
-                            <p style={{ fontSize: 48, marginBottom: 12 }}>🎉</p>
-                            <p style={{ fontWeight: 700, color: "#166534", fontSize: 16 }}>Target Tercapai!</p>
-                            <p style={{ fontSize: 12, color: "#9ca3af", marginTop: 8 }}>Selamat! Semua anggota berhasil mencapai target ini.</p>
-                        </div>
+                        isAdmin ? (
+                            <div style={{ padding: 12, background: "white", borderRadius: 10 }}>
+                                <p style={{ fontSize: 20, fontWeight: 800, color: "#1a3a1f", marginBottom: 8 }}>🎉 Target Tercapai!</p>
+                                <p style={{ fontSize: 13, color: "#6b7280", marginBottom: 12 }}>Sebagai pemilik, kamu dapat menarik dana grup ke saldo pribadi atau ke anggota lain.</p>
+
+                                <div style={{ background: "#f8faf8", border: "1px solid #e6f4e8", padding: 12, borderRadius: 8, marginBottom: 12 }}>
+                                    <p style={{ fontSize: 12, color: "#9ca3af", marginBottom: 6 }}>Saldo Tersedia</p>
+                                    <p style={{ fontSize: 18, fontWeight: 800, color: "#166534" }}>{fmt(group.terkumpul)}</p>
+                                </div>
+
+                                <form onSubmit={async (e) => {
+                                    e.preventDefault();
+                                    setError(null);
+                                    const amt = parseFloat(withdrawAmount);
+                                    if (!amt || amt <= 0) return setError("Masukkan jumlah yang valid");
+                                    if (amt > (group.terkumpul || 0)) return setError("Jumlah melebihi saldo grup");
+                                    if (withdrawDest === "member" && !withdrawMemberId) return setError("Pilih anggota tujuan");
+                                    try {
+                                        setWithdrawLoading(true);
+                                        await API.post(`/shared-tabungan/${group.id}/withdraw`, { amount: amt, destType: withdrawDest, destId: withdrawDest === "member" ? withdrawMemberId : null });
+                                        setWithdrawAmount("");
+                                        setWithdrawMemberId("");
+                                        setSuccess(`Berhasil tarik ${fmt(amt)}`);
+                                        setTimeout(() => setSuccess(null), 2500);
+                                        onRefresh(group.id);
+                                    } catch (err) {
+                                        setError(err.response?.data?.error || err.message || "Gagal menarik dana");
+                                    } finally { setWithdrawLoading(false); }
+                                }}>
+
+                                    <div style={{ marginBottom: 10 }}>
+                                        <label style={{ display: "block", fontSize: 11, color: "#4b5563", marginBottom: 6 }}>Jumlah yang ditarik (Rp)</label>
+                                        <div style={{ position: "relative" }}>
+                                            <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", fontSize: 13, color: "#9ca3af" }}>Rp</span>
+                                            <input type="number" value={withdrawAmount} onChange={e => setWithdrawAmount(e.target.value)} required min={1}
+                                                placeholder="0" style={{ width: "100%", border: "1px solid #d1d5db", borderRadius: 8, padding: "10px 12px 10px 36px", fontSize: 13, outline: "none", fontFamily: "Plus Jakarta Sans, sans-serif" }} />
+                                        </div>
+                                    </div>
+
+                                    <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
+                                        <label style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                                            <input type="radio" checked={withdrawDest === "personal"} onChange={() => setWithdrawDest("personal")} />
+                                            <span style={{ fontSize: 13, fontWeight: 700 }}>Ke Saldo Pribadi</span>
+                                        </label>
+                                        <label style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                                            <input type="radio" checked={withdrawDest === "member"} onChange={() => setWithdrawDest("member")} />
+                                            <span style={{ fontSize: 13, fontWeight: 700 }}>Ke Anggota Lain</span>
+                                        </label>
+                                    </div>
+
+                                    {withdrawDest === "member" && (
+                                        <div style={{ marginBottom: 12 }}>
+                                            <label style={{ display: "block", fontSize: 11, color: "#4b5563", marginBottom: 6 }}>Pilih Anggota Tujuan</label>
+                                            <select value={withdrawMemberId} onChange={e => setWithdrawMemberId(e.target.value)} required
+                                                style={{ width: "100%", border: "1px solid #d1d5db", borderRadius: 8, padding: "10px 12px", fontSize: 13, outline: "none", fontFamily: "Plus Jakarta Sans, sans-serif" }}>
+                                                <option value="">-- Pilih anggota --</option>
+                                                {members.map(m => (
+                                                    <option key={m.uid} value={m.uid}>{m.name || m.email}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    )}
+
+                                    {error && <div style={{ background: "#fee2e2", border: "1px solid #fca5a5", borderRadius: 8, padding: "8px 10px", color: "#991b1b", marginBottom: 10 }}>{error}</div>}
+
+                                    <div style={{ display: "flex", gap: 8 }}>
+                                        <button type="button" onClick={() => { setWithdrawAmount(""); setWithdrawMemberId(""); }} style={{ flex: 1, background: "#f3f4f6", color: "#374151", border: "none", borderRadius: 8, padding: "10px", fontWeight: 700 }}>Batal</button>
+                                        <button type="submit" disabled={withdrawLoading} style={{ flex: 1, background: withdrawLoading ? "#9ca3af" : "#1a3a1f", color: "#9FF782", border: "none", borderRadius: 8, padding: "10px", fontWeight: 800 }}>{withdrawLoading ? "Memproses..." : "Tarik Dana"}</button>
+                                    </div>
+                                </form>
+                            </div>
+                        ) : (
+                            <div style={{ textAlign: "center", padding: "24px 0" }}>
+                                <p style={{ fontSize: 48, marginBottom: 12 }}>🎉</p>
+                                <p style={{ fontWeight: 700, color: "#166534", fontSize: 16 }}>Target Tercapai!</p>
+                                <p style={{ fontSize: 12, color: "#9ca3af", marginTop: 8 }}>Selamat! Semua anggota berhasil mencapai target ini.</p>
+                            </div>
+                        )
                     )}
 
                     {/* ── RIWAYAT TAB ───────────────────────── */}
                     {tab === "riwayat" && (
                         <div>
-                            {(group.setoran || []).length === 0 ? (
+                            <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+                                <button type="button" onClick={() => setHistoryFilter("all")}
+                                    style={{ padding: "6px 10px", borderRadius: 8, border: "none", background: historyFilter === "all" ? "#1a3a1f" : "#f3f4f6", color: historyFilter === "all" ? "#9FF782" : "#6b7280", fontWeight: 700, cursor: "pointer" }}>
+                                    Semua
+                                </button>
+                                <button type="button" onClick={() => setHistoryFilter("personal")}
+                                    style={{ padding: "6px 10px", borderRadius: 8, border: "none", background: historyFilter === "personal" ? "#1a3a1f" : "#f3f4f6", color: historyFilter === "personal" ? "#9FF782" : "#6b7280", fontWeight: 700, cursor: "pointer" }}>
+                                    Pribadi
+                                </button>
+                                <button type="button" onClick={() => setHistoryFilter("shared")}
+                                    style={{ padding: "6px 10px", borderRadius: 8, border: "none", background: historyFilter === "shared" ? "#1a3a1f" : "#f3f4f6", color: historyFilter === "shared" ? "#9FF782" : "#6b7280", fontWeight: 700, cursor: "pointer" }}>
+                                    Saldo Bersama
+                                </button>
+                            </div>
+
+                            {((group.setoran || []).filter(s => {
+                                if (historyFilter === "all") return true;
+                                if (historyFilter === "shared") return s.sourceType === "shared" || s.sourceType === "group";
+                                if (historyFilter === "personal") return s.sourceType === "personal" || !s.sourceType || s.sourceType === "pribadi";
+                                return true;
+                            })).length === 0 ? (
                                 <p style={{ textAlign: "center", color: "#9ca3af", fontSize: 13, padding: "20px 0" }}>Belum ada setoran</p>
-                            ) : (group.setoran || []).map((s, i) => (
+                            ) : ((group.setoran || []).filter(s => {
+                                if (historyFilter === "all") return true;
+                                if (historyFilter === "shared") return s.sourceType === "shared" || s.sourceType === "group";
+                                if (historyFilter === "personal") return s.sourceType === "personal" || !s.sourceType || s.sourceType === "pribadi";
+                                return true;
+                            })).map((s, i) => (
                                 <div key={s.id} style={{ padding: "12px 0", borderBottom: "1px solid #f3f4f6" }}>
                                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                                         <div>

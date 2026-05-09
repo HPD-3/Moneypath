@@ -383,15 +383,10 @@ export default function Profile() {
                                         </button>
 
                                         <button
-                                            onClick={() => {
-                                                setPasswordForm({ oldPassword: "", newPassword: "", confirmPassword: "" });
-                                                setPasswordError("");
-                                                setPasswordMessage("");
-                                                setShowPassword(true);
-                                            }}
+                                            onClick={() => navigate("/settings")}
                                             className="flex-1 md:flex-none px-3 md:px-4 py-2 rounded-full bg-[#9FF782] text-green-900 font-semibold hover:bg-green-300 transition-all text-xs md:text-sm flex items-center gap-2 justify-center"
                                         >
-                                            <iconify-icon icon="mdi:lock"></iconify-icon> Ubah Password
+                                            <iconify-icon icon="mdi:cog"></iconify-icon> Setting
                                         </button>
 
                                         <button

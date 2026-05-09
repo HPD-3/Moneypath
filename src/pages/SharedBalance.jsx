@@ -156,6 +156,7 @@ function GroupDetail({ group, uid, onClose, onRefresh, balanceCategories = [] })
     const [copied, setCopied] = useState(false);
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(null);
+    const [historyFilter, setHistoryFilter] = useState("all");
 
     const members = Object.values(group.members || {});
     const myRole = group.members?.[uid]?.role;
@@ -236,6 +237,22 @@ function GroupDetail({ group, uid, onClose, onRefresh, balanceCategories = [] })
         } catch (err) { setError(err.message); }
     };
 
+    const [refreshing, setRefreshing] = useState(false);
+
+    const handleRefresh = async () => {
+        if (typeof onRefresh !== "function") return;
+        try {
+            setRefreshing(true);
+            await onRefresh(group.id);
+            setSuccess("Riwayat transaksi diperbarui");
+            setTimeout(() => setSuccess(null), 2000);
+        } catch (err) {
+            setError(err.message || "Gagal menyegarkan");
+        } finally {
+            setRefreshing(false);
+        }
+    };
+
     const handleDeleteGroup = async () => {
         if (!confirm("Hapus grup ini? Semua data akan hilang.")) return;
         try {
@@ -274,10 +291,15 @@ function GroupDetail({ group, uid, onClose, onRefresh, balanceCategories = [] })
                             <p style={{ fontSize: 10, color: "rgba(255,255,255,0.4)", marginBottom: 2 }}>Kode Undangan</p>
                             <p style={{ fontSize: 18, fontWeight: 800, color: "#9FF782", letterSpacing: 3, fontFamily: "monospace" }}>{group.inviteCode}</p>
                         </div>
-                        <div style={{ display: "flex", gap: 8 }}>
+                        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
                             <button onClick={handleCopyCode}
                                 style={{ background: copied ? "#9FF782" : "rgba(255,255,255,0.15)", color: copied ? "#0a1f10" : "white", border: "none", borderRadius: 8, padding: "6px 12px", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "Plus Jakarta Sans, sans-serif" }}>
                                 {copied ? "✓ Copied!" : "Copy"}
+                            </button>
+                            <button onClick={handleRefresh}
+                                disabled={refreshing}
+                                style={{ background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.9)", border: "none", borderRadius: 8, padding: "6px 10px", fontSize: 11, cursor: "pointer" }}>
+                                {refreshing ? "Menyegarkan..." : "↻ Segarkan"}
                             </button>
                             {isAdmin && (
                                 <button onClick={handleRegenerateCode}
@@ -347,7 +369,27 @@ function GroupDetail({ group, uid, onClose, onRefresh, balanceCategories = [] })
                             </form>
 
                             {/* Transaction List */}
-                            {(group.transactions || []).map((tx, i) => (
+                            <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+                                <button type="button" onClick={() => setHistoryFilter("all")}
+                                    style={{ padding: "6px 10px", borderRadius: 8, border: "none", background: historyFilter === "all" ? "#1a3a1f" : "#f3f4f6", color: historyFilter === "all" ? "#9FF782" : "#6b7280", fontWeight: 700, cursor: "pointer" }}>
+                                    Semua
+                                </button>
+                                <button type="button" onClick={() => setHistoryFilter("personal")}
+                                    style={{ padding: "6px 10px", borderRadius: 8, border: "none", background: historyFilter === "personal" ? "#1a3a1f" : "#f3f4f6", color: historyFilter === "personal" ? "#9FF782" : "#6b7280", fontWeight: 700, cursor: "pointer" }}>
+                                    Pribadi
+                                </button>
+                                <button type="button" onClick={() => setHistoryFilter("shared")}
+                                    style={{ padding: "6px 10px", borderRadius: 8, border: "none", background: historyFilter === "shared" ? "#1a3a1f" : "#f3f4f6", color: historyFilter === "shared" ? "#9FF782" : "#6b7280", fontWeight: 700, cursor: "pointer" }}>
+                                    Saldo Bersama
+                                </button>
+                            </div>
+
+                            {((group.transactions || []).filter(tx => {
+                                if (historyFilter === "all") return true;
+                                if (historyFilter === "shared") return tx.sourceType === "shared" || tx.sourceType === "group" || (!!tx.personalBalanceName === false);
+                                if (historyFilter === "personal") return tx.sourceType === "personal" || !!tx.personalBalanceName;
+                                return true;
+                            })).map((tx, i) => (
                                 <div key={tx.id} style={{ padding: "12px 0", borderBottom: "1px solid #f3f4f6" }}>
                                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
 

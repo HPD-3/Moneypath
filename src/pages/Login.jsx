@@ -8,6 +8,7 @@ import loginImg from "../assets/image.jpg";
 import logo3 from "../assets/logo3.png";
 
 export default function Login() {
+    const navigate = useNavigate();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const { user } = useAuth();
@@ -42,68 +43,72 @@ export default function Login() {
     };
 
     return (
-        <div className="flex h-screen">
+        <div className="flex flex-col md:flex-row h-screen">
             {/* LEFT */}
-            <div className="flex-1 bg-[#f3f3f3] flex items-center justify-center relative">
+            <div className="flex-1 bg-[#f3f3f3] flex items-center justify-center relative px-4 md:px-6 py-6 md:py-0 overflow-y-auto md:overflow-y-hidden">
                 <h2
-                    className="absolute top-[30px] left-[40px] text-[18px] tracking-[3px]"
+                    className="absolute top-4 md:top-[30px] left-4 md:left-[40px] text-[14px] md:text-[18px] tracking-[3px]"
                     style={{ fontFamily: "'Major Mono Display', monospace" }}
                 >
                     <img
                         src={logo3}
                         alt="MoneyPath Logo"
-                        className="h-[45px] md:h-[55px] w-auto object-contain"
+                        className="h-[35px] md:h-[45px] lg:h-[55px] w-auto object-contain"
                     />
                 </h2>
 
-                <div className="w-[320px]">
-                    <h1 className="text-[26px] font-semibold text-center">Welcome Back</h1>
-                    <p className="text-[12px] text-center text-[#666] mb-[25px]">Welcome Back... Please enter your detail</p>
+                <div className="w-full max-w-xs md:max-w-sm lg:max-w-sm">
+                    <h1 className="text-xl md:text-2xl lg:text-[26px] font-semibold text-center mt-12 md:mt-0">Welcome Back</h1>
+                    <p className="text-[11px] md:text-[12px] text-center text-[#666] mb-5 md:mb-[25px]">Welcome Back... Please enter your detail</p>
 
                     {/* TABS (Now Links) */}
-                    <div className="flex border-2 border-[#1a1a1a] mb-5">
-                        <div className="flex-1 py-3 text-[13px] text-center bg-[#7ED957] text-black cursor-default">
+                    <div className="flex border-2 border-[#1a1a1a] mb-4 md:mb-5">
+                        <div className="flex-1 py-2 md:py-3 text-[12px] md:text-[13px] text-center bg-[#7ED957] text-black cursor-default font-medium">
                             Login
                         </div>
-                        <Link to="/register" className="flex-1 py-3 text-[13px] text-center bg-[#1f1f1f] text-white no-underline hover:bg-[#333]">
+                        <Link to="/register" className="flex-1 py-2 md:py-3 text-[12px] md:text-[13px] text-center bg-[#1f1f1f] text-white no-underline hover:bg-[#333] font-medium transition">
                             Register
                         </Link>
                     </div>
 
-                    <form onSubmit={login}>
-                        <label className="text-[10px] text-[#7ED957]">Email Address</label>
-                        <div className="flex items-center border border-[#ddd] rounded-xl px-3 py-[10px] mt-[5px] mb-[15px] bg-white">
-                            <span className="mr-2 text-[#7ED957]">✉</span>
-                            <input type="email" placeholder="UserEmailLogin@Gmail.com" value={email} onChange={(e) => setEmail(e.target.value)} required className="flex-1 border-none outline-none text-[13px]" />
-                            <span className="text-base text-[#7ED957]">✔</span>
+                    <form onSubmit={login} className="space-y-3 md:space-y-4">
+                        <div>
+                            <label className="text-[10px] md:text-[11px] text-[#7ED957] font-medium">Email Address</label>
+                            <div className="flex items-center border border-[#ddd] rounded-lg md:rounded-xl px-2 md:px-3 py-2 md:py-[10px] mt-1 md:mt-[5px] bg-white focus-within:border-[#7ED957] transition">
+                                <span className="mr-2 text-[#7ED957] text-sm">✉</span>
+                                <input type="email" placeholder="UserEmailLogin@Gmail.com" value={email} onChange={(e) => setEmail(e.target.value)} required className="flex-1 border-none outline-none text-[12px] md:text-[13px]" />
+                                <span className="text-sm md:text-base text-[#7ED957]">✔</span>
+                            </div>
                         </div>
 
-                        <label className="text-[10px] text-[#7ED957]">Password</label>
-                        <div className="flex items-center border border-[#ddd] rounded-xl px-3 py-[10px] mt-[5px] mb-[15px] bg-white">
-                            <span className="mr-2 text-[#7ED957]">🔒</span>
-                            <input type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required className="flex-1 border-none outline-none text-[13px]" />
+                        <div>
+                            <label className="text-[10px] md:text-[11px] text-[#7ED957] font-medium">Password</label>
+                            <div className="flex items-center border border-[#ddd] rounded-lg md:rounded-xl px-2 md:px-3 py-2 md:py-[10px] mt-1 md:mt-[5px] bg-white focus-within:border-[#7ED957] transition">
+                                <span className="mr-2 text-[#7ED957] text-sm">🔒</span>
+                                <input type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required className="flex-1 border-none outline-none text-[12px] md:text-[13px]" />
+                            </div>
                         </div>
 
-                        <button type="submit" className="w-full py-3 bg-[#7ED957] border-none text-[13px] font-semibold cursor-pointer">
+                        <button type="submit" className="w-full py-2 md:py-3 bg-[#7ED957] border-none text-[12px] md:text-[13px] font-semibold cursor-pointer rounded-lg md:rounded-none hover:bg-[#6bc946] transition mt-4 md:mt-0">
                             Login
                         </button>
                     </form>
 
-                    <div className="flex items-center my-5">
+                    <div className="flex items-center my-4 md:my-5">
                         <span className="flex-1 h-[1.5px] bg-black" />
-                        <p className="text-[10px] mx-[10px]">Or Continue With</p>
+                        <p className="text-[10px] md:text-[11px] mx-2 md:mx-[10px]">Or Continue With</p>
                         <span className="flex-1 h-[1.5px] bg-black" />
                     </div>
 
-                    <div className="flex justify-center">
-                        <button onClick={googleLogin} className="flex items-center gap-3 border border-gray-300 px-6 py-2 rounded-full bg-white shadow-sm">
-                            <img src="https://www.svgrepo.com/show/355037/google.svg" className="w-5" />
+                    <div className="flex justify-center mb-6 md:mb-8">
+                        <button onClick={googleLogin} className="flex items-center gap-2 md:gap-3 border border-gray-300 px-4 md:px-6 py-2 rounded-full bg-white shadow-sm hover:shadow-md hover:border-gray-400 transition text-[12px] md:text-[13px]">
+                            <img src="https://www.svgrepo.com/show/355037/google.svg" className="w-4 md:w-5" />
                             Sign in with google
                         </button>
                     </div>
 
                     {/* DESC */}
-                    <p className="text-[10px] text-center text-[#222] leading-[1.6] mt-[50px] max-w-[240px] mx-auto">
+                    <p className="text-[10px] text-center text-[#222] leading-relaxed md:leading-[1.6] max-w-xs mx-auto">
                         Pantau, rencanakan, dan tumbuhkan keuanganmu bersama MoneyPath.
                         Kelola uang bulanan dengan lebih terarah, susun tujuan finansialmu,
                         dan tingkatkan literasi lewat learning path terstruktur serta video
@@ -113,9 +118,9 @@ export default function Login() {
             </div>
 
             {/* RIGHT */}
-            <div className="flex-1 relative hidden md:block">
+            <div className="flex-1 relative hidden lg:block">
                 <img src={loginImg} className="w-full h-full object-cover opacity-55" />
-                <button onClick={() => navigate("/register")} className="absolute top-[30px] right-[40px] bg-[#7ED957] border-none py-3 px-7 text-[13px] font-semibold cursor-pointer">
+                <button onClick={() => navigate("/register")} className="absolute top-6 md:top-[30px] right-6 md:right-[40px] bg-[#7ED957] border-none py-2 md:py-3 px-6 md:px-7 text-[12px] md:text-[13px] font-semibold cursor-pointer hover:bg-[#6bc946] transition rounded-lg md:rounded-none">
                     Register
                 </button>
             </div>
