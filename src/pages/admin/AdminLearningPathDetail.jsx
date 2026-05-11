@@ -87,23 +87,23 @@ export default function AdminLearningPathDetail() {
     };
 
     if (loading) return (
-        <div className="page">
-            <div style={{ textAlign: "center", padding: "40px", color: "#9ca3af" }}>
-                <p>Loading...</p>
+        <div className="p-3 sm:p-6">
+            <div style={{ textAlign: "center", padding: "20px sm:40px", color: "#9ca3af" }}>
+                <p className="text-sm">Loading...</p>
             </div>
         </div>
     );
 
     if (!path) return (
-        <div className="page">
-            <div style={{ textAlign: "center", padding: "40px", color: "#9ca3af" }}>
-                <p>Learning path tidak ditemukan</p>
+        <div className="p-3 sm:p-6">
+            <div style={{ textAlign: "center", padding: "20px sm:40px", color: "#9ca3af" }}>
+                <p className="text-sm">Learning path tidak ditemukan</p>
             </div>
         </div>
     );
 
     return (
-        <div className="page">
+        <div className="p-3 sm:p-6">
             <StyledAlert message={alert?.message} type={alert?.type} onClose={hideAlert} />
             <ConfirmDialog 
                 message={confirm?.message} 
@@ -114,37 +114,38 @@ export default function AdminLearningPathDetail() {
 
             <div className="panel">
                 {/* Header */}
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24, paddingBottom: 20, borderBottom: "1px solid #e5e7eb" }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 24, paddingBottom: 20, borderBottom: "1px solid #e5e7eb" }}>
+                    <button 
+                        onClick={() => navigate(-1)}
+                        className="text-xs sm:text-sm text-blue-600 hover:underline font-semibold self-start"
+                    >
+                        ← Kembali
+                    </button>
                     <div>
-                        <button 
-                            onClick={() => navigate(-1)}
-                            style={{ fontSize: 14, background: "none", border: "none", color: "#0369a1", cursor: "pointer", marginBottom: 12, fontWeight: 600 }}
-                        >
-                            ← Kembali
-                        </button>
-                        <h1 style={{ fontSize: 28, fontWeight: 700, color: "#1a3a1f", margin: 0 }}>
+                        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-2">
                             {path.title}
                         </h1>
-                        <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+                        <div className="flex flex-wrap gap-2">
                             <Badge value={path.difficulty} map={DIFF_COLORS} />
-                            <span style={{ fontSize: 11, fontWeight: 600, color: "#166534", background: "#e8fce0", padding: "2px 8px", borderRadius: 20, textTransform: "capitalize" }}>
+                            <span className="text-xs font-semibold text-green-700 bg-green-100 px-2 py-1 rounded-full capitalize">
                                 {path.category}
                             </span>
-                            <span style={{ fontSize: 11, fontWeight: 600, color: "#6b7280" }}>
+                            <span className="text-xs font-semibold text-gray-600">
                                 📦 {path.totalModules || 0} modul
                             </span>
                         </div>
                     </div>
-                    <div style={{ display: "flex", gap: 8 }}>
+                    <div className="flex flex-col sm:flex-row gap-3">
                         <button 
                             onClick={() => setEditingPath(!editingPath)}
-                            style={{ fontSize: 13, background: editingPath ? "#fee2e2" : "#eff6ff", color: editingPath ? "#991b1b" : "#0369a1", border: editingPath ? "1px solid #fecaca" : "1px solid #cffafe", borderRadius: 8, padding: "8px 16px", cursor: "pointer", fontWeight: 600, fontFamily: "Plus Jakarta Sans, sans-serif" }}
+                            className="px-4 py-2 rounded-lg font-semibold text-xs sm:text-sm transition-all"
+                            style={{ background: editingPath ? "#fee2e2" : "#eff6ff", color: editingPath ? "#991b1b" : "#0369a1", border: editingPath ? "1px solid #fecaca" : "1px solid #cffafe" }}
                         >
                             {editingPath ? "✕ Batal" : "✏️ Edit Info"}
                         </button>
                         <button 
                             onClick={handleDeletePath}
-                            style={{ fontSize: 13, background: "#fee2e2", color: "#991b1b", border: "1px solid #fecaca", borderRadius: 8, padding: "8px 16px", cursor: "pointer", fontWeight: 600, fontFamily: "Plus Jakarta Sans, sans-serif" }}
+                            className="px-4 py-2 rounded-lg font-semibold text-xs sm:text-sm bg-red-100 text-red-700 border border-red-300"
                         >
                             🗑️ Hapus
                         </button>

@@ -2,8 +2,27 @@ import { Router } from "express";
 import { db } from "../firebaseAdmin.js";
 import { verifyToken } from "../middleware/verifyToken.js";
 import crypto from "crypto";
+import { sendInviteEmail } from "../utils/sendInviteEmail.js";
 
 const router = Router();
+
+async function getOrCreatePrimaryBalanceRef(uid) {
+    const userRef = db.collection("users").doc(uid);
+    const snap = await userRef.collection("balances").limit(1).get();
+
+    if (!snap.empty) {
+        return snap.docs[0].ref;
+    }
+
+    return await userRef.collection("balances").add({
+        name: "Default",
+        type: "general",
+        balance: 0,
+        budgetLimit: 0,
+        totalSpent: 0,
+        createdAt: new Date().toISOString()
+    });
+}
 
 // ══════════════════════════════════════════════
 //  SHARED TABUNGAN
@@ -153,25 +172,32 @@ router.post("/:groupId/invite", verifyToken, async (req, res) => {
         const userSnap = await db.collection("users")
             .where("email", "==", email).limit(1).get();
 
-        if (userSnap.empty) {
-            return res.status(404).json({ error: "Pengguna tidak ditemukan" });
+        if (!userSnap.empty) {
+            const invitedUid = userSnap.docs[0].id;
+
+            if (groupData.members?.[invitedUid]) {
+                return res.status(400).json({ error: "Pengguna sudah bergabung" });
+            }
+
+            await db.collection("users").doc(invitedUid)
+                .collection("sharedTabunganInvites").doc(req.params.groupId).set({
+                    groupId: req.params.groupId,
+                    groupName: groupData.name,
+                    targetAmount: groupData.targetAmount,
+                    invitedBy: uid,
+                    inviteCode: groupData.inviteCode,
+                    invitedAt: new Date().toISOString(),
+                    status: "pending",
+                });
         }
 
-        const invitedUid = userSnap.docs[0].id;
-        if (groupData.members?.[invitedUid]) {
-            return res.status(400).json({ error: "Pengguna sudah bergabung" });
-        }
-
-        await db.collection("users").doc(invitedUid)
-            .collection("sharedTabunganInvites").doc(req.params.groupId).set({
-                groupId: req.params.groupId,
-                groupName: groupData.name,
-                targetAmount: groupData.targetAmount,
-                invitedBy: uid,
-                inviteCode: groupData.inviteCode,
-                invitedAt: new Date().toISOString(),
-                status: "pending",
-            });
+        await sendInviteEmail({
+            to: email,
+            groupName: groupData.name,
+            featureName: "Tabungan Bersama",
+            inviteCode: groupData.inviteCode,
+            inviterName: groupData.members?.[uid]?.name || "MoneyPath"
+        });
 
         res.json({ message: `Undangan dikirim ke ${email}` });
     } catch (err) {
@@ -343,6 +369,124 @@ router.post("/:groupId/setor", verifyToken, async (req, res) => {
     }
 });
 
+// ── POST withdraw from tabungan to personal/member balance ──
+router.post("/:groupId/withdraw", verifyToken, async (req, res) => {
+    try {
+        const uid = req.user.uid;
+        const { amount, destType = "personal", destId = null } = req.body;
+        const withdrawAmount = parseFloat(amount);
+
+        if (!withdrawAmount || withdrawAmount <= 0) {
+            return res.status(400).json({ error: "Masukkan jumlah yang valid" });
+        }
+
+        if (!["personal", "member"].includes(destType)) {
+            return res.status(400).json({ error: "Tujuan penarikan tidak valid" });
+        }
+
+        const tabRef = db.collection("sharedTabungan").doc(req.params.groupId);
+        const tabDoc = await tabRef.get();
+        if (!tabDoc.exists) return res.status(404).json({ error: "Target tidak ditemukan" });
+
+        const tabData = tabDoc.data();
+        const requester = tabData.members?.[uid];
+
+        if (!requester) {
+            return res.status(403).json({ error: "Kamu bukan anggota" });
+        }
+
+        if (requester.role !== "admin") {
+            return res.status(403).json({ error: "Hanya admin yang bisa menarik dana" });
+        }
+
+        const availableAmount = tabData.terkumpul || 0;
+        if (!tabData.isCompleted) {
+            return res.status(400).json({ error: "Target belum terkumpul, tarik dana belum tersedia" });
+        }
+        if (withdrawAmount > availableAmount) {
+            return res.status(400).json({ error: "Dana grup tidak mencukupi" });
+        }
+
+        let destinationUid = uid;
+        let destinationName = requester.name || req.user.email?.split("@")[0] || "Unknown";
+
+        if (destType === "member") {
+            if (!destId) {
+                return res.status(400).json({ error: "Pilih anggota tujuan" });
+            }
+
+            if (destId === uid) {
+                return res.status(400).json({ error: "Pilih anggota lain" });
+            }
+
+            const targetMember = tabData.members?.[destId];
+            if (!targetMember) {
+                return res.status(404).json({ error: "Anggota tujuan tidak ditemukan" });
+            }
+
+            destinationUid = destId;
+            destinationName = targetMember.name || targetMember.email || "Member";
+        }
+
+        const now = new Date();
+        const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+        const destinationBalanceRef = await getOrCreatePrimaryBalanceRef(destinationUid);
+        const destinationBalanceDoc = await destinationBalanceRef.get();
+        const destinationBalanceData = destinationBalanceDoc.data() || {};
+
+        const newDestinationBalance = (destinationBalanceData.balance || 0) + withdrawAmount;
+        const newTerkumpul = availableAmount - withdrawAmount;
+        const isCompleted = newTerkumpul > 0;
+
+        await destinationBalanceRef.update({
+            balance: newDestinationBalance,
+            totalSpent: destinationBalanceData.totalSpent || 0,
+        });
+
+        await db.collection("users").doc(destinationUid)
+            .collection("transactions").add({
+                balanceId: destinationBalanceRef.id,
+                balanceName: destinationBalanceData.name || "Default",
+                balanceType: destinationBalanceData.type || "general",
+                amount: withdrawAmount,
+                type: "income",
+                description: `Tarik dana dari tabungan bersama: ${tabData.name}`,
+                category: "shared_tabungan",
+                source: "shared_tabungan",
+                date: now.toISOString(),
+                month,
+            });
+
+        await tabRef.update({
+            terkumpul: newTerkumpul,
+            isCompleted,
+            completedAt: isCompleted ? (tabData.completedAt || now.toISOString()) : null,
+            updatedAt: now.toISOString(),
+        });
+
+        await tabRef.collection("withdrawals").add({
+            amount: withdrawAmount,
+            destType,
+            destId: destinationUid,
+            destName: destinationName,
+            addedBy: uid,
+            addedByName: requester.name || req.user.email?.split("@")[0] || "Unknown",
+            date: now.toISOString(),
+            type: "withdraw",
+        });
+
+        res.json({
+            message: "Dana berhasil ditarik",
+            newTerkumpul,
+            isCompleted,
+            destinationUid,
+            destinationName,
+            newBalance: newDestinationBalance,
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
 
 
 

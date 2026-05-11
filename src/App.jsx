@@ -8,6 +8,7 @@ const LandingPage = lazy(() => import("./pages/Landing"));
 const Register = lazy(() => import("./pages/Register"));
 const Personal = lazy(() => import("./pages/Personal.jsx"));
 const Profile = lazy(() => import("./pages/Profile.jsx"));
+const ProfileHistory = lazy(() => import("./pages/ProfileHistory.jsx"));
 const UserSetting = lazy(() => import("./pages/UserSetting.jsx"));
 const Balance = lazy(() => import("./pages/Balance.jsx"));
 const AdminDashboard = lazy(() => import("./pages/admin/adminDashboard.jsx"));
@@ -89,6 +90,9 @@ function App() {
         } />
         <Route path="/profile" element={
           <ProtectedRoute><Profile /></ProtectedRoute>
+        } />
+        <Route path="/profile/history" element={
+          <ProtectedRoute><ProfileHistory /></ProtectedRoute>
         } />
         <Route path="/settings" element={
           <ProtectedRoute><UserSetting /></ProtectedRoute>

@@ -95,14 +95,14 @@ export default function AdminReviews() {
 
     if (loading) {
         return (
-            <div className="p-6">
-                <p className="text-gray-500">Loading...</p>
+            <div className="p-3 sm:p-6">
+                <p className="text-gray-500 text-sm">Loading...</p>
             </div>
         );
     }
 
     return (
-        <div className="p-6">
+        <div className="p-3 sm:p-6">
             <StyledAlert message={alert?.message} type={alert?.type} onClose={hideAlert} />
             <ConfirmDialog 
                 message={confirm?.message} 
@@ -111,15 +111,15 @@ export default function AdminReviews() {
                 onClose={hideConfirm}
             />
             {/* HEADER */}
-            <div className="flex justify-between items-center mb-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900 mb-1">Manajemen Review</h1>
-                    <p className="text-gray-600 text-sm">Kelola review pengguna dan persetujuan</p>
+                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">Manajemen Review</h1>
+                    <p className="text-xs sm:text-sm text-gray-600">Kelola review pengguna dan persetujuan</p>
                 </div>
             </div>
 
             {/* STATS */}
-            <div className="grid grid-cols-4 gap-4 mb-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
                 {[
                     { key: "all", label: "Total Review", color: "from-blue-400 to-blue-600" },
                     { key: "pending", label: "Menunggu", color: "from-yellow-400 to-yellow-600" },
@@ -128,22 +128,22 @@ export default function AdminReviews() {
                 ].map((stat) => (
                     <div
                         key={stat.key}
-                        className={`bg-gradient-to-br ${stat.color} text-white p-4 rounded-xl shadow`}
+                        className={`bg-gradient-to-br ${stat.color} text-white p-3 sm:p-4 rounded-xl shadow`}
                     >
-                        <div className="text-3xl font-bold">{statusCounts[stat.key]}</div>
-                        <div className="text-sm opacity-90">{stat.label}</div>
+                        <div className="text-2xl sm:text-3xl font-bold">{statusCounts[stat.key]}</div>
+                        <div className="text-xs sm:text-sm opacity-90">{stat.label}</div>
                     </div>
                 ))}
             </div>
 
             {/* FILTER & SEARCH */}
             <div className="bg-white rounded-xl shadow p-4 mb-6">
-                <div className="flex gap-4 flex-wrap">
+                <div className="flex gap-2 sm:gap-4 flex-wrap mb-4">
                     {["all", "pending", "approved", "rejected"].map((status) => (
                         <button
                             key={status}
                             onClick={() => setFilter(status)}
-                            className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                            className={`px-3 sm:px-4 py-2 rounded-lg font-medium transition-all text-xs sm:text-sm whitespace-nowrap ${
                                 filter === status
                                     ? "bg-[#9FF782] text-black"
                                     : "bg-gray-100 text-gray-700 hover:bg-gray-200"
@@ -157,100 +157,97 @@ export default function AdminReviews() {
                     ))}
                 </div>
 
-                <div className="mt-4">
-                    <input
-                        type="text"
-                        placeholder="Cari nama, review, atau email..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9FF782]"
-                    />
-                </div>
+                <input
+                    type="text"
+                    placeholder="Cari nama, review, atau email..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#9FF782]"
+                />
             </div>
 
             {/* REVIEWS TABLE */}
-            <div className="bg-white rounded-xl shadow overflow-hidden">
-                <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                        <thead>
-                            <tr className="bg-gray-50 border-b">
-                                <th className="px-6 py-3 text-left font-semibold text-gray-900">Nama</th>
-                                <th className="px-6 py-3 text-left font-semibold text-gray-900">Review</th>
-                                <th className="px-6 py-3 text-left font-semibold text-gray-900">Rating</th>
-                                <th className="px-6 py-3 text-left font-semibold text-gray-900">Status</th>
-                                <th className="px-6 py-3 text-left font-semibold text-gray-900">Tanggal</th>
-                                <th className="px-6 py-3 text-left font-semibold text-gray-900">Aksi</th>
+            <div className="bg-white rounded-xl shadow overflow-x-auto">
+                <table className="w-full min-w-max text-xs sm:text-sm">
+                    <thead>
+                        <tr className="bg-gray-50 border-b">
+                            <th className="px-3 sm:px-6 py-3 text-left font-semibold text-gray-900">Nama</th>
+                            <th className="px-3 sm:px-6 py-3 text-left font-semibold text-gray-900 hidden sm:table-cell">Review</th>
+                            <th className="px-3 sm:px-6 py-3 text-left font-semibold text-gray-900">Rating</th>
+                            <th className="px-3 sm:px-6 py-3 text-left font-semibold text-gray-900 hidden md:table-cell">Status</th>
+                            <th className="px-3 sm:px-6 py-3 text-left font-semibold text-gray-900 hidden lg:table-cell">Tanggal</th>
+                            <th className="px-3 sm:px-6 py-3 text-left font-semibold text-gray-900">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {filteredReviews.length === 0 ? (
+                            <tr>
+                                <td colSpan={6} className="px-3 sm:px-6 py-6 sm:py-8 text-center text-gray-500 text-xs sm:text-sm">
+                                    Tidak ada review
+                                </td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            {filteredReviews.length === 0 ? (
-                                <tr>
-                                    <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
-                                        Tidak ada review
-                                    </td>
-                                </tr>
-                            ) : (
-                                filteredReviews.map((review) => {
-                                    const status = getReviewStatus(review);
-                                    return (
-                                        <tr
-                                            key={review.id}
-                                            className="border-b hover:bg-gray-50 transition-colors cursor-pointer"
-                                            onClick={() => setSelectedReview(review)}
-                                        >
-                                            <td className="px-6 py-4 font-medium text-gray-900">
-                                                {review.name}
-                                            </td>
-                                            <td className="px-6 py-4 text-gray-700">
-                                                <div className="max-w-xs truncate">{review.review}</div>
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <div className="flex gap-1">
-                                                    {[...Array(5)].map((_, i) => (
-                                                        <span
-                                                            key={i}
-                                                            className={i < review.rating ? "text-yellow-400" : "text-gray-300"}
-                                                        >
-                                                            ⭐
-                                                        </span>
-                                                    ))}
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <span
-                                                    className={`px-3 py-1 rounded-full text-xs font-medium ${
-                                                        status === "approved"
-                                                            ? "bg-green-100 text-green-800"
-                                                            : status === "rejected"
-                                                            ? "bg-red-100 text-red-800"
-                                                            : "bg-yellow-100 text-yellow-800"
-                                                    }`}
-                                                >
-                                                    {status === "approved" && "✓ Disetujui"}
-                                                    {status === "rejected" && "✗ Ditolak"}
-                                                    {status === "pending" && "⏳ Menunggu"}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4 text-gray-600 text-xs">
-                                                {review.createdAt
-                                                    ? new Date(review.createdAt).toLocaleDateString("id-ID", {
-                                                        day: "numeric",
-                                                        month: "short",
-                                                        year: "numeric",
-                                                    })
-                                                    : "—"}
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        setSelectedReview(review);
-                                                    }}
-                                                    className="text-blue-600 hover:text-blue-800 font-medium text-sm"
-                                                >
-                                                    Lihat
-                                                </button>
-                                            </td>
+                        ) : (
+                            filteredReviews.map((review) => {
+                                const status = getReviewStatus(review);
+                                return (
+                                    <tr
+                                        key={review.id}
+                                        className="border-b hover:bg-gray-50 transition-colors cursor-pointer"
+                                        onClick={() => setSelectedReview(review)}
+                                    >
+                                        <td className="px-3 sm:px-6 py-3 sm:py-4 font-medium text-gray-900 text-xs sm:text-sm">
+                                            {review.name}
+                                        </td>
+                                        <td className="px-3 sm:px-6 py-3 sm:py-4 text-gray-700 hidden sm:table-cell">
+                                            <div className="max-w-xs truncate text-xs sm:text-sm">{review.review}</div>
+                                        </td>
+                                        <td className="px-3 sm:px-6 py-3 sm:py-4">
+                                            <div className="flex gap-0.5">
+                                                {[...Array(5)].map((_, i) => (
+                                                    <span
+                                                        key={i}
+                                                        className={`text-xs sm:text-sm ${i < review.rating ? "text-yellow-400" : "text-gray-300"}`}
+                                                    >
+                                                        ⭐
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </td>
+                                        <td className="px-3 sm:px-6 py-3 sm:py-4 hidden md:table-cell">
+                                            <span
+                                                className={`px-2 sm:px-3 py-1 rounded-full text-xs font-medium ${
+                                                    status === "approved"
+                                                        ? "bg-green-100 text-green-800"
+                                                        : status === "rejected"
+                                                        ? "bg-red-100 text-red-800"
+                                                        : "bg-yellow-100 text-yellow-800"
+                                                }`}
+                                            >
+                                                {status === "approved" && "✓ Disetujui"}
+                                                {status === "rejected" && "✗ Ditolak"}
+                                                {status === "pending" && "⏳ Menunggu"}
+                                            </span>
+                                        </td>
+                                        <td className="px-3 sm:px-6 py-3 sm:py-4 text-gray-600 text-xs hidden lg:table-cell">
+                                            {review.createdAt
+                                                ? new Date(review.createdAt).toLocaleDateString("id-ID", {
+                                                    day: "numeric",
+                                                    month: "short",
+                                                    year: "numeric",
+                                                })
+                                                : "—"}
+                                        </td>
+                                        <td className="px-3 sm:px-6 py-3 sm:py-4">
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setSelectedReview(review);
+                                                }}
+                                                className="text-blue-600 hover:text-blue-800 font-medium text-xs sm:text-sm"
+                                            >
+                                                Lihat
+                                            </button>
+                                        </td>
                                         </tr>
                                     );
                                 })
@@ -258,7 +255,6 @@ export default function AdminReviews() {
                         </tbody>
                     </table>
                 </div>
-            </div>
 
             {/* DETAIL MODAL */}
             {selectedReview && (

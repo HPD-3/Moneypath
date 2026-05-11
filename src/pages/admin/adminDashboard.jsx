@@ -27,6 +27,7 @@ export default function AdminDashboard() {
     const [denied, setDenied] = useState(false);
     const [adminEmail, setAdminEmail] = useState("Admin");
     const [isProfileOpen, setIsProfileOpen] = useState(false);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     useEffect(() => { fetchAll(); }, []);
 
@@ -100,19 +101,40 @@ export default function AdminDashboard() {
                 `}
             </style>
 
+            {/* MOBILE OVERLAY */}
+            {isSidebarOpen && (
+                <div 
+                    className="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden"
+                    onClick={() => setIsSidebarOpen(false)}
+                />
+            )}
+
             {/* SIDEBAR */}
-            <aside className="w-64 h-screen bg-gradient-to-b from-[#0b7a3a] to-[#0a5f2d] text-white flex flex-col flex-shrink-0">
-                <Sidebar active={active} setActive={setActive} handleLogout={handleLogout} />
+            <aside className={`fixed lg:static top-0 left-0 h-screen w-64 bg-gradient-to-b from-[#0b7a3a] to-[#0a5f2d] text-white flex flex-col flex-shrink-0 transition-transform duration-300 z-30 ${
+                isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+            }`}>
+                <Sidebar active={active} setActive={(newActive) => {
+                    setActive(newActive);
+                    setIsSidebarOpen(false);
+                }} handleLogout={handleLogout} />
             </aside>
 
             {/* MAIN CONTENT AREA */}
-            <main className="flex-1 p-4">
-                <div className="bg-gray-50 rounded-xl overflow-hidden">
+            <main className="flex-1 overflow-hidden flex flex-col">
+                <div className="bg-gray-50 rounded-none lg:rounded-xl overflow-hidden flex flex-col flex-1">
 
                     {/* HEADER ATAS */}
-                    <div className="bg-white border-b px-6 py-3 flex justify-between items-center shadow-sm">
+                    <div className="bg-white border-b px-3 sm:px-6 py-3 flex justify-between items-center shadow-sm">
 
-                        <h1 className="text-xl font-bold text-gray-900">
+                        {/* HAMBURGER MENU - Mobile only */}
+                        <button 
+                            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                            className="lg:hidden inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:bg-gray-100"
+                        >
+                            <iconify-icon icon="mdi:menu" className="text-2xl"></iconify-icon>
+                        </button>
+
+                        <h1 className="text-base sm:text-xl font-bold text-gray-900">
                             Selamat Datang, Admin
                         </h1>
 
@@ -121,15 +143,15 @@ export default function AdminDashboard() {
 
                             {/* BUTTON */}
                             <div onClick={() => setIsProfileOpen(!isProfileOpen)}
-                                className="flex items-center gap-2 bg-gray-100 px-3 py-1 rounded-full cursor-pointer">
+                                className="flex items-center gap-2 bg-gray-100 px-2 sm:px-3 py-1 rounded-full cursor-pointer">
 
                                 {/* ICON */}
                                 <div className="bg-green-500 text-white rounded-full p-1 flex items-center justify-center">
                                     <iconify-icon icon="mdi:account"></iconify-icon>
                                 </div>
 
-                                {/* TEXT */}
-                                <span className="text-sm">Admin</span>
+                                {/* TEXT - Hidden on small screens */}
+                                <span className="text-xs sm:text-sm hidden sm:inline">Admin</span>
 
                                 {/* ARROW */}
                                 <iconify-icon icon="mdi:chevron-down"></iconify-icon>
@@ -138,8 +160,8 @@ export default function AdminDashboard() {
 
                             {/* DROPDOWN */}
                             {isProfileOpen && (
-                                <div className="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-md overflow-hidden z-50">
-                                    <button onClick={() => navigate("/dashboard")} className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2 text-gray-900 text-sm">
+                                <div className="absolute right-0 mt-2 w-48 sm:w-40 bg-white rounded-lg shadow-md overflow-hidden z-50">
+                                    <button onClick={() => navigate("/dashboard")} className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2 text-gray-900 text-xs sm:text-sm">
                                         <iconify-icon icon="mdi:account-cog"></iconify-icon>
                                         Kembali Ke User Dashboard
                                     </button>
@@ -151,7 +173,7 @@ export default function AdminDashboard() {
                     </div>
 
                     {/* CONTENT */}
-                    <div className="overflow-y-auto max-h-[calc(100vh-8rem)]">
+                    <div className="overflow-y-auto flex-1">
                         {active === "beranda" && (
                             <AdminBeranda
                                 users={users}

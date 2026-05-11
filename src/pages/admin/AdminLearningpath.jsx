@@ -276,14 +276,14 @@ export default function AdminLearningPath({ paths = [], loading, onRefresh }) {
         finally { setSaving(false); }
     };
 
-    if (loading) return <div className="page"><p style={{ color: "#9ca3af" }}>Loading...</p></div>;
+    if (loading) return <div className="p-3 sm:p-6"><p className="text-gray-400 text-sm">Loading...</p></div>;
 
     return (
-        <div className="page">
+        <div className="p-3 sm:p-6">
             <div className="panel">
-                <div className="panel-header">
-                    <p className="section-title" style={{ margin: 0 }}>Kelola Learning Path</p>
-                    <button className="btn-add" onClick={() => { setForm(EMPTY_P); setEditId(null); setShowForm(!showForm); }}>
+                <div className="panel-header flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6">
+                    <p className="section-title text-base sm:text-lg" style={{ margin: 0 }}>Kelola Learning Path</p>
+                    <button className="btn-add w-full sm:w-auto text-center sm:text-left text-sm" onClick={() => { setForm(EMPTY_P); setEditId(null); setShowForm(!showForm); }}>
                         {showForm ? "✕ Batal" : "+ Buat Path Baru"}
                     </button>
                 </div>

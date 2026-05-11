@@ -16,6 +16,12 @@ export function AdminStyles() {
                 display: flex; flex-direction: column;
                 position: fixed; top: 0; left: 0; z-index: 30;
             }
+            @media (max-width: 1024px) {
+                .sidebar { width: 140px; }
+            }
+            @media (max-width: 640px) {
+                .sidebar { width: 100%; }
+            }
             .sidebar-logo {
                 font-family: 'Lilita One', cursive;
                 color: #9FF782; font-size: 18px;

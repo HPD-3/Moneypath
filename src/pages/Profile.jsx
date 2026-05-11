@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { auth, db } from "../firebase.js";
 import API from "../services/api.js";
@@ -6,6 +6,32 @@ import Sidebar from "../components/Sidebar.jsx";
 import Navbar from "../components/Navbar.jsx";
 import { ReviewForm } from "../components/ReviewForm.jsx";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+
+// Custom Hook untuk Intersection Observer
+const useIntersectionObserver = (ref) => {
+    const [isVisible, setIsVisible] = useState(false);
+
+    useEffect(() => {
+        const observer = new IntersectionObserver(([entry]) => {
+            if (entry.isIntersecting) {
+                setIsVisible(true);
+                observer.unobserve(entry.target);
+            }
+        }, { threshold: 0.1 });
+
+        if (ref.current) {
+            observer.observe(ref.current);
+        }
+
+        return () => {
+            if (ref.current) {
+                observer.unobserve(ref.current);
+            }
+        };
+    }, [ref]);
+
+    return isVisible;
+};
 
 export default function Profile() {
     const navigate = useNavigate();
@@ -15,21 +41,28 @@ export default function Profile() {
     const [error, setError] = useState(null);
     const [showEdit, setShowEdit] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
-    const [showAll, setShowAll] = useState(false);
     const [balances, setBalances] = useState([]);
     const [transactions, setTransactions] = useState([]);
     const [tabungan, setTabungan] = useState([]);
+
+    // Refs untuk Intersection Observer
+    const personalInfoRef = useRef(null);
+    const financialStatsRef = useRef(null);
+    const activityRef = useRef(null);
+
+    // Lazy load sections
+    const personalInfoVisible = useIntersectionObserver(personalInfoRef);
+    const financialStatsVisible = useIntersectionObserver(financialStatsRef);
+    const activityVisible = useIntersectionObserver(activityRef);
+
+    // Loading states untuk financial data
+    const [financialLoading, setFinancialLoading] = useState(false);
+    const [personalLoading, setPersonalLoading] = useState(false);
 
     // New state for sidebar and navbar
     const [activeNav, setActiveNav] = useState("profil");
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
-    // Firebase token helper (for Postman testing)
-    const [firebaseIdToken, setFirebaseIdToken] = useState("");
-    const [firebaseTokenLoading, setFirebaseTokenLoading] = useState(false);
-    const [showFirebaseToken, setShowFirebaseToken] = useState(false);
-    const [firebaseTokenError, setFirebaseTokenError] = useState("");
 
     // Edit profile form state
     const [editForm, setEditForm] = useState({
@@ -40,18 +73,18 @@ export default function Profile() {
         address: ""
     });
 
+    const [editLoading, setEditLoading] = useState(false);
+    const [editMessage, setEditMessage] = useState("");
+    const [editError, setEditError] = useState("");
+
     // Password form state
     const [passwordForm, setPasswordForm] = useState({
         oldPassword: "",
         newPassword: "",
         confirmPassword: ""
     });
-
-    const [editLoading, setEditLoading] = useState(false);
     const [passwordLoading, setPasswordLoading] = useState(false);
-    const [editMessage, setEditMessage] = useState("");
     const [passwordMessage, setPasswordMessage] = useState("");
-    const [editError, setEditError] = useState("");
     const [passwordError, setPasswordError] = useState("");
 
     // Review submission state
@@ -75,41 +108,96 @@ export default function Profile() {
         navigate("/login");
     };
 
-    const handleGenerateToken = async () => {
+    const openEditModal = () => {
+        if (!personal) return;
+
+        setEditForm({
+            name: personal.name || "",
+            phoneNumber: personal.phoneNumber || "",
+            dateOfBirth: personal.dateOfBirth || "",
+            gender: personal.gender || "",
+            address: personal.address || ""
+        });
+        setEditError("");
+        setEditMessage("");
+        setShowEdit(true);
+    };
+
+    const handleEditChange = (e) => {
+        const { name, value } = e.target;
+        setEditForm((prev) => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+
+    const handleEditSubmit = async (e) => {
+        e.preventDefault();
+        setEditLoading(true);
+        setEditError("");
+        setEditMessage("");
+
         try {
-            setFirebaseTokenError("");
-            setFirebaseTokenLoading(true);
-            const user = auth.currentUser;
-            if (!user) {
-                setFirebaseTokenError("User belum login.");
-                return;
-            }
-            const token = await user.getIdToken(true);
-            setFirebaseIdToken(token);
-            setShowFirebaseToken(true);
-        } catch (e) {
-            setFirebaseTokenError(e?.message || "Gagal mengambil token Firebase.");
+            const response = await API.put("/personal/profile", editForm);
+            setPersonal(response.data);
+            setEditMessage("Profil berhasil diperbarui!");
+            setTimeout(() => {
+                setShowEdit(false);
+                setEditMessage("");
+            }, 2000);
+        } catch (err) {
+            setEditError(err.response?.data?.message || "Gagal memperbarui profil");
         } finally {
-            setFirebaseTokenLoading(false);
+            setEditLoading(false);
         }
     };
 
-    const handleCopyToken = async () => {
-        if (!firebaseIdToken) return;
-        try {
-            await navigator.clipboard.writeText(firebaseIdToken);
-        } catch {
-            // ignore (clipboard may be blocked)
-        }
+    const handlePasswordChange = (e) => {
+        const { name, value } = e.target;
+        setPasswordForm((prev) => ({
+            ...prev,
+            [name]: value
+        }));
     };
 
-    const handleCopyUid = async () => {
-        const uid = profile?.uid || auth.currentUser?.uid;
-        if (!uid) return;
+    const handlePasswordSubmit = async (e) => {
+        e.preventDefault();
+        setPasswordLoading(true);
+        setPasswordError("");
+        setPasswordMessage("");
+
+        if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+            setPasswordError("Password baru dan konfirmasi password tidak cocok");
+            setPasswordLoading(false);
+            return;
+        }
+
+        if (passwordForm.newPassword.length < 6) {
+            setPasswordError("Password baru minimal 6 karakter");
+            setPasswordLoading(false);
+            return;
+        }
+
         try {
-            await navigator.clipboard.writeText(uid);
-        } catch {
-            // ignore (clipboard may be blocked)
+            await API.post("/auth/change-password", {
+                oldPassword: passwordForm.oldPassword,
+                newPassword: passwordForm.newPassword
+            });
+
+            setPasswordMessage("Password berhasil diubah!");
+            setTimeout(() => {
+                setShowPassword(false);
+                setPasswordForm({
+                    oldPassword: "",
+                    newPassword: "",
+                    confirmPassword: ""
+                });
+                setPasswordMessage("");
+            }, 2000);
+        } catch (err) {
+            setPasswordError(err.response?.data?.message || "Gagal mengubah password");
+        } finally {
+            setPasswordLoading(false);
         }
     };
 
@@ -150,105 +238,6 @@ export default function Profile() {
         }
     };
 
-    // 🔹 Open edit modal with current data
-    const openEditModal = () => {
-        if (personal) {
-            setEditForm({
-                name: personal.name || "",
-                phoneNumber: personal.phoneNumber || "",
-                dateOfBirth: personal.dateOfBirth || "",
-                gender: personal.gender || "",
-                address: personal.address || ""
-            });
-            setEditError("");
-            setEditMessage("");
-        }
-        setShowEdit(true);
-    };
-
-    // 🔹 Handle edit profile form change
-    const handleEditChange = (e) => {
-        const { name, value } = e.target;
-        setEditForm(prev => ({
-            ...prev,
-            [name]: value
-        }));
-    };
-
-    // 🔹 Submit edit profile
-    const handleEditSubmit = async (e) => {
-        e.preventDefault();
-        setEditLoading(true);
-        setEditError("");
-        setEditMessage("");
-
-        try {
-            const response = await API.put("/personal/profile", editForm);
-            setPersonal(response.data);
-            setEditMessage("Profil berhasil diperbarui!");
-            setTimeout(() => {
-                setShowEdit(false);
-                setEditMessage("");
-            }, 2000);
-        } catch (err) {
-            setEditError(err.response?.data?.message || "Gagal memperbarui profil");
-        } finally {
-            setEditLoading(false);
-        }
-    };
-
-    // 🔹 Handle password form change
-    const handlePasswordChange = (e) => {
-        const { name, value } = e.target;
-        setPasswordForm(prev => ({
-            ...prev,
-            [name]: value
-        }));
-    };
-
-    // 🔹 Submit password change
-    const handlePasswordSubmit = async (e) => {
-        e.preventDefault();
-        setPasswordLoading(true);
-        setPasswordError("");
-        setPasswordMessage("");
-
-        // Validate passwords match
-        if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-            setPasswordError("Password baru dan konfirmasi password tidak cocok");
-            setPasswordLoading(false);
-            return;
-        }
-
-        // Validate password length
-        if (passwordForm.newPassword.length < 6) {
-            setPasswordError("Password baru minimal 6 karakter");
-            setPasswordLoading(false);
-            return;
-        }
-
-        try {
-            await API.post("/auth/change-password", {
-                oldPassword: passwordForm.oldPassword,
-                newPassword: passwordForm.newPassword
-            });
-            setPasswordMessage("Password berhasil diubah!");
-            setTimeout(() => {
-                setShowPassword(false);
-                setPasswordForm({
-                    oldPassword: "",
-                    newPassword: "",
-                    confirmPassword: ""
-                });
-                setPasswordMessage("");
-            }, 2000);
-        } catch (err) {
-            setPasswordError(err.response?.data?.message || "Gagal mengubah password");
-        } finally {
-            setPasswordLoading(false);
-        }
-    };
-
     // 🔹 Fetch Auth Profile
     useEffect(() => {
         const fetchProfile = async () => {
@@ -269,6 +258,7 @@ export default function Profile() {
 
         const fetchPersonal = async () => {
             try {
+                setPersonalLoading(true);
                 const res = await API.get("/personal/profile");
                 setPersonal(res.data);
             } catch (err) {
@@ -278,7 +268,7 @@ export default function Profile() {
                     console.error(err);
                 }
             } finally {
-                // no-op
+                setPersonalLoading(false);
             }
         };
 
@@ -301,10 +291,13 @@ export default function Profile() {
         fetchQuizStats();
     }, [profile]);
 
-    // 🔹 Fetch Financial Data
+    // 🔹 Fetch Financial Data (Lazy load when visible)
     useEffect(() => {
+        if (!profile || !financialStatsVisible) return;
+
         const fetchFinancialData = async () => {
             try {
+                setFinancialLoading(true);
                 const [balRes, txRes, tabRes] = await Promise.all([
                     API.get("/balance"),
                     API.get("/balance/transactions"),
@@ -315,13 +308,13 @@ export default function Profile() {
                 setTabungan(tabRes.data || []);
             } catch (err) {
                 console.error("Error fetching financial data:", err);
+            } finally {
+                setFinancialLoading(false);
             }
         };
 
-        if (profile) {
-            fetchFinancialData();
-        }
-    }, [profile]);
+        fetchFinancialData();
+    }, [profile, financialStatsVisible]);
 
     // 📊 Calculate Statistics
     const calculateStats = () => {
@@ -407,137 +400,195 @@ export default function Profile() {
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
 
                                 {/* LEFT: INFORMASI PRIBADI */}
-                                {personal && (
-                                    <div className="bg-white p-6 rounded-2xl shadow-md">
-                                        <h3 className="text-xl font-bold text-gray-900 mb-6">Informasi Pribadi</h3>
-
-                                        <div className="space-y-4">
-                                            <div className="flex items-center gap-4 pb-4 border-b border-gray-200">
-                                                <iconify-icon icon="mdi:account" className="text-2xl"></iconify-icon>
-                                                <div>
-                                                    <p className="text-xs text-gray-500 font-semibold">Nama</p>
-                                                    <p className="text-gray-900 font-medium">{personal.name || "-"}</p>
-                                                </div>
+                                <div ref={personalInfoRef}>
+                                    {personalLoading ? (
+                                        <div className="bg-white p-6 rounded-2xl shadow-md animate-pulse">
+                                            <div className="h-6 bg-gray-300 rounded mb-6 w-32"></div>
+                                            <div className="space-y-4">
+                                                {[...Array(5)].map((_, i) => (
+                                                    <div key={i} className="flex gap-4">
+                                                        <div className="w-10 h-10 bg-gray-300 rounded-lg flex-shrink-0"></div>
+                                                        <div className="flex-1">
+                                                            <div className="h-3 bg-gray-300 rounded mb-2 w-16"></div>
+                                                            <div className="h-4 bg-gray-200 rounded w-24"></div>
+                                                        </div>
+                                                    </div>
+                                                ))}
                                             </div>
+                                        </div>
+                                    ) : personal && (
+                                        <div className="bg-white p-6 rounded-2xl shadow-md">
+                                            <h3 className="text-xl font-bold text-gray-900 mb-6">Informasi Pribadi</h3>
 
-                                            <div className="flex items-center gap-4 pb-4 border-b border-gray-200">
-                                                <iconify-icon icon="mdi:calendar" className="text-2xl"></iconify-icon>
-                                                <div>
-                                                    <p className="text-xs text-gray-500 font-semibold">Tanggal Lahir</p>
-                                                    <p className="text-gray-900 font-medium">{personal.dateOfBirth || "-"}</p>
+                                            <div className="space-y-4">
+                                                <div className="flex items-center gap-4 pb-4 border-b border-gray-200">
+                                                    <iconify-icon icon="mdi:account" className="text-2xl"></iconify-icon>
+                                                    <div>
+                                                        <p className="text-xs text-gray-500 font-semibold">Nama</p>
+                                                        <p className="text-gray-900 font-medium">{personal.name || "-"}</p>
+                                                    </div>
                                                 </div>
-                                            </div>
 
-                                            <div className="flex items-center gap-4 pb-4 border-b border-gray-200">
-                                                <iconify-icon icon="mdi:phone" className="text-2xl"></iconify-icon>
-                                                <div>
-                                                    <p className="text-xs text-gray-500 font-semibold">Nomor HP</p>
-                                                    <p className="text-gray-900 font-medium">{personal.phoneNumber || "-"}</p>
+                                                <div className="flex items-center gap-4 pb-4 border-b border-gray-200">
+                                                    <iconify-icon icon="mdi:calendar" className="text-2xl"></iconify-icon>
+                                                    <div>
+                                                        <p className="text-xs text-gray-500 font-semibold">Tanggal Lahir</p>
+                                                        <p className="text-gray-900 font-medium">{personal.dateOfBirth || "-"}</p>
+                                                    </div>
                                                 </div>
-                                            </div>
 
-                                            <div className="flex items-center gap-4 pb-4 border-b border-gray-200">
-                                                <iconify-icon icon="mdi:gender-female" className="text-2xl"></iconify-icon>
-                                                <div>
-                                                    <p className="text-xs text-gray-500 font-semibold">Jenis Kelamin</p>
-                                                    <p className="text-gray-900 font-medium">{personal.gender || "-"}</p>
+                                                <div className="flex items-center gap-4 pb-4 border-b border-gray-200">
+                                                    <iconify-icon icon="mdi:phone" className="text-2xl"></iconify-icon>
+                                                    <div>
+                                                        <p className="text-xs text-gray-500 font-semibold">Nomor HP</p>
+                                                        <p className="text-gray-900 font-medium">{personal.phoneNumber || "-"}</p>
+                                                    </div>
                                                 </div>
-                                            </div>
 
-                                            <div className="flex items-center gap-4">
-                                                <iconify-icon icon="mdi:map-marker" className="text-2xl"></iconify-icon>
-                                                <div>
-                                                    <p className="text-xs text-gray-500 font-semibold">Alamat</p>
-                                                    <p className="text-gray-900 font-medium">{personal.address || "-"}</p>
+                                                <div className="flex items-center gap-4 pb-4 border-b border-gray-200">
+                                                    <iconify-icon icon="mdi:gender-female" className="text-2xl"></iconify-icon>
+                                                    <div>
+                                                        <p className="text-xs text-gray-500 font-semibold">Jenis Kelamin</p>
+                                                        <p className="text-gray-900 font-medium">{personal.gender || "-"}</p>
+                                                    </div>
+                                                </div>
+
+                                                <div className="flex items-center gap-4">
+                                                    <iconify-icon icon="mdi:map-marker" className="text-2xl"></iconify-icon>
+                                                    <div>
+                                                        <p className="text-xs text-gray-500 font-semibold">Alamat</p>
+                                                        <p className="text-gray-900 font-medium">{personal.address || "-"}</p>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
-                                )}
+                                    )}
+                                </div>
 
                                 {/* MIDDLE: STATISTIK KEUANGAN */}
-                                <div className="bg-white p-6 rounded-2xl shadow-md">
-                                    <h3 className="text-xl font-bold text-gray-900 mb-6">Statistik Keuangan</h3>
-
-                                    <div className="grid grid-cols-2 gap-4 mb-6">
-                                        {/* Total Tabungan */}
-                                        <div className="bg-[#172619] text-white p-4 rounded-xl flex flex-col gap-2">
-                                            <span className="text-xs font-semibold bg-green-400 text-green-900 px-3 py-1 rounded-full w-fit">
-                                                Total Tabungan
-                                            </span>
-                                            <p className="text-lg font-bold"><iconify-icon icon="mdi:wallet" style={{ marginRight: "6px" }}></iconify-icon>{fmt(totalTabungan)}</p>
+                                <div ref={financialStatsRef}>
+                                    {financialLoading ? (
+                                        <div className="bg-white p-6 rounded-2xl shadow-md animate-pulse">
+                                            <div className="h-6 bg-gray-300 rounded mb-6 w-40"></div>
+                                            <div className="grid grid-cols-2 gap-4 mb-6">
+                                                {[...Array(4)].map((_, i) => (
+                                                    <div key={i} className="bg-gray-300 h-28 rounded-xl"></div>
+                                                ))}
+                                            </div>
+                                            <div className="space-y-3">
+                                                <div className="h-2 bg-gray-300 rounded-full"></div>
+                                                <div className="h-3 bg-gray-200 rounded w-32"></div>
+                                            </div>
                                         </div>
+                                    ) : (
+                                        <div className="bg-white p-6 rounded-2xl shadow-md">
+                                            <h3 className="text-xl font-bold text-gray-900 mb-6">Statistik Keuangan</h3>
 
-                                        {/* Total Pengeluaran */}
-                                        <div className="bg-[#172619] text-white p-4 rounded-xl flex flex-col gap-2">
-                                            <span className="text-xs font-semibold bg-green-400 text-green-900 px-3 py-1 rounded-full w-fit">
-                                                Total Pengeluaran
-                                            </span>
-                                            <p className="text-lg font-bold"><iconify-icon icon="mdi:trending-down" style={{ marginRight: "6px" }}></iconify-icon>{fmt(totalPengeluaran)}</p>
-                                        </div>
+                                            <div className="grid grid-cols-2 gap-4 mb-6">
+                                                {/* Total Tabungan */}
+                                                <div className="bg-[#172619] text-white p-4 rounded-xl flex flex-col gap-2">
+                                                    <span className="text-xs font-semibold bg-green-400 text-green-900 px-3 py-1 rounded-full w-fit">
+                                                        Total Tabungan
+                                                    </span>
+                                                    <p className="text-lg font-bold"><iconify-icon icon="mdi:wallet" style={{ marginRight: "6px" }}></iconify-icon>{fmt(totalTabungan)}</p>
+                                                </div>
 
-                                        {/* Total Pemasukan */}
-                                        <div className="bg-[#172619] text-white p-4 rounded-xl flex flex-col gap-2">
-                                            <span className="text-xs font-semibold bg-green-400 text-green-900 px-3 py-1 rounded-full w-fit">
-                                                Total Pemasukan
-                                            </span>
-                                            <p className="text-lg font-bold"><iconify-icon icon="mdi:trending-up" style={{ marginRight: "6px" }}></iconify-icon>{fmt(totalPemasukan)}</p>
-                                        </div>
+                                                {/* Total Pengeluaran */}
+                                                <div className="bg-[#172619] text-white p-4 rounded-xl flex flex-col gap-2">
+                                                    <span className="text-xs font-semibold bg-green-400 text-green-900 px-3 py-1 rounded-full w-fit">
+                                                        Total Pengeluaran
+                                                    </span>
+                                                    <p className="text-lg font-bold"><iconify-icon icon="mdi:trending-down" style={{ marginRight: "6px" }}></iconify-icon>{fmt(totalPengeluaran)}</p>
+                                                </div>
 
-                                        {/* Target Keuangan */}
-                                        <div className="bg-[#172619] text-white p-4 rounded-xl flex flex-col gap-2">
-                                            <span className="text-xs font-semibold bg-green-400 text-green-900 px-3 py-1 rounded-full w-fit">
-                                                Target Keuangan
-                                            </span>
-                                            <p className="text-lg font-bold"><iconify-icon icon="mdi:target" style={{ marginRight: "6px" }}></iconify-icon>{completedTabungan} Tercapai</p>
-                                        </div>
-                                    </div>
+                                                {/* Total Pemasukan */}
+                                                <div className="bg-[#172619] text-white p-4 rounded-xl flex flex-col gap-2">
+                                                    <span className="text-xs font-semibold bg-green-400 text-green-900 px-3 py-1 rounded-full w-fit">
+                                                        Total Pemasukan
+                                                    </span>
+                                                    <p className="text-lg font-bold"><iconify-icon icon="mdi:trending-up" style={{ marginRight: "6px" }}></iconify-icon>{fmt(totalPemasukan)}</p>
+                                                </div>
 
-                                    {/* Progress Bar */}
-                                    <div>
-                                        <div className="h-2 bg-gray-300 rounded-full overflow-hidden mb-2">
-                                            <div
-                                                className="h-full bg-gradient-to-r from-green-900 to-green-400 transition-all duration-500"
-                                                style={{ width: totalBalance > 0 ? `${Math.min((totalBalance / (totalPemasukan || 1)) * 100, 100)}%` : "0%" }}
-                                            ></div>
+                                                {/* Target Keuangan */}
+                                                <div className="bg-[#172619] text-white p-4 rounded-xl flex flex-col gap-2">
+                                                    <span className="text-xs font-semibold bg-green-400 text-green-900 px-3 py-1 rounded-full w-fit">
+                                                        Target Keuangan
+                                                    </span>
+                                                    <p className="text-lg font-bold"><iconify-icon icon="mdi:target" style={{ marginRight: "6px" }}></iconify-icon>{completedTabungan} Tercapai</p>
+                                                </div>
+                                            </div>
+
+                                            {/* Progress Bar */}
+                                            <div>
+                                                <div className="h-2 bg-gray-300 rounded-full overflow-hidden mb-2">
+                                                    <div
+                                                        className="h-full bg-gradient-to-r from-green-900 to-green-400 transition-all duration-500"
+                                                        style={{ width: totalBalance > 0 ? `${Math.min((totalBalance / (totalPemasukan || 1)) * 100, 100)}%` : "0%" }}
+                                                    ></div>
+                                                </div>
+                                                <p className="text-xs text-gray-600 font-medium">
+                                                    {fmt(totalBalance)} - {fmt(totalPemasukan)}
+                                                </p>
+                                            </div>
                                         </div>
-                                        <p className="text-xs text-gray-600 font-medium">
-                                            {fmt(totalBalance)} - {fmt(totalPemasukan)}
-                                        </p>
-                                    </div>
+                                    )}
                                 </div>
 
                                 {/* RIGHT: AKTIVITAS TERAKHIR */}
-                                <div className="bg-white p-6 rounded-2xl shadow-md">
-                                    <h3 className="text-xl font-bold text-gray-900 mb-6">Aktivitas Terakhir</h3>
-
-                                    <div className="overflow-y-auto max-h-96">
-                                        <table className="w-full text-sm">
-                                            <thead className="sticky top-0 bg-gray-50 border-b border-gray-200">
-                                                <tr>
-                                                    <th className="text-left font-semibold text-gray-700 py-3 px-4">Deskripsi</th>
-                                                    <th className="text-right font-semibold text-gray-700 py-3 px-4">Jumlah</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {(showAll ? transactions : transactions.slice(0, 4)).map((tx, i) => (
-                                                    <tr key={i} className="border-b border-gray-100 hover:bg-gray-50 transition">
-                                                        <td className="py-3 px-4 text-gray-700">{tx.description || "-"}</td>
-                                                        <td className={`py-3 px-4 text-right font-medium ${tx.type === "income" ? "text-green-600" : "text-red-600"}`}>
-                                                            {tx.type === "income" ? "+" : "-"}{fmt(tx.amount)}
-                                                        </td>
-                                                    </tr>
+                                <div ref={activityRef}>
+                                    {financialLoading ? (
+                                        <div className="bg-white p-6 rounded-2xl shadow-md animate-pulse">
+                                            <div className="h-6 bg-gray-300 rounded mb-6 w-48"></div>
+                                            <div className="space-y-3">
+                                                {[...Array(5)].map((_, i) => (
+                                                    <div key={i} className="flex justify-between gap-4 pb-3 border-b border-gray-100">
+                                                        <div className="h-4 bg-gray-300 rounded flex-1"></div>
+                                                        <div className="h-4 bg-gray-200 rounded w-24"></div>
+                                                    </div>
                                                 ))}
-                                            </tbody>
-                                        </table>
-                                    </div>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="bg-white p-6 rounded-2xl shadow-md">
+                                            <div className="flex justify-between items-center mb-6">
+                                                <h3 className="text-xl font-bold text-gray-900">Aktivitas Terakhir</h3>
+                                                <button
+                                                    onClick={() => navigate("/profile/history")}
+                                                    className="text-blue-600 hover:text-blue-800 font-semibold text-sm"
+                                                >
+                                                    Lihat Semua →
+                                                </button>
+                                            </div>
 
-                                    <button
-                                        onClick={() => setShowAll(!showAll)}
-                                        className="text-green-700 font-semibold text-sm hover:text-green-900 transition-all mt-4 inline-block"
-                                    >
-                                        {showAll ? "Tutup" : "Lihat Semua >"}
-                                    </button>
+                                            <div className="overflow-y-auto max-h-96">
+                                                <table className="w-full text-sm">
+                                                    <thead className="sticky top-0 bg-gray-50 border-b border-gray-200">
+                                                        <tr>
+                                                            <th className="text-left font-semibold text-gray-700 py-3 px-4">Deskripsi</th>
+                                                            <th className="text-right font-semibold text-gray-700 py-3 px-4">Jumlah</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {(transactions.slice(0, 4)).map((tx, i) => (
+                                                            <tr key={i} className="border-b border-gray-100 hover:bg-gray-50 transition">
+                                                                <td className="py-3 px-4 text-gray-700">{tx.description || "-"}</td>
+                                                                <td className={`py-3 px-4 text-right font-medium ${tx.type === "income" ? "text-green-600" : "text-red-600"}`}>
+                                                                    {tx.type === "income" ? "+" : "-"}{fmt(tx.amount)}
+                                                                </td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+
+                                            <button
+                                                onClick={() => navigate("/profile/history")}
+                                                className="text-green-700 font-semibold text-sm hover:text-green-900 transition-all mt-4 inline-block"
+                                            >
+                                                Lihat Semua
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
 
                             </div>

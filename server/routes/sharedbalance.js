@@ -2,6 +2,7 @@ import { Router } from "express";
 import { db } from "../firebaseAdmin.js";
 import { verifyToken } from "../middleware/verifyToken.js";
 import crypto from "crypto";
+import { sendInviteEmail } from "../utils/sendInviteEmail.js";
 
 const router = Router();
 
@@ -288,26 +289,32 @@ router.post("/:groupId/invite", verifyToken, async (req, res) => {
             .limit(1)
             .get();
 
-        if (userSnap.empty) {
-            return res.status(404).json({ error: "User not found" });
+        if (!userSnap.empty) {
+            const targetUid = userSnap.docs[0].id;
+
+            if (groupData.members?.[targetUid]) {
+                return res.status(400).json({ error: "Already a member" });
+            }
+
+            await db.collection("users")
+                .doc(targetUid)
+                .collection("invites")
+                .add({
+                    groupId,
+                    groupName: groupData.name,
+                    invitedBy: uid,
+                    status: "pending",
+                    createdAt: new Date().toISOString()
+                });
         }
 
-        const targetUid = userSnap.docs[0].id;
-
-        if (groupData.members?.[targetUid]) {
-            return res.status(400).json({ error: "Already a member" });
-        }
-
-        await db.collection("users")
-            .doc(targetUid)
-            .collection("invites")
-            .add({
-                groupId,
-                groupName: groupData.name,
-                invitedBy: uid,
-                status: "pending",
-                createdAt: new Date().toISOString()
-            });
+        await sendInviteEmail({
+            to: email,
+            groupName: groupData.name,
+            featureName: "Saldo Bersama",
+            inviteCode: groupData.inviteCode,
+            inviterName: groupData.members?.[uid]?.name || "MoneyPath"
+        });
 
         res.json({ message: "Invite sent" });
 

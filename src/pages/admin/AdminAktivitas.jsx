@@ -44,23 +44,23 @@ export default function AdminAktivitas() {
     const recentActivities = activities.slice(0, 5);
 
     return (
-        <div className="space-y-6 p-6">
+        <div className="space-y-6 p-3 sm:p-6">
             {/* PAGE HEADER */}
             <div>
-                <h1 className="text-3xl font-bold text-gray-900">📋 Aktivitas Terbaru</h1>
-                <p className="text-gray-600 mt-2">Pantau semua aktivitas admin dan konten yang ditambahkan</p>
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">📋 Aktivitas Terbaru</h1>
+                <p className="text-gray-600 mt-2 text-sm">Pantau semua aktivitas admin dan konten yang ditambahkan</p>
             </div>
 
             {/* LOADING & ERROR */}
             {loading && (
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <p className="text-blue-700">Memuat aktivitas...</p>
+                    <p className="text-blue-700 text-sm">Memuat aktivitas...</p>
                 </div>
             )}
 
             {error && (
                 <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                    <p className="text-red-700">Error: {error}</p>
+                    <p className="text-red-700 text-sm">Error: {error}</p>
                 </div>
             )}
 
@@ -69,31 +69,31 @@ export default function AdminAktivitas() {
                     {/* RECENT ACTIVITIES TABLE */}
                     <div className="bg-white rounded-lg shadow border border-gray-200 overflow-hidden">
                         <div className="overflow-x-auto">
-                            <table className="w-full">
+                            <table className="w-full min-w-max">
                                 <thead className="bg-gray-50 border-b border-gray-200">
                                     <tr>
-                                        <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Aktivitas</th>
-                                        <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Tanggal</th>
-                                        <th className="px-6 py-3 text-center text-sm font-semibold text-gray-900">Aksi</th>
+                                        <th className="px-3 sm:px-6 py-3 text-left text-xs sm:text-sm font-semibold text-gray-900">Aktivitas</th>
+                                        <th className="px-3 sm:px-6 py-3 text-left text-xs sm:text-sm font-semibold text-gray-900">Tanggal</th>
+                                        <th className="px-3 sm:px-6 py-3 text-center text-xs sm:text-sm font-semibold text-gray-900">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-200">
                                     {recentActivities.length > 0 ? (
                                         recentActivities.map((activity) => (
                                             <tr key={activity.id} className="hover:bg-gray-50 transition">
-                                                <td className="px-6 py-4">
-                                                    <div className="text-sm">
+                                                <td className="px-3 sm:px-6 py-4">
+                                                    <div className="text-xs sm:text-sm">
                                                         <p className="text-gray-900 font-medium">{activity.action}</p>
-                                                        <p className="text-gray-600">{activity.title}</p>
+                                                        <p className="text-gray-600 truncate">{activity.title}</p>
                                                     </div>
                                                 </td>
-                                                <td className="px-6 py-4 text-sm text-gray-600">
+                                                <td className="px-3 sm:px-6 py-4 text-xs sm:text-sm text-gray-600 whitespace-nowrap">
                                                     {formatDate(activity.date)}
                                                 </td>
-                                                <td className="px-6 py-4 text-center">
+                                                <td className="px-3 sm:px-6 py-4 text-center">
                                                     <button
                                                         onClick={() => openDetail(activity)}
-                                                        className="inline-flex items-center px-3 py-1.5 rounded-md text-sm font-medium bg-blue-100 text-blue-700 hover:bg-blue-200 transition"
+                                                        className="inline-flex items-center px-2 sm:px-3 py-1 rounded-md text-xs sm:text-sm font-medium bg-blue-100 text-blue-700 hover:bg-blue-200 transition"
                                                     >
                                                         Lihat
                                                     </button>

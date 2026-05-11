@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import API from "../services/api.js";
 import Navbar from "../components/Navbar.jsx";
 import Sidebar from "../components/Sidebar.jsx";
@@ -173,6 +173,9 @@ function GroupDetail({ group, uid, personalBalances, sharedBalances, onClose, on
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(null);
     const [historyFilter, setHistoryFilter] = useState("all");
+    const [historySetoran, setHistorySetoran] = useState([]);
+    const [historyLoading, setHistoryLoading] = useState(false);
+    const [historyLoaded, setHistoryLoaded] = useState(false);
 
     const members = Object.values(group.members || {});
     const myRole = group.members?.[uid]?.role;
@@ -193,6 +196,32 @@ function GroupDetail({ group, uid, personalBalances, sharedBalances, onClose, on
         setTimeout(() => setCopied(false), 2000);
     };
 
+    const loadHistory = async () => {
+        try {
+            setHistoryLoading(true);
+            const res = await API.get(`/shared-tabungan/${group.id}`);
+            setHistorySetoran(res.data.setoran || []);
+            setHistoryLoaded(true);
+        } catch (err) {
+            setError(err.response?.data?.error || err.message || "Gagal memuat riwayat");
+        } finally {
+            setHistoryLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        if (tab === "riwayat" && !historyLoaded) {
+            loadHistory();
+        }
+    }, [tab, historyLoaded, group.id]);
+
+    const filteredHistorySetoran = historySetoran.filter(s => {
+        if (historyFilter === "all") return true;
+        if (historyFilter === "shared") return s.sourceType === "shared" || s.sourceType === "group";
+        if (historyFilter === "personal") return s.sourceType === "personal" || !s.sourceType || s.sourceType === "pribadi";
+        return true;
+    });
+
     const handleSetor = async e => {
         e.preventDefault();
         setError(null);
@@ -211,6 +240,10 @@ function GroupDetail({ group, uid, personalBalances, sharedBalances, onClose, on
             setSuccess(`+${fmt(amt)} berhasil disetor!`);
             setTimeout(() => setSuccess(null), 3000);
             onRefresh(group.id);
+            if (tab === "riwayat") {
+                setHistoryLoaded(false);
+                await loadHistory();
+            }
         } catch (err) {
             setError(err.response?.data?.error || err.message);
         } finally { setSaving(false); }
@@ -241,6 +274,10 @@ function GroupDetail({ group, uid, personalBalances, sharedBalances, onClose, on
         try {
             setRefreshing(true);
             await onRefresh(group.id);
+            if (tab === "riwayat") {
+                setHistoryLoaded(false);
+                await loadHistory();
+            }
             setSuccess("Riwayat transaksi diperbarui");
             setTimeout(() => setSuccess(null), 2000);
         } catch (err) {
@@ -394,7 +431,7 @@ function GroupDetail({ group, uid, personalBalances, sharedBalances, onClose, on
                         isAdmin ? (
                             <div style={{ padding: 12, background: "white", borderRadius: 10 }}>
                                 <p style={{ fontSize: 20, fontWeight: 800, color: "#1a3a1f", marginBottom: 8 }}>🎉 Target Tercapai!</p>
-                                <p style={{ fontSize: 13, color: "#6b7280", marginBottom: 12 }}>Sebagai pemilik, kamu dapat menarik dana grup ke saldo pribadi atau ke anggota lain.</p>
+                                <p style={{ fontSize: 13, color: "#6b7280", marginBottom: 12 }}>Sebagai pemilik, kamu dapat menarik dana grup ke saldo pribadi atau ke anggota lain sampai saldo kembali ke Rp 0.</p>
 
                                 <div style={{ background: "#f8faf8", border: "1px solid #e6f4e8", padding: 12, borderRadius: 8, marginBottom: 12 }}>
                                     <p style={{ fontSize: 12, color: "#9ca3af", marginBottom: 6 }}>Saldo Tersedia</p>
@@ -489,19 +526,11 @@ function GroupDetail({ group, uid, personalBalances, sharedBalances, onClose, on
                                 </button>
                             </div>
 
-                            {((group.setoran || []).filter(s => {
-                                if (historyFilter === "all") return true;
-                                if (historyFilter === "shared") return s.sourceType === "shared" || s.sourceType === "group";
-                                if (historyFilter === "personal") return s.sourceType === "personal" || !s.sourceType || s.sourceType === "pribadi";
-                                return true;
-                            })).length === 0 ? (
+                            {historyLoading ? (
+                                <p style={{ textAlign: "center", color: "#9ca3af", fontSize: 13, padding: "20px 0" }}>Memuat riwayat...</p>
+                            ) : filteredHistorySetoran.length === 0 ? (
                                 <p style={{ textAlign: "center", color: "#9ca3af", fontSize: 13, padding: "20px 0" }}>Belum ada setoran</p>
-                            ) : ((group.setoran || []).filter(s => {
-                                if (historyFilter === "all") return true;
-                                if (historyFilter === "shared") return s.sourceType === "shared" || s.sourceType === "group";
-                                if (historyFilter === "personal") return s.sourceType === "personal" || !s.sourceType || s.sourceType === "pribadi";
-                                return true;
-                            })).map((s, i) => (
+                            ) : filteredHistorySetoran.map((s, i) => (
                                 <div key={s.id} style={{ padding: "12px 0", borderBottom: "1px solid #f3f4f6" }}>
                                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                                         <div>
@@ -591,6 +620,7 @@ function GroupDetail({ group, uid, personalBalances, sharedBalances, onClose, on
 // ── Main Page ─────────────────────────────────────────────────
 export default function SharedTabungan() {
     const navigate = useNavigate();
+    const location = useLocation();
     const [groups, setGroups] = useState([]);
     const [invites, setInvites] = useState([]);
     const [personalBal, setPersonalBal] = useState([]);
@@ -605,7 +635,7 @@ export default function SharedTabungan() {
     const [profile, setProfile] = useState(null);
     const [personal, setPersonal] = useState(null);
 
-    useEffect(() => { fetchAll(); }, []);
+    useEffect(() => { fetchAll(); }, [location.state?.refreshKey]);
 
     const fetchAll = async () => {
         setLoading(true);
@@ -658,52 +688,52 @@ export default function SharedTabungan() {
 
                 <div style={{ flex: 1, padding: "40px 40px", overflowY: "auto", width: "100%", background: "#f5f5f5" }}>
 
-                        {/* Header with Back Button */}
-                        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
-                            <button onClick={() => navigate("/dashboard")} style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", padding: 0 }}>←</button>
-                            <div>
-                                <h1 style={{ fontSize: 28, fontWeight: 800, color: "#1a3a1f", marginBottom: 4 }}>Tabungan Bersama</h1>
-                                <p style={{ fontSize: 13, color: "#6b7280" }}>Buat Taget sekarang bersama teman-teman mu!</p>
+                    {/* Header with Back Button */}
+                    <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
+                        <button onClick={() => navigate("/dashboard")} style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", padding: 0 }}>←</button>
+                        <div>
+                            <h1 style={{ fontSize: 28, fontWeight: 800, color: "#1a3a1f", marginBottom: 4 }}>Tabungan Bersama</h1>
+                            <p style={{ fontSize: 13, color: "#6b7280" }}>Buat Taget sekarang bersama teman-teman mu!</p>
+                        </div>
+                    </div>
+
+                    {/* Daftar Target Section with Action Buttons */}
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
+                        <h2 style={{ fontSize: 14, fontWeight: 700, color: "#1a3a1f" }}>Daftar Target ({groups.length})</h2>
+                        <div style={{ display: "flex", gap: 10 }}>
+                            <button onClick={() => setShowCreate(true)}
+                                style={{ background: "#1a3a1f", color: "white", border: "none", borderRadius: 8, padding: "10px 16px", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "Plus Jakarta Sans, sans-serif", display: "flex", alignItems: "center", gap: 6, transition: "background 0.2s" }}
+                                onMouseEnter={e => e.target.style.background = "#0f2a18"}
+                                onMouseLeave={e => e.target.style.background = "#1a3a1f"}>
+                                + Buat Target
+                            </button>
+                            <button onClick={() => setShowJoin(true)}
+                                style={{ background: "white", color: "#f59e0b", border: "2px solid #fbbf24", borderRadius: 8, padding: "8px 16px", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "Plus Jakarta Sans, sans-serif", display: "flex", alignItems: "center", gap: 6, transition: "all 0.2s" }}
+                                onMouseEnter={e => { e.target.style.background = "#fef3c7"; }}
+                                onMouseLeave={e => { e.target.style.background = "white"; }}>
+                                🔑 Masukan Kode
+                            </button>
+                        </div>
+                    </div>
+
+                    {loading ? (
+                        <div style={{ textAlign: "center", padding: 48, color: "#9ca3af" }}>Loading...</div>
+                    ) : groups.length === 0 ? (
+                        <div style={{ textAlign: "center", padding: 48, color: "#9ca3af", background: "white", borderRadius: 12 }}>
+                            <p style={{ fontSize: 40, marginBottom: 12 }}>🤝</p>
+                            <p style={{ fontSize: 14, marginBottom: 16 }}>Belum ada tabungan bersama.</p>
+                            <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
+                                <button onClick={() => setShowCreate(true)} style={{ background: "#1a3a1f", color: "white", border: "none", borderRadius: 8, padding: "10px 16px", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "Plus Jakarta Sans, sans-serif" }}>+ Buat Target</button>
+                                <button onClick={() => setShowJoin(true)} style={{ background: "white", color: "#f59e0b", border: "2px solid #fbbf24", borderRadius: 8, padding: "8px 16px", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "Plus Jakarta Sans, sans-serif" }}>🔑 Masukan Kode</button>
                             </div>
                         </div>
-
-                        {/* Daftar Target Section with Action Buttons */}
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
-                            <h2 style={{ fontSize: 14, fontWeight: 700, color: "#1a3a1f" }}>Daftar Target ({groups.length})</h2>
-                            <div style={{ display: "flex", gap: 10 }}>
-                                <button onClick={() => setShowCreate(true)}
-                                    style={{ background: "#1a3a1f", color: "white", border: "none", borderRadius: 8, padding: "10px 16px", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "Plus Jakarta Sans, sans-serif", display: "flex", alignItems: "center", gap: 6, transition: "background 0.2s" }}
-                                    onMouseEnter={e => e.target.style.background = "#0f2a18"}
-                                    onMouseLeave={e => e.target.style.background = "#1a3a1f"}>
-                                    + Buat Target
-                                </button>
-                                <button onClick={() => setShowJoin(true)}
-                                    style={{ background: "white", color: "#f59e0b", border: "2px solid #fbbf24", borderRadius: 8, padding: "8px 16px", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "Plus Jakarta Sans, sans-serif", display: "flex", alignItems: "center", gap: 6, transition: "all 0.2s" }}
-                                    onMouseEnter={e => { e.target.style.background = "#fef3c7"; }}
-                                    onMouseLeave={e => { e.target.style.background = "white"; }}>
-                                    🔑 Masukan Kode
-                                </button>
-                            </div>
+                    ) : (
+                        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 20 }}>
+                            {groups.map(g => (
+                                <TargetCard key={g.id} group={g} uid={uid} onClick={setSelected} />
+                            ))}
                         </div>
-
-                        {loading ? (
-                            <div style={{ textAlign: "center", padding: 48, color: "#9ca3af" }}>Loading...</div>
-                        ) : groups.length === 0 ? (
-                            <div style={{ textAlign: "center", padding: 48, color: "#9ca3af", background: "white", borderRadius: 12 }}>
-                                <p style={{ fontSize: 40, marginBottom: 12 }}>🤝</p>
-                                <p style={{ fontSize: 14, marginBottom: 16 }}>Belum ada tabungan bersama.</p>
-                                <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
-                                    <button onClick={() => setShowCreate(true)} style={{ background: "#1a3a1f", color: "white", border: "none", borderRadius: 8, padding: "10px 16px", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "Plus Jakarta Sans, sans-serif" }}>+ Buat Target</button>
-                                    <button onClick={() => setShowJoin(true)} style={{ background: "white", color: "#f59e0b", border: "2px solid #fbbf24", borderRadius: 8, padding: "8px 16px", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "Plus Jakarta Sans, sans-serif" }}>🔑 Masukan Kode</button>
-                                </div>
-                            </div>
-                        ) : (
-                            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 20 }}>
-                                {groups.map(g => (
-                                    <TargetCard key={g.id} group={g} uid={uid} onClick={setSelected} />
-                                ))}
-                            </div>
-                        )}
+                    )}
 
                     {selected && uid && (
                         <GroupDetail
@@ -714,7 +744,7 @@ export default function SharedTabungan() {
                             onRefresh={handleRefreshGroup}
                         />
                     )}
-                     {showCreate && <CreateModal onClose={() => setShowCreate(false)} onCreate={async (form) => { await API.post("/shared-tabungan", form); fetchAll(); }} />}
+                    {showCreate && <CreateModal onClose={() => setShowCreate(false)} onCreate={async (form) => { await API.post("/shared-tabungan", form); fetchAll(); }} />}
                     {showJoin && <JoinModal onClose={() => setShowJoin(false)} onJoin={async (code) => { await API.post("/shared-tabungan/join", { inviteCode: code }); fetchAll(); }} />}
                 </div>
             </main>

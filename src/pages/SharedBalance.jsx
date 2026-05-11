@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import API from "../services/api.js";
 import Navbar from "../components/Navbar.jsx";
 import Sidebar from "../components/Sidebar.jsx";
@@ -157,6 +157,9 @@ function GroupDetail({ group, uid, onClose, onRefresh, balanceCategories = [] })
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(null);
     const [historyFilter, setHistoryFilter] = useState("all");
+    const [historyTransactions, setHistoryTransactions] = useState([]);
+    const [historyLoading, setHistoryLoading] = useState(false);
+    const [historyLoaded, setHistoryLoaded] = useState(false);
 
     const members = Object.values(group.members || {});
     const myRole = group.members?.[uid]?.role;
@@ -167,6 +170,25 @@ function GroupDetail({ group, uid, onClose, onRefresh, balanceCategories = [] })
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
     };
+
+    const loadHistory = async () => {
+        try {
+            setHistoryLoading(true);
+            const res = await API.get(`/shared-balance/${group.id}`);
+            setHistoryTransactions(res.data.transactions || []);
+            setHistoryLoaded(true);
+        } catch (err) {
+            setError(err.response?.data?.error || err.message || "Gagal memuat riwayat");
+        } finally {
+            setHistoryLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        if (tab === "riwayat" && !historyLoaded) {
+            loadHistory();
+        }
+    }, [tab, group.id, historyLoaded]);
 
     const handleTransaction = async e => {
         e.preventDefault();
@@ -198,6 +220,10 @@ function GroupDetail({ group, uid, onClose, onRefresh, balanceCategories = [] })
             });
 
             onRefresh(group.id);
+            if (tab === "riwayat") {
+                setHistoryLoaded(false);
+                await loadHistory();
+            }
         } catch (err) {
             console.log(err.response?.data);
             setError(err.response?.data?.error || err.message);
@@ -244,6 +270,10 @@ function GroupDetail({ group, uid, onClose, onRefresh, balanceCategories = [] })
         try {
             setRefreshing(true);
             await onRefresh(group.id);
+            if (tab === "riwayat") {
+                setHistoryLoaded(false);
+                await loadHistory();
+            }
             setSuccess("Riwayat transaksi diperbarui");
             setTimeout(() => setSuccess(null), 2000);
         } catch (err) {
@@ -318,10 +348,10 @@ function GroupDetail({ group, uid, onClose, onRefresh, balanceCategories = [] })
 
                     {/* Tabs */}
                     <div style={{ display: "flex", gap: 0, marginBottom: 16, background: "#f3f4f6", borderRadius: 10, padding: 3 }}>
-                        {["transaksi", "anggota", "undang"].map(t => (
+                        {["transaksi", "riwayat", "anggota", "undang"].map(t => (
                             <button key={t} onClick={() => setTab(t)}
                                 style={{ flex: 1, padding: "8px", borderRadius: 8, border: "none", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "Plus Jakarta Sans, sans-serif", background: tab === t ? "white" : "transparent", color: tab === t ? "#1a3a1f" : "#9ca3af", textTransform: "capitalize", boxShadow: tab === t ? "0 1px 4px rgba(0,0,0,0.08)" : "none", transition: "all 0.2s" }}>
-                                {t === "transaksi" ? "💸 Transaksi" : t === "anggota" ? "👥 Anggota" : "📨 Undang"}
+                                {t === "transaksi" ? "💸 Transaksi" : t === "riwayat" ? "📋 Riwayat" : t === "anggota" ? "👥 Anggota" : "📨 Undang"}
                             </button>
                         ))}
                     </div>
@@ -367,9 +397,13 @@ function GroupDetail({ group, uid, onClose, onRefresh, balanceCategories = [] })
                                     {saving ? "Menyimpan..." : "Simpan Transaksi"}
                                 </button>
                             </form>
+                        </>
+                    )}
 
-                            {/* Transaction List */}
-                            <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+                    {/* ── RIWAYAT TAB ───────────────────────── */}
+                    {tab === "riwayat" && (
+                        <div>
+                            <div style={{ display: "flex", gap: 8, marginBottom: 12, flexWrap: "wrap" }}>
                                 <button type="button" onClick={() => setHistoryFilter("all")}
                                     style={{ padding: "6px 10px", borderRadius: 8, border: "none", background: historyFilter === "all" ? "#1a3a1f" : "#f3f4f6", color: historyFilter === "all" ? "#9FF782" : "#6b7280", fontWeight: 700, cursor: "pointer" }}>
                                     Semua
@@ -384,92 +418,43 @@ function GroupDetail({ group, uid, onClose, onRefresh, balanceCategories = [] })
                                 </button>
                             </div>
 
-                            {((group.transactions || []).filter(tx => {
+                            {historyLoading ? (
+                                <p style={{ textAlign: "center", color: "#9ca3af", fontSize: 13, padding: "20px 0" }}>Memuat riwayat...</p>
+                            ) : (historyTransactions.filter(tx => {
                                 if (historyFilter === "all") return true;
                                 if (historyFilter === "shared") return tx.sourceType === "shared" || tx.sourceType === "group" || (!!tx.personalBalanceName === false);
                                 if (historyFilter === "personal") return tx.sourceType === "personal" || !!tx.personalBalanceName;
                                 return true;
-                            })).map((tx, i) => (
+                            })).length === 0 ? (
+                                <p style={{ textAlign: "center", color: "#9ca3af", fontSize: 13, padding: "20px 0" }}>Belum ada riwayat transaksi</p>
+                            ) : historyTransactions.filter(tx => {
+                                if (historyFilter === "all") return true;
+                                if (historyFilter === "shared") return tx.sourceType === "shared" || tx.sourceType === "group" || (!!tx.personalBalanceName === false);
+                                if (historyFilter === "personal") return tx.sourceType === "personal" || !!tx.personalBalanceName;
+                                return true;
+                            }).map((tx) => (
                                 <div key={tx.id} style={{ padding: "12px 0", borderBottom: "1px solid #f3f4f6" }}>
-                                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-
-                                        {/* LEFT */}
+                                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
                                         <div style={{ flex: 1 }}>
-                                            <div>
-                                                <p>{tx.description}</p>
-
-                                                {tx.personalBalanceName && (
-                                                    <p style={{ fontSize: "12px", color: "#888" }}>
-                                                        Sumber dana: {tx.personalBalanceName}
-                                                    </p>
-                                                )}
-                                            </div>
-
-                                            {/* 🔥 CATEGORY BADGE */}
-                                            {tx.personalBalanceCategory && (
-                                                <span style={{
-                                                    display: "inline-block",
-                                                    marginTop: 4,
-                                                    fontSize: 10,
-                                                    fontWeight: 600,
-                                                    padding: "2px 8px",
-                                                    borderRadius: 20,
-                                                    background: "#e0f2fe",
-                                                    color: "#0369a1"
-                                                }}>
-                                                    {tx.personalBalanceCategory}
-                                                </span>
-                                            )}
-
-                                            {/* META */}
-                                            <div style={{ display: "flex", gap: 8, marginTop: 3 }}>
+                                            <p style={{ fontWeight: 600, color: "#374151" }}>{tx.description}</p>
+                                            {tx.note && <p style={{ fontSize: 11, color: "#9ca3af", marginTop: 2 }}>{tx.note}</p>}
+                                            <div style={{ display: "flex", gap: 8, marginTop: 4, flexWrap: "wrap" }}>
                                                 <p style={{ fontSize: 11, color: "#9ca3af" }}>
                                                     oleh {(tx.addedByName && tx.addedByName.trim()) || "Unknown"}
                                                 </p>
                                                 <p style={{ fontSize: 11, color: "#9ca3af" }}>
-                                                    {tx.date
-                                                        ? new Date(tx.date).toLocaleDateString("id-ID", {
-                                                            day: "2-digit",
-                                                            month: "short",
-                                                            year: "numeric"
-                                                        })
-                                                        : "-"}
+                                                    {tx.date ? new Date(tx.date).toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" }) : "-"}
                                                 </p>
+                                                {tx.personalBalanceName && <p style={{ fontSize: 11, color: "#3b82f6" }}>{tx.personalBalanceName}</p>}
                                             </div>
-
-                                            {tx.note && (
-                                                <p style={{ fontSize: 11, color: "#9ca3af", marginTop: 2, fontStyle: "italic" }}>
-                                                    📝 {tx.note}
-                                                </p>
-                                            )}
-
-                                            {tx.personalBalanceCategory && (
-                                                <p style={{ fontSize: 11, color: "#3b82f6", marginTop: 2 }}>
-                                                    💳 Sumber dana: {tx.personalBalanceCategory}
-                                                </p>
-                                            )}
-
-                                            {tx.linkedPersonalTxId && (
-                                                <p style={{ fontSize: 10, color: "#10b981", marginTop: 2, fontWeight: 600 }}>
-                                                    ✅ Tersinkronisasi ke saldo pribadi
-                                                </p>
-                                            )}
                                         </div>
-
-                                        {/* RIGHT (AMOUNT) */}
-                                        <p style={{
-                                            fontSize: 14,
-                                            fontWeight: 700,
-                                            color: tx.type === "income" ? "#166534" : "#991b1b"
-                                        }}>
-                                            {tx.type === "income" ? "+" : "−"}
-                                            {fmt(tx.amount)}
+                                        <p style={{ fontSize: 14, fontWeight: 700, color: tx.type === "income" ? "#166534" : "#991b1b" }}>
+                                            {tx.type === "income" ? "+" : "−"}{fmt(tx.amount)}
                                         </p>
-
                                     </div>
                                 </div>
                             ))}
-                        </>
+                        </div>
                     )}
 
                     {/* ── ANGGOTA TAB ───────────────────────── */}
@@ -545,6 +530,7 @@ function GroupDetail({ group, uid, onClose, onRefresh, balanceCategories = [] })
 // ── Main Shared Balance Page ──────────────────────────────────
 export default function SharedBalance() {
     const navigate = useNavigate();
+    const location = useLocation();
     const [groups, setGroups] = useState([]);
     const [invites, setInvites] = useState([]);
     const [balances, setBalances] = useState([]);
@@ -558,7 +544,7 @@ export default function SharedBalance() {
     const [profile, setProfile] = useState(null);
     const [personal, setPersonal] = useState(null);
 
-    useEffect(() => { fetchAll(); }, []);
+    useEffect(() => { fetchAll(); }, [location.state?.refreshKey]);
 
     const fetchAll = async () => {
         setLoading(true);
