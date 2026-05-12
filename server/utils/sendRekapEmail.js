@@ -271,7 +271,7 @@ export async function sendRekapEmail({ to, name, year, month, summary, byCategor
     const html      = buildEmailHTML({ name, year, month, summary, byCategory, balances, tabungan, transactions });
 
     const { data, error } = await resend.emails.send({
-        from:    "MoneyPath <onboarding@resend.dev>", // ← ganti dengan domain sendiri jika sudah verifikasi
+        from: "MoneyPath <noreply@moneypath.my.id>", // ← ganti dengan domain sendiri jika sudah verifikasi
         to:      [to],
         subject: `📊 Rekap Keuangan ${monthName} ${year} - MoneyPath`,
         html,

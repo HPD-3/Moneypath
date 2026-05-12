@@ -7,7 +7,7 @@ export const sendEmailHandler = async (req, res) => {
         const { name, email, message } = req.body;
 
         const data = await resend.emails.send({
-            from: "onboarding@resend.dev",
+            from: "MoneyPath <noreply@moneypath.my.id>",
             to: ["your@email.com"],
             subject: "New Message",
             html: `
