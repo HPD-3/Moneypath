@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import API from "../services/api.js";
 import Navbar from "../components/Navbar.jsx";
 import Sidebar from "../components/Sidebar.jsx";
+import SEO from "../components/SEO";
+import seoConfig from "../seo.config";
 
 function calcLevel(totalExp) {
     const level = Math.floor(totalExp / 100) + 1;
@@ -218,6 +220,8 @@ export default function DailyQuiz() {
     const q = questions[currentQ];
 
     return (
+        <>
+        <SEO {...seoConfig["/quiz"]} />
         <div className="flex h-screen bg-white overflow-hidden w-full" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
             <style>{`
                 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
@@ -352,5 +356,6 @@ export default function DailyQuiz() {
                 </div>
             </main>
         </div>
+        </>
     );
 }

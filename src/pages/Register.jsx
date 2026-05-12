@@ -6,6 +6,8 @@ import { useNavigate, Link } from "react-router-dom";
 
 import loginImg from "../assets/image.jpg";
 import logo3 from "../assets/logo3.png";
+import SEO from "../components/SEO";
+import seoConfig from "../seo.config";
 
 export default function Register() {
     const [email, setEmail] = useState("");
@@ -36,6 +38,8 @@ export default function Register() {
     };
 
     return (
+        <>
+        <SEO {...seoConfig["/register"]} />
         <div className="flex flex-col md:flex-row h-screen">
             {/* LEFT */}
             <div className="flex-1 bg-[#f3f3f3] flex flex-col items-center justify-center relative px-4 md:px-6 py-6 md:py-0 overflow-y-auto md:overflow-y-hidden">
@@ -146,5 +150,6 @@ export default function Register() {
                 </button>
             </div>
         </div>
+        </>
     );
 }

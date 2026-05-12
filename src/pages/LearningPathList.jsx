@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../firebase.js";
 import API from "../services/api.js";
+import SEO from "../components/SEO";
+import seoConfig from "../seo.config";
 import Sidebar from "../components/Sidebar.jsx";
 import Navbar from "../components/Navbar.jsx";
 
@@ -146,6 +148,8 @@ export default function LearningPathList() {
     );
 
     return (
+        <>
+        <SEO {...seoConfig["/learning"]} />
         <div className="flex h-screen bg-gray-50 font-sans overflow-hidden">
             <Sidebar active={activeNav} setActive={(navId) => { setActiveNav(navId); handleNavigation(navId); }} handleLogout={handleLogout} isOpen={isSidebarOpen} setOpen={setIsSidebarOpen} />
 
@@ -210,5 +214,6 @@ export default function LearningPathList() {
                 </div>
             </div>
         </div>
+        </>
     );
 }

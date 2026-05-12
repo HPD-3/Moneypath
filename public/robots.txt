@@ -1,0 +1,19 @@
+User-agent: *
+Allow: /
+Allow: /login
+Allow: /register
+Disallow: /dashboard
+Disallow: /balance
+Disallow: /tabungan
+Disallow: /personal
+Disallow: /profile
+Disallow: /settings
+Disallow: /video
+Disallow: /learning
+Disallow: /quiz
+Disallow: /rekap
+Disallow: /admin
+Disallow: /shared-balance
+Disallow: /shared-tabungan
+
+Sitemap: https://moneypath.my.id/sitemap.xml

@@ -1,5 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import SEO from "../components/SEO";
+import seoConfig from "../seo.config";
 
 // ── Component Imports ──────────────────────────────────────────
 import { TestimonialPremium } from "../components/TestimonialPremium";
@@ -643,6 +645,7 @@ export default function LandingPage() {
 
     return (
         <>
+            <SEO {...seoConfig["/"]} />
             <GlobalStyles />
             <div className="bg-[#F7F7F7] text-gray-800">
                 <Navbar

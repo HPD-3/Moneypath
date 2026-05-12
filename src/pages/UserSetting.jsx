@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { auth, db } from "../firebase.js";
-import { sendPasswordResetEmail, deleteUser } from "firebase/auth";
+import { sendPasswordResetEmail, deleteUser, reauthenticateWithCredential, EmailAuthProvider } from "firebase/auth";
 import { doc, getDoc, updateDoc, deleteDoc } from "firebase/firestore";
 import API from "../services/api.js";
 import Sidebar from "../components/Sidebar.jsx";
@@ -14,6 +14,13 @@ export default function UserSetting() {
     const [personal, setPersonal] = useState(null);
     const [error, setError] = useState(null);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+    // Toast notification
+    const [toast, setToast] = useState(null); // { type: 'success'|'error', message: string }
+    const showToast = (type, message) => {
+        setToast({ type, message });
+        setTimeout(() => setToast(null), 4000);
+    };
 
     // Forgot password state
     const [showForgotPassword, setShowForgotPassword] = useState(false);
@@ -74,6 +81,7 @@ export default function UserSetting() {
             } catch (err) {
                 console.error("Error fetching data:", err);
                 setError(err.response?.data?.message || "Failed to load settings");
+                showToast("error", err.response?.data?.message || "Failed to load settings");
             }
         };
 
@@ -87,20 +95,17 @@ export default function UserSetting() {
         setForgotPasswordMessage("");
 
         if (!forgotPasswordEmail) {
-            setForgotPasswordError("Please enter your email address");
+            showToast("error", "Please enter your email address");
             return;
         }
 
         try {
             setForgotPasswordLoading(true);
             await sendPasswordResetEmail(auth, forgotPasswordEmail);
-            setForgotPasswordMessage("Password reset email sent! Check your inbox.");
             setShowForgotPassword(false);
-            setTimeout(() => {
-                setForgotPasswordMessage("");
-            }, 3000);
+            showToast("success", "Password reset email sent! Check your inbox.");
         } catch (err) {
-            setForgotPasswordError(err.message || "Failed to send password reset email");
+            showToast("error", err.message || "Failed to send password reset email");
         } finally {
             setForgotPasswordLoading(false);
         }
@@ -125,13 +130,10 @@ export default function UserSetting() {
             setEditProfileLoading(true);
             await API.post("/personal/profile", editForm);
             setProfile({ ...profile, ...editForm });
-            setEditProfileMessage("Profile updated successfully!");
             setShowEditProfile(false);
-            setTimeout(() => {
-                setEditProfileMessage("");
-            }, 3000);
+            showToast("success", "Profile updated successfully!");
         } catch (err) {
-            setEditProfileError(err.response?.data?.message || "Failed to update profile");
+            showToast("error", err.response?.data?.message || "Failed to update profile");
         } finally {
             setEditProfileLoading(false);
         }
@@ -143,26 +145,36 @@ export default function UserSetting() {
         setDeleteAccountError("");
 
         if (!deleteConfirmPassword) {
-            setDeleteAccountError("Please enter your password to confirm deletion");
+            showToast("error", "Please enter your password to confirm deletion");
             return;
         }
 
         try {
             setDeleteAccountLoading(true);
-            
-            // Call backend to delete account
-            await API.post("/settings/delete-account", { password: deleteConfirmPassword });
-            
-            // Delete user from Firebase
+
+            // Re-authenticate to verify password BEFORE deleting
             const user = auth.currentUser;
-            if (user) {
-                await deleteUser(user);
+            if (!user || !user.email) {
+                showToast("error", "No authenticated user found. Please log in again.");
+                return;
             }
 
-            // Redirect to login
+            const credential = EmailAuthProvider.credential(user.email, deleteConfirmPassword);
+            await reauthenticateWithCredential(user, credential);
+
+            // Password verified — delete from backend then Firebase
+            await API.post("/settings/delete-account", { password: deleteConfirmPassword });
+            await deleteUser(user);
+
             navigate("/login");
         } catch (err) {
-            setDeleteAccountError(err.response?.data?.message || "Failed to delete account");
+            if (err.code === "auth/wrong-password" || err.code === "auth/invalid-credential") {
+                showToast("error", "Incorrect password. Account was not deleted.");
+            } else if (err.code === "auth/too-many-requests") {
+                showToast("error", "Too many attempts. Please try again later.");
+            } else {
+                showToast("error", err.response?.data?.message || err.message || "Failed to delete account");
+            }
         } finally {
             setDeleteAccountLoading(false);
         }
@@ -175,6 +187,52 @@ export default function UserSetting() {
 
     return (
         <div className="flex h-screen bg-gray-100">
+            {/* Toast Notification */}
+            {toast && (
+                <div
+                    style={{
+                        position: "fixed",
+                        top: 24,
+                        right: 24,
+                        zIndex: 9999,
+                        minWidth: 280,
+                        maxWidth: 380,
+                        display: "flex",
+                        alignItems: "flex-start",
+                        gap: 12,
+                        padding: "14px 18px",
+                        borderRadius: 12,
+                        boxShadow: "0 8px 32px rgba(0,0,0,0.15)",
+                        background: toast.type === "success" ? "#f0fdf4" : "#fff1f2",
+                        border: `1.5px solid ${toast.type === "success" ? "#86efac" : "#fca5a5"}`,
+                        animation: "slideIn 0.25s ease",
+                    }}
+                >
+                    <span style={{ fontSize: 20, lineHeight: 1 }}>
+                        {toast.type === "success" ? "✅" : "❌"}
+                    </span>
+                    <div style={{ flex: 1 }}>
+                        <p style={{
+                            margin: 0,
+                            fontSize: 14,
+                            fontWeight: 600,
+                            color: toast.type === "success" ? "#166534" : "#991b1b",
+                        }}>
+                            {toast.type === "success" ? "Success" : "Error"}
+                        </p>
+                        <p style={{ margin: "2px 0 0", fontSize: 13, color: toast.type === "success" ? "#15803d" : "#b91c1c" }}>
+                            {toast.message}
+                        </p>
+                    </div>
+                    <button
+                        onClick={() => setToast(null)}
+                        style={{ background: "none", border: "none", cursor: "pointer", fontSize: 16, color: "#9ca3af", lineHeight: 1, padding: 0 }}
+                    >
+                        ✕
+                    </button>
+                    <style>{`@keyframes slideIn { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: translateX(0); } }`}</style>
+                </div>
+            )}
             <Sidebar
                 active="settings"
                 setActive={() => { }}
@@ -191,49 +249,6 @@ export default function UserSetting() {
                 />
 
                 <div className="p-4 md:p-8 max-w-4xl mx-auto">
-                    {/* Success Messages */}
-                    {forgotPasswordMessage && (
-                        <div className="mb-4 p-4 bg-green-100 text-green-800 rounded-lg border border-green-300 text-sm">
-                            ✓ {forgotPasswordMessage}
-                        </div>
-                    )}
-                    {editNameMessage && (
-                        <div className="mb-4 p-4 bg-green-100 text-green-800 rounded-lg border border-green-300 text-sm">
-                            ✓ {editNameMessage}
-                        </div>
-                    )}
-                    {editProfileMessage && (
-                        <div className="mb-4 p-4 bg-green-100 text-green-800 rounded-lg border border-green-300 text-sm">
-                            ✓ {editProfileMessage}
-                        </div>
-                    )}
-
-                    {/* Error Messages */}
-                    {error && (
-                        <div className="mb-4 p-4 bg-red-100 text-red-800 rounded-lg border border-red-300 text-sm">
-                            ✕ {error}
-                        </div>
-                    )}
-                    {forgotPasswordError && (
-                        <div className="mb-4 p-4 bg-red-100 text-red-800 rounded-lg border border-red-300 text-sm">
-                            ✕ {forgotPasswordError}
-                        </div>
-                    )}
-                    {editNameError && (
-                        <div className="mb-4 p-4 bg-red-100 text-red-800 rounded-lg border border-red-300 text-sm">
-                            ✕ {editNameError}
-                        </div>
-                    )}
-                    {editProfileError && (
-                        <div className="mb-4 p-4 bg-red-100 text-red-800 rounded-lg border border-red-300 text-sm">
-                            ✕ {editProfileError}
-                        </div>
-                    )}
-                    {deleteAccountError && (
-                        <div className="mb-4 p-4 bg-red-100 text-red-800 rounded-lg border border-red-300 text-sm">
-                            ✕ {deleteAccountError}
-                        </div>
-                    )}
 
                     <h1 className="text-3xl md:text-4xl font-bold mb-8 text-[#1a3a1f]">Settings</h1>
 

@@ -5,6 +5,8 @@ import { auth } from "../firebase.js";
 import API from "../services/api.js";
 import Sidebar from "../components/Sidebar.jsx";
 import Navbar from "../components/Navbar.jsx";
+import SEO from "../components/SEO";
+import seoConfig from "../seo.config";
 
 // ── Helpers ───────────────────────────────────────────────────
 const fmt = (n) => `Rp ${(n || 0).toLocaleString("id-ID")}`;
@@ -575,6 +577,8 @@ export default function Tabungan() {
     });
 
     return (
+        <>
+        <SEO {...seoConfig["/tabungan"]} />
         <div className="flex h-screen bg-gray-50 font-sans overflow-hidden">
             <Sidebar active={activeNav} setActive={(navId) => { setActiveNav(navId); handleNavigation(navId); }} handleLogout={handleLogout} isOpen={isSidebarOpen} setOpen={setIsSidebarOpen} />
 
@@ -691,5 +695,6 @@ export default function Tabungan() {
                 </div>
             </div>
         </div>
+        </>
     );
 }

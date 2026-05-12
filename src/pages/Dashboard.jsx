@@ -5,6 +5,8 @@ import { getFirestore, doc, getDoc } from "firebase/firestore";
 import API from "../services/api.js";
 import Sidebar from "../components/Sidebar.jsx";
 import Navbar from "../components/Navbar.jsx";
+import SEO from "../components/SEO";
+import seoConfig from "../seo.config";
 
 // ── Helpers ───────────────────────────────────────────────────
 function calcLevel(totalExp = 0) {
@@ -410,6 +412,8 @@ export default function Dashboard() {
     calcLevel(quizStats?.totalExp || 0);
 
     return (
+        <>
+        <SEO {...seoConfig["/dashboard"]} />
         <div className="flex h-screen bg-white overflow-hidden w-full" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
             <style>{`
                 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Lilita+One&display=swap');
@@ -845,5 +849,6 @@ ${(financialHealth.suggestions || []).map((s, i) => `${i + 1}. ${s}`).join("\n")
                 </div>
             </main>
         </div>
+        </>
     );
 }
