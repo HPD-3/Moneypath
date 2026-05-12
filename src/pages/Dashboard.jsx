@@ -245,24 +245,24 @@ export default function Dashboard() {
                 const res = await API.get("/auth/profile");
                 setProfile(res.data);
 
-                const [personalRes, quizRes] = await Promise.allSettled([
-                    API.get("/personal/profile"),
-                    API.get("/quiz/stats"),
-                ]);
-
-                if (personalRes.status === "fulfilled") {
-                    setPersonal(personalRes.value.data);
-                } else if (personalRes.reason?.response?.status === 404) {
-                    navigate("/personal");
-                    return;
+                try {
+                    const personalRes = await API.get("/personal/profile");
+                    setPersonal(personalRes.data);
+                } catch (personalErr) {
+                    if (personalErr?.response?.status === 404) {
+                        navigate("/personal");
+                        return;
+                    }
+                    throw personalErr;
                 }
 
-                if (quizRes.status === "fulfilled") {
-                    setQuizStats(quizRes.value.data);
+                const quizRes = await API.get("/quiz/stats");
+
+                setQuizStats(quizRes.data);
                     // Get XP history from expLog (last 5 entries)
-                    if (quizRes.value.data.expLog && quizRes.value.data.expLog.length > 0) {
+                    if (quizRes.data.expLog && quizRes.data.expLog.length > 0) {
                         const processedHistory = await Promise.all(
-                            quizRes.value.data.expLog
+                            quizRes.data.expLog
                                 .slice()
                                 .reverse()
                                 .slice(0, 5)
@@ -296,7 +296,6 @@ export default function Dashboard() {
                         );
                         setXpHistory(processedHistory);
                     }
-                }
             } catch (err) {
                 setError(err.message);
             } finally {

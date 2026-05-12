@@ -535,31 +535,30 @@ export default function LearningPathDetail() {
                 )}
             </div>
 
-                {/* FOOTER - Only Mobile */}
-                <div className="border-t bg-white shadow-sm p-3 lg:hidden">
-                    <div className="flex gap-2 justify-between items-center">
-                        <button 
-                            onClick={prevMateri} 
-                            disabled={currentModuleIndex === 0}
-                            className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg font-semibold transition-all text-gray-600 hover:text-gray-900 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed text-sm">
-                            <iconify-icon icon="mdi:arrow-left" width="20" height="20"></iconify-icon>
-                            <span className="hidden sm:inline">Kembali</span>
-                        </button>
+            {/* FOOTER - Only Mobile */}
+            <div className="border-t bg-white shadow-sm p-3 lg:hidden">
+                <div className="flex gap-2 justify-between items-center">
+                    <button
+                        onClick={prevMateri}
+                        disabled={currentModuleIndex === 0}
+                        className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg font-semibold transition-all text-gray-600 hover:text-gray-900 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed text-sm">
+                        <iconify-icon icon="mdi:arrow-left" width="20" height="20"></iconify-icon>
+                        <span className="hidden sm:inline">Kembali</span>
+                    </button>
 
-                        <button 
-                            onClick={nextMateri}
-                            disabled={!completed.includes(activeModule.id) || currentModuleIndex === path.modules.length - 1}
-                            className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg font-semibold transition-all text-sm ${
-                                !completed.includes(activeModule.id) || currentModuleIndex === path.modules.length - 1
-                                    ? 'bg-gray-300 text-gray-600 cursor-not-allowed opacity-60'
-                                    : 'bg-gradient-to-r from-[#0f2e1c] to-[#174d2e] text-white hover:shadow-lg hover:shadow-[#0f2e1c]/30'
+                    <button
+                        onClick={nextMateri}
+                        disabled={!completed.includes(activeModule.id) || currentModuleIndex === path.modules.length - 1}
+                        className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg font-semibold transition-all text-sm ${!completed.includes(activeModule.id) || currentModuleIndex === path.modules.length - 1
+                                ? 'bg-gray-300 text-gray-600 cursor-not-allowed opacity-60'
+                                : 'bg-gradient-to-r from-[#0f2e1c] to-[#174d2e] text-white hover:shadow-lg hover:shadow-[#0f2e1c]/30'
                             }`}
-                            title={!completed.includes(activeModule.id) ? "Tandai modul ini selesai terlebih dahulu" : currentModuleIndex === path.modules.length - 1 ? "Anda sudah di modul terakhir" : ""}>
-                            <span className="hidden sm:inline">Lanjut</span>
-                            <iconify-icon icon="mdi:arrow-right" width="20" height="20"></iconify-icon>
-                        </button>
-                    </div>
+                        title={!completed.includes(activeModule.id) ? "Tandai modul ini selesai terlebih dahulu" : currentModuleIndex === path.modules.length - 1 ? "Anda sudah di modul terakhir" : ""}>
+                        <span className="hidden sm:inline">Lanjut</span>
+                        <iconify-icon icon="mdi:arrow-right" width="20" height="20"></iconify-icon>
+                    </button>
                 </div>
+            </div>
 
 
             {/* ================= SIDEBAR ================= */}
@@ -572,9 +571,8 @@ export default function LearningPathDetail() {
             )}
 
             {/* Sidebar - Desktop: Always visible, Mobile: Slide-out drawer */}
-            <div className={`fixed lg:static left-0 top-0 h-screen w-72 lg:w-80 bg-white lg:bg-gray-50 border-l p-3 lg:p-6 overflow-y-auto z-40 transition-transform duration-300 flex flex-col ${
-                sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-            } sidebar-mobile`}>
+            <div className={`fixed lg:static left-0 top-0 h-screen w-72 lg:w-80 bg-white lg:bg-gray-50 border-l p-3 lg:p-6 overflow-y-auto z-40 transition-transform duration-300 flex flex-col ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+                } sidebar-mobile`}>
                 <div>
                     <div className="flex justify-between items-center mb-4">
                         <h2 className="font-bold text-gray-800 text-base lg:text-lg">Daftar Materi</h2>
@@ -599,15 +597,13 @@ export default function LearningPathDetail() {
                                         loadMateri(i);
                                         setSidebarOpen(false);
                                     }}
-                                    className={`menu-item px-3 py-2 rounded-lg transition cursor-pointer ${
-                                        !unlocked ? "opacity-50 cursor-not-allowed" : ""
-                                    } ${
-                                        isActive 
+                                    className={`menu-item px-3 py-2 rounded-lg transition cursor-pointer ${!unlocked ? "opacity-50 cursor-not-allowed" : ""
+                                        } ${isActive
                                             ? "bg-gradient-to-r from-green-200 to-green-100 border-l-4 border-green-600 text-gray-800 font-semibold"
-                                            : unlocked 
-                                            ? "hover:bg-gray-100 text-gray-700" 
-                                            : "text-gray-600"
-                                    }`}
+                                            : unlocked
+                                                ? "hover:bg-gray-100 text-gray-700"
+                                                : "text-gray-600"
+                                        }`}
                                 >
                                     <div className="flex items-center gap-2">
                                         {isDone && <iconify-icon icon="mdi:check-circle" width="18" height="18" className="text-green-600 flex-shrink-0"></iconify-icon>}
@@ -620,29 +616,29 @@ export default function LearningPathDetail() {
                     </div>
                 </div>
 
-                {/* Navigation Buttons - Only Desktop */}
-                <div className="hidden lg:flex flex-col gap-2 mt-auto pt-4 border-t">
-                    <button 
-                        onClick={prevMateri} 
-                        disabled={currentModuleIndex === 0}
-                        className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg font-semibold transition-all text-gray-600 hover:text-gray-900 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm">
-                        <iconify-icon icon="mdi:arrow-left" width="18" height="18"></iconify-icon>
-                        Kembali
-                    </button>
+                {/* Navigation Buttons removed from sidebar so they can be fixed globally */}
+            </div>
+            {/* Desktop fixed bottom-right action buttons (sibling of sidebar) */}
+            <div className="hidden lg:flex fixed right-6 bottom-6 z-50 flex-col gap-3">
+                <button
+                    onClick={prevMateri}
+                    disabled={currentModuleIndex === 0}
+                    className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl font-semibold transition-all text-gray-600 hover:text-gray-900 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed text-sm shadow-sm bg-white border border-gray-200">
+                    <iconify-icon icon="mdi:arrow-left" width="18" height="18"></iconify-icon>
+                    Kembali
+                </button>
 
-                    <button 
-                        onClick={nextMateri}
-                        disabled={!completed.includes(activeModule.id) || currentModuleIndex === path.modules.length - 1}
-                        className={`flex items-center justify-center gap-2 px-3 py-2 rounded-lg font-semibold transition-all text-sm ${
-                            !completed.includes(activeModule.id) || currentModuleIndex === path.modules.length - 1
-                                ? 'bg-gray-300 text-gray-600 cursor-not-allowed opacity-60'
-                                : 'bg-gradient-to-r from-[#0f2e1c] to-[#174d2e] text-white hover:shadow-lg hover:shadow-[#0f2e1c]/30'
-                        }`}
-                        title={!completed.includes(activeModule.id) ? "Tandai modul ini selesai terlebih dahulu" : currentModuleIndex === path.modules.length - 1 ? "Anda sudah di modul terakhir" : ""}>
-                        Lanjut
-                        <iconify-icon icon="mdi:arrow-right" width="18" height="18"></iconify-icon>
-                    </button>
-                </div>
+                <button
+                    onClick={nextMateri}
+                    disabled={!completed.includes(activeModule.id) || currentModuleIndex === path.modules.length - 1}
+                    className={`flex items-center justify-center gap-2 px-4 py-2 rounded-xl font-semibold transition-all text-sm ${!completed.includes(activeModule.id) || currentModuleIndex === path.modules.length - 1
+                            ? 'bg-gray-300 text-gray-600 cursor-not-allowed opacity-60'
+                            : 'bg-gradient-to-r from-[#0f2e1c] to-[#174d2e] text-white hover:shadow-lg hover:shadow-[#0f2e1c]/30'
+                        } shadow-lg`}
+                    title={!completed.includes(activeModule.id) ? "Tandai modul ini selesai terlebih dahulu" : currentModuleIndex === path.modules.length - 1 ? "Anda sudah di modul terakhir" : ""}>
+                    <span className="hidden sm:inline">Lanjut</span>
+                    <iconify-icon icon="mdi:arrow-right" width="18" height="18"></iconify-icon>
+                </button>
             </div>
         </div>
     );

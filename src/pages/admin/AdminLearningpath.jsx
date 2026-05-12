@@ -49,12 +49,6 @@ function QuizEditor({ pathId, moduleId, quiz, onRefresh }) {
 
     return (
         <div style={{ marginTop: 12, background: "#f8fdf8", borderRadius: 8, padding: 12, border: "1px solid #d1fae5" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-                <span style={{ fontSize: 12, fontWeight: 600, color: "#166534" }}>📝 Quiz ({quiz.length} soal)</span>
-                <button onClick={() => setShow(!show)} style={{ fontSize: 11, background: "#9FF782", color: "#0a1f10", border: "none", borderRadius: 6, padding: "4px 10px", cursor: "pointer", fontFamily: "Plus Jakarta Sans, sans-serif", fontWeight: 600 }}>
-                    {show ? "✕ Batal" : "+ Tambah Soal"}
-                </button>
-            </div>
 
             {show && (
                 <form onSubmit={handleSubmit} style={{ marginBottom: 10 }}>
@@ -243,6 +237,17 @@ export default function AdminLearningPath({ paths = [], loading, onRefresh }) {
     const [showForm, setShowForm] = useState(false);
     const [saving, setSaving] = useState(false);
     const [expanded, setExpanded] = useState(null);
+    const [modulesMap, setModulesMap] = useState({}); // cache modules per pathId
+
+    const fetchModules = async (pathId) => {
+        try {
+            const res = await API.get(`/learningpath/${pathId}`);
+            setModulesMap(m => ({ ...m, [pathId]: res.data.modules || [] }));
+        } catch (err) {
+            console.error("Error fetching modules for path", pathId, err.message || err);
+            setModulesMap(m => ({ ...m, [pathId]: [] }));
+        }
+    };
 
     const handleEdit = p => {
         setForm({ title: p.title, description: p.description, category: p.category, difficulty: p.difficulty, estimatedTime: p.estimatedTime || "", photoUrl: p.photoUrl || "" });
@@ -364,7 +369,7 @@ export default function AdminLearningPath({ paths = [], loading, onRefresh }) {
                     <div key={p.id} style={{ border: "1px solid #e5e7eb", borderRadius: 10, marginBottom: 12, overflow: "hidden" }}>
                         {/* Path Header */}
                         <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 16px", background: expanded === p.id ? "#f8fdf8" : "white", cursor: "pointer" }}
-                            onClick={() => setExpanded(expanded === p.id ? null : p.id)}>
+                            onClick={() => { const next = expanded === p.id ? null : p.id; setExpanded(next); if (next) fetchModules(p.id); }}>
                             <div style={{ flex: 1 }}>
                                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
                                     <span style={{ fontWeight: 700, fontSize: 14, color: "#1a3a1f" }}>{p.title}</span>
@@ -387,7 +392,11 @@ export default function AdminLearningPath({ paths = [], loading, onRefresh }) {
                         {expanded === p.id && (
                             <div style={{ padding: "0 16px 16px", borderTop: "1px solid #f3f4f6" }}>
                                 <p style={{ fontSize: 12, color: "#6b7280", marginTop: 10, marginBottom: 10 }}>{p.description}</p>
-                                <ModuleEditor pathId={p.id} modules={p.modules || []} onRefresh={onRefresh} />
+                                <ModuleEditor
+                                    pathId={p.id}
+                                    modules={modulesMap[p.id] || p.modules || []}
+                                    onRefresh={async () => { await onRefresh(); await fetchModules(p.id); }}
+                                />
                             </div>
                         )}
                     </div>

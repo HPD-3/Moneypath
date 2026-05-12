@@ -102,6 +102,8 @@ export default function AdminLearningPathDetail() {
         </div>
     );
 
+    const modules = Array.isArray(path.modules) ? path.modules : [];
+
     return (
         <div className="p-3 sm:p-6">
             <StyledAlert message={alert?.message} type={alert?.type} onClose={hideAlert} />
@@ -238,11 +240,11 @@ export default function AdminLearningPathDetail() {
 
                 {/* Modules Section */}
                 <div style={{ marginTop: 24 }}>
-                    <h2 style={{ fontSize: 18, fontWeight: 700, color: "#1a3a1f", marginBottom: 16 }}>Modul Pembelajaran ({path.modules?.length || 0})</h2>
+                    <h2 style={{ fontSize: 18, fontWeight: 700, color: "#1a3a1f", marginBottom: 16 }}>Modul Pembelajaran ({modules.length})</h2>
                     
-                    {path.modules && path.modules.length > 0 ? (
+                    {modules.length > 0 ? (
                         <div style={{ display: "grid", gap: 12 }}>
-                            {path.modules.map((module, idx) => (
+                            {modules.map((module, idx) => (
                                 <div key={module.id} style={{ background: "white", border: "1px solid #e5e7eb", borderRadius: 10, padding: 16, overflow: "hidden" }}>
                                     <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
                                         <span style={{ width: 32, height: 32, borderRadius: "8px", background: "#1a3a1f", color: "#9FF782", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, flexShrink: 0 }}>

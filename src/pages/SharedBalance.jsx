@@ -564,7 +564,7 @@ export default function SharedBalance() {
                 API.get("/auth/profile"),
                 API.get("/shared-balance"),
                 API.get("/shared-balance/invites/pending"),
-                API.get("/users/personal").catch(() => ({ data: null })),
+                API.get("/personal/profile").catch(() => ({ data: null })),
             ]);
             setUid(profileRes.data.uid);
             setProfile(profileRes.data);

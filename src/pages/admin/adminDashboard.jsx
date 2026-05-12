@@ -1,16 +1,16 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../../services/api.js";
 
-// Import Sub-komponen
-import AdminBeranda from "./AdminBeranda.jsx";
-import AdminVideoEdukasi from "./AdminVideoEdukasi.jsx";
-import AdminLearningPath from "./AdminLearningPath.jsx";
-import AdminKontenEdukasi from "./AdminKontenEdukasi.jsx";
-import AdminDailyQuiz from "./AdminDailyQuiz.jsx";
-import AdminReviews from "./AdminReviews.jsx";
-import AdminAktivitas from "./AdminAktivitas.jsx";
-import Sidebar from "./AdminShared.jsx";
+// Lazy-load admin subcomponents to reduce initial bundle size
+const AdminBeranda = lazy(() => import("./AdminBeranda.jsx"));
+const AdminVideoEdukasi = lazy(() => import("./AdminVideoEdukasi.jsx"));
+const AdminLearningPath = lazy(() => import("./AdminLearningPath.jsx"));
+const AdminKontenEdukasi = lazy(() => import("./AdminKontenEdukasi.jsx"));
+const AdminDailyQuiz = lazy(() => import("./AdminDailyQuiz.jsx"));
+const AdminReviews = lazy(() => import("./AdminReviews.jsx"));
+const AdminAktivitas = lazy(() => import("./AdminAktivitas.jsx"));
+const Sidebar = lazy(() => import("./AdminShared.jsx"));
 
 export default function AdminDashboard() {
     const navigate = useNavigate();
@@ -113,10 +113,12 @@ export default function AdminDashboard() {
             <aside className={`fixed lg:static top-0 left-0 h-screen w-64 bg-gradient-to-b from-[#0b7a3a] to-[#0a5f2d] text-white flex flex-col flex-shrink-0 transition-transform duration-300 z-30 ${
                 isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
             }`}>
-                <Sidebar active={active} setActive={(newActive) => {
-                    setActive(newActive);
-                    setIsSidebarOpen(false);
-                }} handleLogout={handleLogout} />
+                <Suspense fallback={<div className="p-4">Loading...</div>}>
+                    <Sidebar active={active} setActive={(newActive) => {
+                        setActive(newActive);
+                        setIsSidebarOpen(false);
+                    }} handleLogout={handleLogout} />
+                </Suspense>
             </aside>
 
             {/* MAIN CONTENT AREA */}
@@ -174,37 +176,39 @@ export default function AdminDashboard() {
 
                     {/* CONTENT */}
                     <div className="overflow-y-auto flex-1">
-                        {active === "beranda" && (
-                            <AdminBeranda
-                                users={users}
-                                modules={modules}
-                                videos={videos}
-                                transactions={transactions}
-                                paths={paths}
-                                setActive={setActive}
-                            />
-                        )}
-                        {active === "video" && (
-                            <AdminVideoEdukasi videos={videos} loading={loading} onRefresh={fetchAll} />
-                        )}
-                        {active === "learning" && (
-                            <AdminLearningPath paths={paths} loading={loading} onRefresh={fetchAll} />
-                        )}
-                        {active === "konten" && (
-                            <AdminKontenEdukasi modules={modules} loading={loading} onRefresh={fetchAll} />
-                        )}
-                        {active === "dailyquiz" && (
-                            <AdminDailyQuiz questions={quizQuestions} loading={loading} onRefresh={fetchAll} />
-                        )}
-                        {active === "review" && (
-                            <AdminReviews />
-                        )}
-                        {active === "aktivitas" && (
-                            <AdminAktivitas />
-                        )}
-                    </div>
+                        <Suspense fallback={<div className="p-6 text-center text-gray-500">Memuat konten admin...</div>}>
+                            {active === "beranda" && (
+                                <AdminBeranda
+                                    users={users}
+                                    modules={modules}
+                                    videos={videos}
+                                    transactions={transactions}
+                                    paths={paths}
+                                    setActive={setActive}
+                                />
+                            )}
+                            {active === "video" && (
+                                <AdminVideoEdukasi videos={videos} loading={loading} onRefresh={fetchAll} />
+                            )}
+                            {active === "learning" && (
+                                <AdminLearningPath paths={paths} loading={loading} onRefresh={fetchAll} />
+                            )}
+                            {active === "konten" && (
+                                <AdminKontenEdukasi modules={modules} loading={loading} onRefresh={fetchAll} />
+                            )}
+                            {active === "dailyquiz" && (
+                                <AdminDailyQuiz questions={quizQuestions} loading={loading} onRefresh={fetchAll} />
+                            )}
+                            {active === "review" && (
+                                <AdminReviews />
+                            )}
+                            {active === "aktivitas" && (
+                                <AdminAktivitas />
+                            )}
+                        </Suspense>
 
                 </div>
+            </div>
 
             </main>
         </div>

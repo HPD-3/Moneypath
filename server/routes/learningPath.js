@@ -119,12 +119,25 @@ router.get("/:pathId", verifyToken, async (req, res) => {
         const modulesSnap = await db.collection("learningPaths")
             .doc(req.params.pathId).collection("modules").get();
 
-        const modules = await Promise.all(
+        let modules = await Promise.all(
             modulesSnap.docs.map(async (modDoc) => {
                 const quizSnap = await modDoc.ref.collection("quiz").get();
                 return { id: modDoc.id, ...modDoc.data(), quiz: quizSnap.docs.map(q => ({ id: q.id, ...q.data() })) };
             })
         );
+
+        if (modules.length === 0) {
+            const legacySnap = await db.collection("learningModules")
+                .where("pathId", "==", req.params.pathId)
+                .get();
+
+            modules = legacySnap.docs.map((doc) => ({
+                id: doc.id,
+                ...doc.data(),
+                quiz: [],
+            }));
+        }
+
         modules.sort((a, b) => (a.order || 0) - (b.order || 0));
         res.json({ id: pathDoc.id, ...pathDoc.data(), modules });
     } catch (err) { res.status(500).json({ error: err.message }); }
