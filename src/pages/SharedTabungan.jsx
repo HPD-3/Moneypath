@@ -6,6 +6,18 @@ import Sidebar from "../components/Sidebar.jsx";
 
 const fmt = (n) => `Rp ${(n || 0).toLocaleString("id-ID")}`;
 const pct = (terkumpul, target) => Math.min(Math.round((terkumpul / target) * 100), 100);
+
+const formatInputRupiah = (value) => {
+    if (!value) return "";
+    const numStr = value.toString().replace(/[^0-9]/g, "");
+    if (!numStr) return "";
+    return numStr.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+};
+
+const parseInputRupiah = (formatted) => {
+    return formatted.replace(/[^0-9]/g, "");
+};
+
 const CATS = ["umum", "liburan", "elektronik", "kendaraan", "pendidikan", "darurat", "lainnya"];
 const CAT_ICONS = { umum: "🎯", liburan: "✈️", elektronik: "💻", kendaraan: "🚗", pendidikan: "📚", darurat: "🏥", lainnya: "📦" };
 
@@ -94,7 +106,7 @@ function CreateModal({ onClose, onCreate }) {
                         <label style={{ fontSize: 11, fontWeight: 600, color: "#4b5563", display: "block", marginBottom: 4 }}>Target Jumlah (Rp) *</label>
                         <div style={{ position: "relative" }}>
                             <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", fontSize: 13, color: "#9ca3af" }}>Rp</span>
-                            <input type="number" value={form.targetAmount} onChange={e => setForm({ ...form, targetAmount: e.target.value })} required min={1}
+                            <input type="text" value={formatInputRupiah(form.targetAmount)} onChange={e => setForm({ ...form, targetAmount: parseInputRupiah(e.target.value) })} required min={1}
                                 placeholder="0" style={{ width: "100%", border: "1px solid #d1d5db", borderRadius: 8, padding: "10px 12px 10px 36px", fontSize: 13, outline: "none", fontFamily: "Plus Jakarta Sans, sans-serif" }} />
                         </div>
                     </div>
@@ -402,7 +414,7 @@ function GroupDetail({ group, uid, personalBalances, sharedBalances, onClose, on
                                 <label style={{ fontSize: 11, fontWeight: 600, color: "#4b5563", display: "block", marginBottom: 4 }}>Jumlah Setoran</label>
                                 <div style={{ position: "relative" }}>
                                     <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", fontSize: 13, color: "#9ca3af" }}>Rp</span>
-                                    <input type="number" value={amount} onChange={e => setAmount(e.target.value)} required min={1}
+                                    <input type="text" value={formatInputRupiah(amount)} onChange={e => setAmount(parseInputRupiah(e.target.value))} required min={1}
                                         placeholder="0" style={{ width: "100%", border: "1px solid #d1d5db", borderRadius: 8, padding: "10px 12px 10px 36px", fontSize: 13, outline: "none", fontFamily: "Plus Jakarta Sans, sans-serif" }} />
                                 </div>
                                 {selectedSource && (
@@ -462,7 +474,7 @@ function GroupDetail({ group, uid, personalBalances, sharedBalances, onClose, on
                                         <label style={{ display: "block", fontSize: 11, color: "#4b5563", marginBottom: 6 }}>Jumlah yang ditarik (Rp)</label>
                                         <div style={{ position: "relative" }}>
                                             <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", fontSize: 13, color: "#9ca3af" }}>Rp</span>
-                                            <input type="number" value={withdrawAmount} onChange={e => setWithdrawAmount(e.target.value)} required min={1}
+                                            <input type="text" value={formatInputRupiah(withdrawAmount)} onChange={e => setWithdrawAmount(parseInputRupiah(e.target.value))} required min={1}
                                                 placeholder="0" style={{ width: "100%", border: "1px solid #d1d5db", borderRadius: 8, padding: "10px 12px 10px 36px", fontSize: 13, outline: "none", fontFamily: "Plus Jakarta Sans, sans-serif" }} />
                                         </div>
                                     </div>

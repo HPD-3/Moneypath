@@ -22,12 +22,25 @@ export default function UserSetting() {
     const [forgotPasswordMessage, setForgotPasswordMessage] = useState("");
     const [forgotPasswordError, setForgotPasswordError] = useState("");
 
-    // Edit username state
-    const [showEditUsername, setShowEditUsername] = useState(false);
-    const [newUsername, setNewUsername] = useState("");
-    const [editUsernameLoading, setEditUsernameLoading] = useState(false);
-    const [editUsernameError, setEditUsernameError] = useState("");
-    const [editUsernameMessage, setEditUsernameMessage] = useState("");
+    // Edit name state
+    const [showEditName, setShowEditName] = useState(false);
+    const [newName, setNewName] = useState("");
+    const [editNameLoading, setEditNameLoading] = useState(false);
+    const [editNameError, setEditNameError] = useState("");
+    const [editNameMessage, setEditNameMessage] = useState("");
+
+    // Edit profile form state
+    const [showEditProfile, setShowEditProfile] = useState(false);
+    const [editForm, setEditForm] = useState({
+        name: "",
+        phoneNumber: "",
+        dateOfBirth: "",
+        gender: "",
+        address: ""
+    });
+    const [editProfileLoading, setEditProfileLoading] = useState(false);
+    const [editProfileError, setEditProfileError] = useState("");
+    const [editProfileMessage, setEditProfileMessage] = useState("");
 
     // Delete account state
     const [showDeleteAccount, setShowDeleteAccount] = useState(false);
@@ -48,7 +61,14 @@ export default function UserSetting() {
                 // Fetch profile from API
                 const profileRes = await API.get("/personal/profile");
                 setProfile(profileRes.data);
-                setNewUsername(profileRes.data?.name || "");
+                setNewName(profileRes.data?.name || "");
+                setEditForm({
+                    name: profileRes.data?.name || "",
+                    phoneNumber: profileRes.data?.phoneNumber || "",
+                    dateOfBirth: profileRes.data?.dateOfBirth || "",
+                    gender: profileRes.data?.gender || "",
+                    address: profileRes.data?.address || ""
+                });
                 setForgotPasswordEmail(user.email || "");
 
             } catch (err) {
@@ -86,30 +106,34 @@ export default function UserSetting() {
         }
     };
 
-    // Handle edit username
-    const handleEditUsername = async (e) => {
-        e.preventDefault();
-        setEditUsernameError("");
-        setEditUsernameMessage("");
+    // Handle edit profile form change
+    const handleEditProfileChange = (e) => {
+        const { name, value } = e.target;
+        setEditForm((prev) => ({
+            ...prev,
+            [name]: value
+        }));
+    };
 
-        if (!newUsername.trim()) {
-            setEditUsernameError("Username cannot be empty");
-            return;
-        }
+    // Handle edit profile submit
+    const handleEditProfileSubmit = async (e) => {
+        e.preventDefault();
+        setEditProfileError("");
+        setEditProfileMessage("");
 
         try {
-            setEditUsernameLoading(true);
-            await API.post("/settings/update-username", { name: newUsername });
-            setProfile({ ...profile, name: newUsername });
-            setEditUsernameMessage("Username updated successfully!");
-            setShowEditUsername(false);
+            setEditProfileLoading(true);
+            await API.post("/personal/profile", editForm);
+            setProfile({ ...profile, ...editForm });
+            setEditProfileMessage("Profile updated successfully!");
+            setShowEditProfile(false);
             setTimeout(() => {
-                setEditUsernameMessage("");
+                setEditProfileMessage("");
             }, 3000);
         } catch (err) {
-            setEditUsernameError(err.response?.data?.message || "Failed to update username");
+            setEditProfileError(err.response?.data?.message || "Failed to update profile");
         } finally {
-            setEditUsernameLoading(false);
+            setEditProfileLoading(false);
         }
     };
 
@@ -173,9 +197,14 @@ export default function UserSetting() {
                             ✓ {forgotPasswordMessage}
                         </div>
                     )}
-                    {editUsernameMessage && (
+                    {editNameMessage && (
                         <div className="mb-4 p-4 bg-green-100 text-green-800 rounded-lg border border-green-300 text-sm">
-                            ✓ {editUsernameMessage}
+                            ✓ {editNameMessage}
+                        </div>
+                    )}
+                    {editProfileMessage && (
+                        <div className="mb-4 p-4 bg-green-100 text-green-800 rounded-lg border border-green-300 text-sm">
+                            ✓ {editProfileMessage}
                         </div>
                     )}
 
@@ -190,9 +219,14 @@ export default function UserSetting() {
                             ✕ {forgotPasswordError}
                         </div>
                     )}
-                    {editUsernameError && (
+                    {editNameError && (
                         <div className="mb-4 p-4 bg-red-100 text-red-800 rounded-lg border border-red-300 text-sm">
-                            ✕ {editUsernameError}
+                            ✕ {editNameError}
+                        </div>
+                    )}
+                    {editProfileError && (
+                        <div className="mb-4 p-4 bg-red-100 text-red-800 rounded-lg border border-red-300 text-sm">
+                            ✕ {editProfileError}
                         </div>
                     )}
                     {deleteAccountError && (
@@ -212,37 +246,8 @@ export default function UserSetting() {
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                                 <div className="md:col-span-2">
-                                    <label className="text-sm font-medium text-gray-600 mb-2 block">Username</label>
-                                    <div className="flex gap-2 items-end">
-                                        <div className="flex-1">
-                                            <p className="font-semibold text-lg text-gray-800 bg-gray-50 p-3 rounded-lg">{profile?.name || "N/A"}</p>
-                                        </div>
-                                        <button
-                                            onClick={() => setShowEditUsername(!showEditUsername)}
-                                            className="px-4 py-2 bg-[#9FF782] hover:bg-[#7dd65f] text-[#1a3a1f] rounded-lg font-semibold transition whitespace-nowrap"
-                                        >
-                                            {showEditUsername ? "Cancel" : "Edit"}
-                                        </button>
-                                    </div>
-
-                                    {showEditUsername && (
-                                        <form onSubmit={handleEditUsername} className="bg-gray-50 p-4 rounded-lg space-y-4 mt-4">
-                                            <input
-                                                type="text"
-                                                value={newUsername}
-                                                onChange={(e) => setNewUsername(e.target.value)}
-                                                placeholder="Enter new username"
-                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9FF782]"
-                                            />
-                                            <button
-                                                type="submit"
-                                                disabled={editUsernameLoading}
-                                                className="w-full px-4 py-2 bg-[#9FF782] hover:bg-[#7dd65f] text-[#1a3a1f] rounded-lg font-semibold transition disabled:opacity-50"
-                                            >
-                                                {editUsernameLoading ? "Saving..." : "Save Username"}
-                                            </button>
-                                        </form>
-                                    )}
+                                    <label className="text-sm font-medium text-gray-600 mb-2 block">Name</label>
+                                    <p className="font-semibold text-gray-800 bg-gray-50 p-3 rounded-lg">{profile?.name || "N/A"}</p>
                                 </div>
 
                                 <div>
@@ -257,7 +262,90 @@ export default function UserSetting() {
                                     <label className="text-sm font-medium text-gray-600 mb-2 block">Gender</label>
                                     <p className="font-semibold text-gray-800 bg-gray-50 p-3 rounded-lg">{profile?.gender || "N/A"}</p>
                                 </div>
+                                <div>
+                                    <label className="text-sm font-medium text-gray-600 mb-2 block">Date of Birth</label>
+                                    <p className="font-semibold text-gray-800 bg-gray-50 p-3 rounded-lg">{profile?.dateOfBirth || "N/A"}</p>
+                                </div>
+                                <div className="md:col-span-2">
+                                    <label className="text-sm font-medium text-gray-600 mb-2 block">Address</label>
+                                    <p className="font-semibold text-gray-800 bg-gray-50 p-3 rounded-lg">{profile?.address || "N/A"}</p>
+                                </div>
                             </div>
+
+                            <button
+                                onClick={() => setShowEditProfile(!showEditProfile)}
+                                className="w-full px-4 py-2 bg-[#9FF782] hover:bg-[#7dd65f] text-[#1a3a1f] rounded-lg font-semibold transition"
+                            >
+                                {showEditProfile ? "Cancel Edit Profile" : "Edit Profile"}
+                            </button>
+
+                            {showEditProfile && (
+                                <form onSubmit={handleEditProfileSubmit} className="bg-gray-50 p-4 rounded-lg space-y-4 mt-4">
+                                    <div>
+                                        <label className="text-sm font-medium text-gray-600 mb-2 block">Full Name</label>
+                                        <input
+                                            type="text"
+                                            name="name"
+                                            value={editForm.name}
+                                            onChange={handleEditProfileChange}
+                                            placeholder="Full Name"
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9FF782]"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-sm font-medium text-gray-600 mb-2 block">Phone Number</label>
+                                        <input
+                                            type="tel"
+                                            name="phoneNumber"
+                                            value={editForm.phoneNumber}
+                                            onChange={handleEditProfileChange}
+                                            placeholder="Phone Number"
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9FF782]"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-sm font-medium text-gray-600 mb-2 block">Date of Birth</label>
+                                        <input
+                                            type="date"
+                                            name="dateOfBirth"
+                                            value={editForm.dateOfBirth}
+                                            onChange={handleEditProfileChange}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9FF782]"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-sm font-medium text-gray-600 mb-2 block">Gender</label>
+                                        <select
+                                            name="gender"
+                                            value={editForm.gender}
+                                            onChange={handleEditProfileChange}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9FF782]"
+                                        >
+                                            <option value="">Select Gender</option>
+                                            <option value="Male">Male</option>
+                                            <option value="Female">Female</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="text-sm font-medium text-gray-600 mb-2 block">Address</label>
+                                        <textarea
+                                            name="address"
+                                            value={editForm.address}
+                                            onChange={handleEditProfileChange}
+                                            placeholder="Address"
+                                            rows="3"
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9FF782]"
+                                        />
+                                    </div>
+                                    <button
+                                        type="submit"
+                                        disabled={editProfileLoading}
+                                        className="w-full px-4 py-2 bg-[#9FF782] hover:bg-[#7dd65f] text-[#1a3a1f] rounded-lg font-semibold transition disabled:opacity-50"
+                                    >
+                                        {editProfileLoading ? "Saving..." : "Save Profile"}
+                                    </button>
+                                </form>
+                            )}
                         </div>
                     )}
 

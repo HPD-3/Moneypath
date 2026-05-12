@@ -64,19 +64,6 @@ export default function Profile() {
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-    // Edit profile form state
-    const [editForm, setEditForm] = useState({
-        name: "",
-        phoneNumber: "",
-        dateOfBirth: "",
-        gender: "",
-        address: ""
-    });
-
-    const [editLoading, setEditLoading] = useState(false);
-    const [editMessage, setEditMessage] = useState("");
-    const [editError, setEditError] = useState("");
-
     // Password form state
     const [passwordForm, setPasswordForm] = useState({
         oldPassword: "",
@@ -108,50 +95,7 @@ export default function Profile() {
         navigate("/login");
     };
 
-    const openEditModal = () => {
-        if (!personal) return;
-
-        setEditForm({
-            name: personal.name || "",
-            phoneNumber: personal.phoneNumber || "",
-            dateOfBirth: personal.dateOfBirth || "",
-            gender: personal.gender || "",
-            address: personal.address || ""
-        });
-        setEditError("");
-        setEditMessage("");
-        setShowEdit(true);
-    };
-
-    const handleEditChange = (e) => {
-        const { name, value } = e.target;
-        setEditForm((prev) => ({
-            ...prev,
-            [name]: value
-        }));
-    };
-
-    const handleEditSubmit = async (e) => {
-        e.preventDefault();
-        setEditLoading(true);
-        setEditError("");
-        setEditMessage("");
-
-        try {
-            const response = await API.put("/personal/profile", editForm);
-            setPersonal(response.data);
-            setEditMessage("Profil berhasil diperbarui!");
-            setTimeout(() => {
-                setShowEdit(false);
-                setEditMessage("");
-            }, 2000);
-        } catch (err) {
-            setEditError(err.response?.data?.message || "Gagal memperbarui profil");
-        } finally {
-            setEditLoading(false);
-        }
-    };
-
+    // Profile editing moved to UserSetting.jsx - no longer needed here
     const handlePasswordChange = (e) => {
         const { name, value } = e.target;
         setPasswordForm((prev) => ({
@@ -275,6 +219,22 @@ export default function Profile() {
         fetchPersonal();
     }, [profile, navigate]);
 
+    // 🔹 Refetch personal data when page comes into focus (after returning from Settings)
+    useEffect(() => {
+        const handleFocus = async () => {
+            if (!profile) return;
+            try {
+                const res = await API.get("/personal/profile");
+                setPersonal(res.data);
+            } catch (err) {
+                console.error("Error refetching personal data:", err);
+            }
+        };
+
+        window.addEventListener("focus", handleFocus);
+        return () => window.removeEventListener("focus", handleFocus);
+    }, [profile]);
+
     // 🔹 Fetch Quiz Stats for XP
     useEffect(() => {
         if (!profile) return;
@@ -369,7 +329,7 @@ export default function Profile() {
 
                                     <div className="flex flex-row md:flex-col gap-2 md:gap-3 w-full sm:w-auto">
                                         <button
-                                            onClick={openEditModal}
+                                            onClick={() => navigate("/settings")}
                                             className="flex-1 md:flex-none px-3 md:px-4 py-2 rounded-full bg-[#9FF782] text-green-900 font-semibold hover:bg-green-300 transition-all text-xs md:text-sm flex items-center gap-2 justify-center"
                                         >
                                             <iconify-icon icon="mdi:pencil"></iconify-icon> Edit Profil
@@ -594,79 +554,7 @@ export default function Profile() {
                             </div>
                         </div>
 
-                        {/* MODAL EDIT PROFIL */}
-                        {showEdit && (
-                            <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50 backdrop-blur-sm">
-                                <div className="bg-white p-8 rounded-2xl w-full max-w-md shadow-2xl">
-                                    <h3 className="text-lg font-bold text-green-900 mb-5">Edit Profil</h3>
-
-                                    {editError && <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg text-sm">{editError}</div>}
-                                    {editMessage && <div className="mb-4 p-3 bg-green-100 text-green-700 rounded-lg text-sm">{editMessage}</div>}
-
-                                    <form onSubmit={handleEditSubmit} className="space-y-3">
-                                        <input
-                                            type="text"
-                                            name="name"
-                                            value={editForm.name}
-                                            onChange={handleEditChange}
-                                            placeholder="Nama Lengkap"
-                                            className="w-full p-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-green-300 focus:ring-4 focus:ring-green-100"
-                                        />
-                                        <input
-                                            type="tel"
-                                            name="phoneNumber"
-                                            value={editForm.phoneNumber}
-                                            onChange={handleEditChange}
-                                            placeholder="Nomor Telepon"
-                                            className="w-full p-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-green-300 focus:ring-4 focus:ring-green-100"
-                                        />
-                                        <input
-                                            type="date"
-                                            name="dateOfBirth"
-                                            value={editForm.dateOfBirth}
-                                            onChange={handleEditChange}
-                                            className="w-full p-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-green-300 focus:ring-4 focus:ring-green-100"
-                                        />
-                                        <select
-                                            name="gender"
-                                            value={editForm.gender}
-                                            onChange={handleEditChange}
-                                            className="w-full p-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-green-300 focus:ring-4 focus:ring-green-100"
-                                        >
-                                            <option value="">Pilih Jenis Kelamin</option>
-                                            <option value="Laki-laki">Laki-laki</option>
-                                            <option value="Perempuan">Perempuan</option>
-                                        </select>
-                                        <textarea
-                                            name="address"
-                                            value={editForm.address}
-                                            onChange={handleEditChange}
-                                            placeholder="Alamat"
-                                            rows="3"
-                                            className="w-full p-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-green-300 focus:ring-4 focus:ring-green-100"
-                                        />
-
-                                        <div className="flex gap-3 pt-2">
-                                            <button
-                                                type="button"
-                                                onClick={() => setShowEdit(false)}
-                                                disabled={editLoading}
-                                                className="flex-1 p-3 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition-all disabled:opacity-50"
-                                            >
-                                                Batal
-                                            </button>
-                                            <button
-                                                type="submit"
-                                                disabled={editLoading}
-                                                className="flex-1 p-3 bg-green-900 text-white font-semibold rounded-lg hover:bg-green-800 transition-all disabled:opacity-50"
-                                            >
-                                                {editLoading ? "Menyimpan..." : "Simpan"}
-                                            </button>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-                        )}
+                        {/* MODAL EDIT PROFIL - Removed, use UserSetting.jsx instead */}
 
                         {/* MODAL PASSWORD */}
                         {showPassword && (

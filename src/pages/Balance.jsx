@@ -43,6 +43,17 @@ const currentMonth = getCurrentMonth;
 
 const formatRp = formatRupiah;
 
+const formatInputRupiah = (value) => {
+    if (!value) return "";
+    const numStr = value.toString().replace(/[^0-9]/g, "");
+    if (!numStr) return "";
+    return numStr.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+};
+
+const parseInputRupiah = (formatted) => {
+    return formatted.replace(/[^0-9]/g, "");
+};
+
 function BudgetBar({ spent, limit }) {
     if (!limit || limit <= 0) return null;
     const pct = Math.min((spent / limit) * 100, 100);
@@ -481,9 +492,9 @@ export default function Balance() {
                                                     {isEditingLimit ? (
                                                         <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
                                                             <input
-                                                                type="number"
-                                                                value={limitValue}
-                                                                onChange={e => setLimitValue(e.target.value)}
+                                                                type="text"
+                                                                value={formatInputRupiah(limitValue)}
+                                                                onChange={e => setLimitValue(parseInputRupiah(e.target.value))}
                                                                 placeholder="Masukkan batas anggaran"
                                                                 style={{ flex: 1, borderRadius: 8, border: "1px solid #d1d5db", padding: "8px 12px", fontSize: 13, outline: "none" }}
                                                             />
@@ -989,10 +1000,10 @@ export default function Balance() {
 
                                     <InputField
                                         label="Jumlah (Rp)"
-                                        type="number"
+                                        type="text"
                                         placeholder="0"
-                                        value={txForm.amount}
-                                        onChange={e => setTxForm({ ...txForm, amount: e.target.value })}
+                                        value={formatInputRupiah(txForm.amount)}
+                                        onChange={e => setTxForm({ ...txForm, amount: parseInputRupiah(e.target.value) })}
                                         error={formErrors.amount}
                                     />
                                     <InputField
@@ -1037,18 +1048,18 @@ export default function Balance() {
                                     </SelectField>
                                     <InputField
                                         label="Saldo Awal (opsional)"
-                                        type="number"
+                                        type="text"
                                         placeholder="0"
-                                        value={newCategory.balance}
-                                        onChange={e => setNewCategory({ ...newCategory, balance: e.target.value })}
+                                        value={formatInputRupiah(newCategory.balance)}
+                                        onChange={e => setNewCategory({ ...newCategory, balance: parseInputRupiah(e.target.value) })}
                                         error={formErrors.balance}
                                     />
                                     <InputField
                                         label="Batas Anggaran (opsional)"
-                                        type="number"
+                                        type="text"
                                         placeholder="0"
-                                        value={newCategory.budgetLimit}
-                                        onChange={e => setNewCategory({ ...newCategory, budgetLimit: e.target.value })}
+                                        value={formatInputRupiah(newCategory.budgetLimit)}
+                                        onChange={e => setNewCategory({ ...newCategory, budgetLimit: parseInputRupiah(e.target.value) })}
                                         error={formErrors.budgetLimit}
                                     />
                                     <button

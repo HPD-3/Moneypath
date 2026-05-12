@@ -10,6 +10,17 @@ import Navbar from "../components/Navbar.jsx";
 const fmt = (n) => `Rp ${(n || 0).toLocaleString("id-ID")}`;
 const pct = (terkumpul, target) => Math.min(Math.round((terkumpul / target) * 100), 100);
 
+const formatInputRupiah = (value) => {
+    if (!value) return "";
+    const numStr = value.toString().replace(/[^0-9]/g, "");
+    if (!numStr) return "";
+    return numStr.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+};
+
+const parseInputRupiah = (formatted) => {
+    return formatted.replace(/[^0-9]/g, "");
+};
+
 const CATEGORIES = ["umum", "liburan", "elektronik", "kendaraan", "pendidikan", "darurat", "lainnya"];
 const CAT_ICONS = { umum: "🎯", liburan: "✈️", elektronik: "💻", kendaraan: "🚗", pendidikan: "📚", darurat: "🏥", lainnya: "📦" };
 
@@ -75,6 +86,27 @@ function DetailModal({ target, balances, onClose, onAlokasi, onDelete, onCheckou
     const progress = pct(target.terkumpul, target.targetAmount);
     const sisaTarget = target.targetAmount - target.terkumpul;
     const selectedBal = balances.find(b => b.id === balId);
+
+    // Calculate recommendation
+    const calculateRecommendation = () => {
+        if (!target.deadline || target.isCompleted || sisaTarget <= 0) {
+            return null;
+        }
+
+        const today = new Date();
+        const deadline = new Date(target.deadline);
+        const daysRemaining = Math.ceil((deadline - today) / (1000 * 60 * 60 * 24));
+        const monthsRemaining = Math.max(1, Math.ceil(daysRemaining / 30));
+
+        if (daysRemaining <= 0) {
+            return { monthlyAmount: sisaTarget, daysRemaining: 0, monthsRemaining: 0, isOverdue: true };
+        }
+
+        const monthlyRecommendation = Math.ceil(sisaTarget / monthsRemaining);
+        return { monthlyAmount: monthlyRecommendation, daysRemaining, monthsRemaining, isOverdue: false };
+    };
+
+    const recommendation = calculateRecommendation();
 
     useEffect(() => {
         API.get(`/tabungan/${target.id}/riwayat`)
@@ -172,6 +204,34 @@ function DetailModal({ target, balances, onClose, onAlokasi, onDelete, onCheckou
                         </div>
                     </div>
 
+                    {/* Recommendation Card */}
+                    {recommendation && !recommendation.isOverdue && (
+                        <div style={{ background: "#f0fdf4", border: "1px solid #86efac", borderRadius: 10, padding: 12, marginBottom: 16 }}>
+                            <div style={{ display: "flex", alignItems: "start", gap: 10 }}>
+                                <span style={{ fontSize: 16 }}>💡</span>
+                                <div style={{ flex: 1 }}>
+                                    <p style={{ fontSize: 11, fontWeight: 600, color: "#22c55e", marginBottom: 3 }}>Rekomendasi Setoran Bulanan</p>
+                                    <p style={{ fontSize: 14, fontWeight: 700, color: "#166534", marginBottom: 4 }}>{fmt(recommendation.monthlyAmount)} / bulan</p>
+                                    <p style={{ fontSize: 10, color: "#6b7280", lineHeight: 1.4 }}>
+                                        Setoran {fmt(recommendation.monthlyAmount)} setiap bulan selama {recommendation.monthsRemaining} bulan akan membantu Anda mencapai target sebelum deadline ({new Date(target.deadline).toLocaleDateString("id-ID", { year: "numeric", month: "short", day: "numeric" })})
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {recommendation?.isOverdue && (
+                        <div style={{ background: "#fef2f2", border: "1px solid #fca5a5", borderRadius: 10, padding: 12, marginBottom: 16 }}>
+                            <div style={{ display: "flex", alignItems: "start", gap: 10 }}>
+                                <span style={{ fontSize: 16 }}>⏰</span>
+                                <div style={{ flex: 1 }}>
+                                    <p style={{ fontSize: 11, fontWeight: 600, color: "#dc2626", marginBottom: 3 }}>Target Tertunda</p>
+                                    <p style={{ fontSize: 12, color: "#7f1d1d" }}>Deadline telah melewati. Segera lunasi sisa target sebesar {fmt(sisaTarget)}</p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     {/* Tabs */}
                     <div style={{ display: "flex", gap: 0, marginBottom: 16, background: "#f3f4f6", borderRadius: 10, padding: 3 }}>
                         {["detail", "riwayat"].map(t => (
@@ -183,7 +243,17 @@ function DetailModal({ target, balances, onClose, onAlokasi, onDelete, onCheckou
                     </div>
 
                     {/* Alokasi Form */}
-                    {tab === "detail" && !target.isCompleted && (
+                    {tab === "detail" && !target.isCompleted && balances.length === 0 && (
+                        <div style={{ background: "#fef2f2", border: "1px solid #fca5a5", borderRadius: 10, padding: 16, textAlign: "center" }}>
+                            <span style={{ fontSize: 32, display: "block", marginBottom: 8 }}>💳</span>
+                            <p style={{ fontSize: 13, fontWeight: 600, color: "#dc2626", marginBottom: 6 }}>Tidak Ada Sumber Dana</p>
+                            <p style={{ fontSize: 12, color: "#7f1d1d", marginBottom: 12, lineHeight: 1.5 }}>
+                                Anda belum membuat balance/sumber dana. Silakan buat balance terlebih dahulu untuk dapat melakukan setoran ke tabungan.
+                            </p>
+                        </div>
+                    )}
+
+                    {tab === "detail" && !target.isCompleted && balances.length > 0 && (
                         <form onSubmit={handleAlokasi}>
                             <div style={{ marginBottom: 12 }}>
                                 <label style={{ fontSize: 11, fontWeight: 600, color: "#4b5563", display: "block", marginBottom: 4 }}>Sumber Saldo</label>
@@ -202,9 +272,9 @@ function DetailModal({ target, balances, onClose, onAlokasi, onDelete, onCheckou
                                 <div style={{ position: "relative" }}>
                                     <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", fontSize: 13, color: "#9ca3af" }}>Rp</span>
                                     <input
-                                        type="number"
-                                        value={amount}
-                                        onChange={e => setAmount(e.target.value)}
+                                        type="text"
+                                        value={formatInputRupiah(amount)}
+                                        onChange={e => setAmount(parseInputRupiah(e.target.value))}
                                         placeholder="0"
                                         min={1}
                                         style={{ width: "100%", border: "1px solid #d1d5db", borderRadius: 8, padding: "10px 12px 10px 36px", fontSize: 13, outline: "none", fontFamily: "Plus Jakarta Sans, sans-serif" }}
@@ -219,6 +289,16 @@ function DetailModal({ target, balances, onClose, onAlokasi, onDelete, onCheckou
 
                             {/* Quick amount buttons */}
                             <div style={{ display: "flex", gap: 6, marginBottom: 14, flexWrap: "wrap" }}>
+                                {recommendation && (
+                                    <button type="button" onClick={() => setAmount(String(recommendation.monthlyAmount))}
+                                        style={{ background: amount == recommendation.monthlyAmount ? "#22c55e" : "#dcfce7", color: amount == recommendation.monthlyAmount ? "#fff" : "#166534", border: "1px solid #86efac", borderRadius: 8, padding: "5px 10px", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "Plus Jakarta Sans, sans-serif" }}>
+                                        💡 {(recommendation.monthlyAmount / 1000).toFixed(0)}rb
+                                    </button>
+                                )}
+                                <button type="button" onClick={() => setAmount(String(sisaTarget))}
+                                    style={{ background: amount == sisaTarget ? "#f59e0b" : "#fef3c7", color: amount == sisaTarget ? "#fff" : "#b45309", border: "1px solid #fcd34d", borderRadius: 8, padding: "5px 10px", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "Plus Jakarta Sans, sans-serif" }}>
+                                    🎯 Sisa {(sisaTarget / 1000).toFixed(0)}rb
+                                </button>
                                 {[50000, 100000, 250000, 500000].map(v => (
                                     <button key={v} type="button" onClick={() => setAmount(String(v))}
                                         style={{ background: amount == v ? "#1a3a1f" : "#f3f4f6", color: amount == v ? "#9FF782" : "#374151", border: "none", borderRadius: 8, padding: "5px 10px", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "Plus Jakarta Sans, sans-serif" }}>
@@ -229,7 +309,7 @@ function DetailModal({ target, balances, onClose, onAlokasi, onDelete, onCheckou
 
                             {error && <p style={{ fontSize: 12, color: "#ef4444", marginBottom: 10 }}>⚠️ {error}</p>}
 
-                            <button type="submit" disabled={saving || balances.length === 0}
+                            <button type="submit" disabled={saving}
                                 style={{ width: "100%", background: "#1a3a1f", color: "#9FF782", border: "none", borderRadius: 10, padding: "13px", fontSize: 14, fontWeight: 700, cursor: saving ? "not-allowed" : "pointer", fontFamily: "Plus Jakarta Sans, sans-serif", opacity: saving ? 0.7 : 1 }}>
                                 {saving ? "Menyetor..." : "💰 Setor ke Tabungan"}
                             </button>
@@ -355,7 +435,7 @@ function CreateModal({ onClose, onCreate }) {
                         <label style={{ fontSize: 11, fontWeight: 600, color: "#4b5563", display: "block", marginBottom: 4 }}>Target Jumlah (Rp) *</label>
                         <div style={{ position: "relative" }}>
                             <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", fontSize: 13, color: "#9ca3af" }}>Rp</span>
-                            <input type="number" value={form.targetAmount} onChange={e => setForm({ ...form, targetAmount: e.target.value })} required min={1}
+                            <input type="text" value={formatInputRupiah(form.targetAmount)} onChange={e => setForm({ ...form, targetAmount: parseInputRupiah(e.target.value) })} required min={1}
                                 placeholder="0" style={{ width: "100%", border: "1px solid #d1d5db", borderRadius: 8, padding: "10px 12px 10px 36px", fontSize: 13, outline: "none", fontFamily: "Plus Jakarta Sans, sans-serif" }} />
                         </div>
                     </div>

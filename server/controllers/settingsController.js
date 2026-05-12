@@ -176,3 +176,59 @@ export async function updateSettingsProfile(req, res) {
         res.status(500).json({ message: err.message || "Failed to update profile" });
     }
 }
+
+/**
+ * Update user name
+ * POST /settings/update-username
+ */
+export async function updateUsername(req, res) {
+    try {
+        const uid = req.user.uid;
+        const { name } = req.body;
+
+        if (!name || name.trim().length === 0) {
+            return res.status(400).json({ message: "Name is required" });
+        }
+
+        // Update name in Firestore
+        await db.collection("users").doc(uid).update({
+            name: name,
+            updatedAt: new Date().toISOString()
+        });
+
+        res.json({ message: "Name updated successfully", name: name });
+    } catch (err) {
+        res.status(500).json({ message: err.message || "Failed to update name" });
+    }
+}
+
+/**
+ * Delete user account
+ * POST /settings/delete-account
+ */
+export async function deleteAccount(req, res) {
+    try {
+        const uid = req.user.uid;
+        const { password } = req.body;
+
+        if (!password) {
+            return res.status(400).json({ message: "Password is required for account deletion" });
+        }
+
+        const auth = getAuth();
+
+        // Delete user from Firebase Authentication
+        await auth.deleteUser(uid);
+
+        // Delete user document from Firestore
+        await db.collection("users").doc(uid).delete();
+
+        res.json({ message: "Account deleted successfully" });
+    } catch (err) {
+        if (err.code === "auth/user-not-found") {
+            res.status(404).json({ message: "User not found" });
+        } else {
+            res.status(500).json({ message: err.message || "Failed to delete account" });
+        }
+    }
+}

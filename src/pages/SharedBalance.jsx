@@ -6,6 +6,17 @@ import Sidebar from "../components/Sidebar.jsx";
 
 const fmt = (n) => `Rp ${(n || 0).toLocaleString("id-ID")}`;
 
+const formatInputRupiah = (value) => {
+    if (!value) return "";
+    const numStr = value.toString().replace(/[^0-9]/g, "");
+    if (!numStr) return "";
+    return numStr.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+};
+
+const parseInputRupiah = (formatted) => {
+    return formatted.replace(/[^0-9]/g, "");
+};
+
 // ── Role Badge ────────────────────────────────────────────────
 function RoleBadge({ role }) {
     return (
@@ -370,7 +381,7 @@ function GroupDetail({ group, uid, onClose, onRefresh, balanceCategories = [] })
                                     </select>
                                     <div style={{ flex: 2, position: "relative" }}>
                                         <span style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", fontSize: 12, color: "#9ca3af" }}>Rp</span>
-                                        <input type="number" value={txForm.amount} onChange={e => setTxForm({ ...txForm, amount: e.target.value })} required min={1}
+                                        <input type="text" value={formatInputRupiah(txForm.amount)} onChange={e => setTxForm({ ...txForm, amount: parseInputRupiah(e.target.value) })} required min={1}
                                             placeholder="0" style={{ width: "100%", border: "1px solid #d1d5db", borderRadius: 8, padding: "9px 10px 9px 28px", fontSize: 12, outline: "none", fontFamily: "Plus Jakarta Sans, sans-serif" }} />
                                     </div>
                                 </div>
