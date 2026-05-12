@@ -282,6 +282,14 @@ export default function Balance() {
         if (!txForm.balanceId) errors.balanceId = "Pilih kategori";
         if (!txForm.amount || isNaN(txForm.amount) || parseFloat(txForm.amount) <= 0)
             errors.amount = "Masukkan jumlah yang valid";
+        // Prevent adding expense greater than available balance
+        if (txForm.type === "expense" && txForm.balanceId && txForm.amount && !isNaN(txForm.amount)) {
+            const selected = balances.find(b => b.id === txForm.balanceId);
+            const available = selected ? Number(selected.balance || 0) : 0;
+            if (Number(txForm.amount) > available) {
+                errors.amount = "Saldo tidak mencukupi untuk pengeluaran ini";
+            }
+        }
         if (!txForm.description.trim()) errors.description = "Deskripsi wajib diisi";
         setFormErrors(errors);
         return Object.keys(errors).length === 0;
@@ -755,7 +763,7 @@ export default function Balance() {
                                             const categorySpending = balances.map(b => ({
                                                 name: b.name,
                                                 spent: b.totalSpent || 0,
-                                                color: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4'][balances.indexOf(b) % 7]
+                                                color: ['#10B981', '#1E40AF', '#F59E0B', '#DC2626', '#7C3AED', '#DB2777', '#0891B2'][balances.indexOf(b) % 7]
                                             })).filter(c => c.spent > 0);
 
                                             if (categorySpending.length === 0) {
@@ -776,7 +784,7 @@ export default function Balance() {
                                                                     id: idx,
                                                                     value: c.spent,
                                                                     label: c.name,
-                                                                    color: ['#10b981', '#34d399', '#6ee7b7', '#a7f3d0', '#d1fae5', '#06b6d4', '#0ea5e9'][idx % 7]
+                                                                    color: ['#10B981', '#1E40AF', '#F59E0B', '#DC2626', '#7C3AED', '#DB2777', '#0891B2'][idx % 7]
                                                                 })),
                                                                 innerRadius: 50,
                                                                 outerRadius: 120,
@@ -826,7 +834,7 @@ export default function Balance() {
                                             const categorySpending = balances.map(b => ({
                                                 name: b.name,
                                                 spent: b.totalSpent || 0,
-                                                color: ['#00d084', '#0066ff', '#ff8c00', '#ff3333', '#9d00ff', '#ff1493', '#00ccff'][balances.indexOf(b) % 7]
+                                                color: ['#10B981', '#1E40AF', '#F59E0B', '#DC2626', '#7C3AED', '#DB2777', '#0891B2'][balances.indexOf(b) % 7]
                                             })).filter(c => c.spent > 0).sort((a, b) => b.spent - a.spent);
 
                                             if (categorySpending.length === 0) {
@@ -935,19 +943,19 @@ export default function Balance() {
                                                 {
                                                     data: chartData.map(d => d.income),
                                                     label: 'Pemasukan',
-                                                    color: '#10b981',
+                                                    color: '#10B981',
                                                     valueFormatter: (value) => value ? `Rp ${value.toLocaleString('id-ID')}` : '-',
                                                 },
                                                 {
                                                     data: chartData.map(d => d.expense),
                                                     label: 'Pengeluaran',
-                                                    color: '#ef4444',
+                                                    color: '#DC2626',
                                                     valueFormatter: (value) => value ? `Rp ${value.toLocaleString('id-ID')}` : '-',
                                                 },
                                                 {
                                                     data: chartData.map(d => d.net),
                                                     label: 'Arus Bersih',
-                                                    color: '#0ea5e9',
+                                                    color: '#0891B2',
                                                     valueFormatter: (value) => value ? `Rp ${value.toLocaleString('id-ID')}` : '-',
                                                 }
                                             ]}

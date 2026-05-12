@@ -53,7 +53,7 @@ export default function Register() {
                 <img
                     src={logo3}
                     alt="MoneyPath Logo"
-                    className="absolute top-4 left-4 md:top-6 md:left-8 h-[22px] md:h-[26px] lg:h-[28px] w-auto object-contain"
+                    className="absolute top-4 left-4 md:top-[30px] md:left-[40px] h-[35px] md:h-[45px] lg:h-[55px] w-auto object-contain"
                 />
 
                 <div className="w-full max-w-xs md:max-w-sm lg:max-w-sm">
