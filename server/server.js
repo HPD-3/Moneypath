@@ -28,6 +28,8 @@ app.get("/", (req, res) => {
 const allowedOrigins = new Set([
     "https://moneypath-7777.firebaseapp.com",
     "https://moneypath-7777.web.app",
+    "http://moneypath.my.id",
+    "https://moneypath.my.id",
     "http://localhost:5173",
     "http://localhost:3000",
     "http://127.0.0.1:5173",
