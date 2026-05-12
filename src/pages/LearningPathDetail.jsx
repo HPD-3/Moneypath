@@ -33,20 +33,20 @@ function Quiz({ questions, moduleId, pathId, onComplete }) {
     const passed = score >= 70;
 
     return (
-        <div className="mt-6 bg-green-50 border border-green-200 rounded-xl p-5">
+        <div className="mx-3 lg:mx-0 mt-4 lg:mt-6 bg-green-50 border border-green-200 rounded-lg lg:rounded-xl p-4 lg:p-5">
             <h3 className="font-bold text-[#1a3a1f] text-sm mb-1">📝 Quiz Modul</h3>
-            <p className="text-xs text-gray-500 mb-4">
+            <p className="text-xs text-gray-500 mb-3 lg:mb-4">
                 ⚠️ Kamu harus lulus quiz ini (min. 70) untuk membuka modul berikutnya.
             </p>
 
             {questions.map((q, i) => (
-                <div key={q.id} className="mb-5">
-                    <p className="font-semibold text-sm text-[#1a3a1f] mb-2">
+                <div key={q.id} className="mb-4 lg:mb-5">
+                    <p className="font-semibold text-xs lg:text-sm text-[#1a3a1f] mb-2">
                         {i + 1}. {q.question}
                     </p>
 
                     {q.options?.map((opt, j) => {
-                        let base = "flex items-center gap-2 px-4 py-2 rounded-lg mb-1 cursor-pointer transition text-sm";
+                        let base = "flex items-center gap-2 px-3 lg:px-4 py-2 rounded-lg mb-1 cursor-pointer transition text-xs lg:text-sm";
                         let style = "bg-white border border-gray-200 text-gray-700";
 
                         if (submitted) {
@@ -58,10 +58,10 @@ function Quiz({ questions, moduleId, pathId, onComplete }) {
 
                         return (
                             <div key={j} onClick={() => handleAnswer(i, j)} className={`${base} ${style}`}>
-                                <span className="w-5 h-5 flex items-center justify-center rounded-full border text-xs font-bold">
+                                <span className="w-5 h-5 flex items-center justify-center rounded-full border text-xs font-bold flex-shrink-0">
                                     {String.fromCharCode(65 + j)}
                                 </span>
-                                <span>{opt}</span>
+                                <span className="flex-1">{opt}</span>
                                 {submitted && j === q.correctIndex && (
                                     <span className="ml-auto text-xs font-bold">✓</span>
                                 )}
@@ -75,20 +75,20 @@ function Quiz({ questions, moduleId, pathId, onComplete }) {
                 <button
                     onClick={handleSubmit}
                     disabled={Object.keys(answers).length < questions.length}
-                    className={`w-full rounded-lg py-3 text-sm font-semibold transition
+                    className={`w-full rounded-lg py-2 lg:py-3 text-xs lg:text-sm font-semibold transition
                         ${Object.keys(answers).length < questions.length
                             ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                            : "bg-[#1a3a1f] text-[#9FF782]"}`}
+                            : "bg-[#1a3a1f] text-[#9FF782] hover:bg-[#0f2e1c]"}`}
                 >
                     Kumpulkan Jawaban ({Object.keys(answers).length}/{questions.length})
                 </button>
             ) : (
-                <div className={`text-center p-4 rounded-lg ${passed ? "bg-green-100" : "bg-red-100"}`}>
-                    <p className="text-2xl">{passed ? "🎉" : "😔"}</p>
-                    <p className={`font-bold text-lg ${passed ? "text-green-800" : "text-red-800"}`}>
+                <div className={`text-center p-3 lg:p-4 rounded-lg ${passed ? "bg-green-100" : "bg-red-100"}`}>
+                    <p className="text-xl lg:text-2xl">{passed ? "🎉" : "😔"}</p>
+                    <p className={`font-bold text-base lg:text-lg ${passed ? "text-green-800" : "text-red-800"}`}>
                         Nilai: {score}/100
                     </p>
-                    <p className="text-sm mt-1">
+                    <p className="text-xs lg:text-sm mt-1">
                         {passed
                             ? "Selamat! Modul berikutnya sekarang terbuka."
                             : "Nilai minimal 70. Coba lagi!"}
@@ -97,7 +97,7 @@ function Quiz({ questions, moduleId, pathId, onComplete }) {
                     {!passed && (
                         <button
                             onClick={() => { setAnswers({}); setSubmit(false); setScore(0); }}
-                            className="mt-3 bg-[#1a3a1f] text-[#9FF782] px-4 py-2 rounded-lg text-sm"
+                            className="mt-3 bg-[#1a3a1f] text-[#9FF782] px-4 py-2 rounded-lg text-xs lg:text-sm hover:bg-[#0f2e1c]"
                         >
                             Coba Lagi
                         </button>
@@ -122,6 +122,7 @@ export default function LearningPathDetail() {
     const [lockedModuleInfo, setLockedModuleInfo] = useState(null);
     const [pathCompleted, setPathCompleted] = useState(false);
     const [showCompletionModal, setShowCompletionModal] = useState(false);
+    const [sidebarOpen, setSidebarOpen] = useState(false);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -298,7 +299,7 @@ export default function LearningPathDetail() {
     }
 
     return (
-        <div className="flex min-h-screen bg-gray-100">
+        <div className="flex flex-col lg:flex-row min-h-screen bg-gray-100">
             <style>{`
                 body { font-family: 'Plus Jakarta Sans', sans-serif; }
                 .active {
@@ -325,6 +326,13 @@ export default function LearningPathDetail() {
                 @keyframes slideUp {
                   from { opacity: 0; transform: translateY(20px); }
                   to { opacity: 1; transform: translateY(0); }
+                }
+                .sidebar-mobile {
+                  animation: slideInLeft 0.3s ease-in-out;
+                }
+                @keyframes slideInLeft {
+                  from { transform: translateX(-100%); opacity: 0; }
+                  to { transform: translateX(0); opacity: 1; }
                 }
             `}</style>
 
@@ -393,40 +401,66 @@ export default function LearningPathDetail() {
             <div className="flex-1 flex flex-col bg-white">
 
                 {/* HEADER */}
-                <div className="flex justify-between items-center px-8 py-4 border-b bg-white shadow-sm">
-                    <button onClick={() => navigate("/learning")} className="flex items-center gap-2 text-lg font-semibold hover:opacity-70 text-gray-700">
-                        <iconify-icon icon="mdi:arrow-left" width="24" height="24"></iconify-icon>
-                        {path.title}
-                    </button>
+                <div className="border-b bg-white shadow-sm">
+                    {/* Top Row - Mobile */}
+                    <div className="flex lg:hidden justify-between items-center px-3 py-3 gap-2">
+                        <button onClick={() => navigate("/learning")} className="p-1 hover:opacity-70 text-gray-700">
+                            <iconify-icon icon="mdi:arrow-left" width="24" height="24"></iconify-icon>
+                        </button>
+                        <h2 className="text-sm font-semibold text-gray-700 flex-1 truncate">{path.title}</h2>
+                        <button
+                            onClick={() => setSidebarOpen(!sidebarOpen)}
+                            className="p-1 rounded-lg hover:bg-gray-100 transition"
+                        >
+                            <iconify-icon icon={sidebarOpen ? "mdi:close" : "mdi:menu"} width="24" height="24"></iconify-icon>
+                        </button>
+                    </div>
 
-                    <div className="flex items-center gap-6">
-                        <span className="text-sm font-medium text-gray-600">
-                            {completed.length} / {totalModules}
-                        </span>
-
-                        <div className="flex items-center gap-2">
-                            <div className="w-7 h-7 flex items-center justify-center rounded-full border-2 border-orange-400">
-                                <iconify-icon icon="mdi:fire" width="18" height="18" className="text-orange-500"></iconify-icon>
-                            </div>
-                            <span className="font-bold text-gray-700">{completed.length}</span>
-                        </div>
-
+                    {/* Progress Row - Mobile */}
+                    <div className="flex lg:hidden justify-between items-center px-3 py-2 bg-gray-50 text-xs gap-2">
+                        <span className="font-medium text-gray-700">{completed.length}/{totalModules}</span>
                         <span className="font-semibold text-green-700">{progressPercent}%</span>
+                        <div className="flex-1 bg-gray-200 h-1.5 rounded-full overflow-hidden">
+                            <div style={{ width: `${progressPercent}%` }} className="h-1.5 bg-gradient-to-r from-green-600 to-green-400"></div>
+                        </div>
+                    </div>
 
-                        <div className="w-40 bg-gray-200 h-2 rounded-full overflow-hidden">
-                            <div style={{ width: `${progressPercent}%` }} className="h-2 bg-gradient-to-r from-black via-green-900 to-green-400 transition-all duration-500"></div>
+                    {/* Desktop Header */}
+                    <div className="hidden lg:flex justify-between items-center px-8 py-4">
+                        <button onClick={() => navigate("/learning")} className="flex items-center gap-2 text-lg font-semibold hover:opacity-70 text-gray-700">
+                            <iconify-icon icon="mdi:arrow-left" width="24" height="24"></iconify-icon>
+                            {path.title}
+                        </button>
+
+                        <div className="flex items-center gap-6">
+                            <span className="text-sm font-medium text-gray-600">
+                                {completed.length} / {totalModules}
+                            </span>
+
+                            <div className="flex items-center gap-2">
+                                <div className="w-7 h-7 flex items-center justify-center rounded-full border-2 border-orange-400">
+                                    <iconify-icon icon="mdi:fire" width="16" height="16" className="text-orange-500"></iconify-icon>
+                                </div>
+                                <span className="font-bold text-gray-700">{completed.length}</span>
+                            </div>
+
+                            <span className="font-semibold text-green-700">{progressPercent}%</span>
+
+                            <div className="w-40 bg-gray-200 h-2 rounded-full overflow-hidden">
+                                <div style={{ width: `${progressPercent}%` }} className="h-2 bg-gradient-to-r from-black via-green-900 to-green-400 transition-all duration-500"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 {/* CONTENT */}
-                <div className="flex-1 p-10 text-gray-700 fade overflow-y-auto">
-                    <h1 className="text-3xl font-bold mb-4">{activeModule.title}</h1>
+                <div className="flex-1 px-3 lg:px-10 py-4 lg:py-6 text-gray-700 fade overflow-y-auto">
+                    <h1 className="text-xl lg:text-3xl font-bold mb-3 lg:mb-4">{activeModule.title}</h1>
                     <div
-                        className="text-base leading-relaxed mb-8 prose prose-sm max-w-none"
+                        className="text-sm lg:text-base leading-relaxed mb-6 lg:mb-8 prose prose-sm max-w-none"
                         style={{
-                            fontSize: '16px',
-                            lineHeight: '1.75',
+                            fontSize: 'inherit',
+                            lineHeight: '1.7',
                             color: '#374151'
                         }}
                         dangerouslySetInnerHTML={{ __html: activeModule.content }}
@@ -484,78 +518,130 @@ export default function LearningPathDetail() {
                     )}
 
                 {!activeModule.quiz?.length && !completed.includes(activeModule.id) && (
-                    <button
-                        onClick={async () => {
-                            await API.post(`/learningpath/${pathId}/progress`, {
-                                moduleId: activeModule.id
-                            });
-                            handleComplete(activeModule.id);
-                        }}
-                        className="w-full bg-gradient-to-r from-[#9FF782] to-[#7dd65f] hover:shadow-lg hover:shadow-[#9FF782]/40 text-[#0f2e1c] px-6 py-4 rounded-xl font-bold shadow transition-all transform hover:scale-105 flex items-center justify-center gap-2 text-lg"
-                    >
-                        <iconify-icon icon="mdi:check-circle" width="24" height="24"></iconify-icon>
-                        Tandai Modul Selesai
-                    </button>
+                    <div className="px-3 lg:px-10 pb-4 lg:pb-6">
+                        <button
+                            onClick={async () => {
+                                await API.post(`/learningpath/${pathId}/progress`, {
+                                    moduleId: activeModule.id
+                                });
+                                handleComplete(activeModule.id);
+                            }}
+                            className="w-full bg-gradient-to-r from-[#9FF782] to-[#7dd65f] hover:shadow-lg hover:shadow-[#9FF782]/40 text-[#0f2e1c] px-4 py-3 rounded-lg font-bold shadow transition-all flex items-center justify-center gap-2 text-sm"
+                        >
+                            <iconify-icon icon="mdi:check-circle" width="20" height="20"></iconify-icon>
+                            Tandai Modul Selesai
+                        </button>
+                    </div>
                 )}
             </div>
 
-            {/* FOOTER */}
-            <div className="flex justify-between items-center px-8 py-4 border-t bg-gradient-to-r from-white to-gray-50 shadow-sm gap-4">
-                <button 
-                    onClick={prevMateri} 
-                    disabled={currentModuleIndex === 0}
-                    className="flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all text-gray-600 hover:text-gray-900 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed">
-                    <iconify-icon icon="mdi:arrow-left" width="20" height="20"></iconify-icon>
-                    Kembali
-                </button>
+                {/* FOOTER - Only Mobile */}
+                <div className="border-t bg-white shadow-sm p-3 lg:hidden">
+                    <div className="flex gap-2 justify-between items-center">
+                        <button 
+                            onClick={prevMateri} 
+                            disabled={currentModuleIndex === 0}
+                            className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg font-semibold transition-all text-gray-600 hover:text-gray-900 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed text-sm">
+                            <iconify-icon icon="mdi:arrow-left" width="20" height="20"></iconify-icon>
+                            <span className="hidden sm:inline">Kembali</span>
+                        </button>
 
-                <button 
-                    onClick={nextMateri}
-                    disabled={!completed.includes(activeModule.id) || currentModuleIndex === path.modules.length - 1}
-                    className={`flex items-center gap-2 px-8 py-3 rounded-xl font-semibold transition-all transform ${
-                        !completed.includes(activeModule.id) || currentModuleIndex === path.modules.length - 1
-                            ? 'bg-gray-300 text-gray-600 cursor-not-allowed opacity-60'
-                            : 'bg-gradient-to-r from-[#0f2e1c] to-[#174d2e] text-white hover:shadow-lg hover:shadow-[#0f2e1c]/30 hover:scale-105'
-                    }`}
-                    title={!completed.includes(activeModule.id) ? "Tandai modul ini selesai terlebih dahulu" : currentModuleIndex === path.modules.length - 1 ? "Anda sudah di modul terakhir" : ""}>
-                    Lanjut
-                    <iconify-icon icon="mdi:arrow-right" width="20" height="20"></iconify-icon>
-                </button>
-            </div>
+                        <button 
+                            onClick={nextMateri}
+                            disabled={!completed.includes(activeModule.id) || currentModuleIndex === path.modules.length - 1}
+                            className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg font-semibold transition-all text-sm ${
+                                !completed.includes(activeModule.id) || currentModuleIndex === path.modules.length - 1
+                                    ? 'bg-gray-300 text-gray-600 cursor-not-allowed opacity-60'
+                                    : 'bg-gradient-to-r from-[#0f2e1c] to-[#174d2e] text-white hover:shadow-lg hover:shadow-[#0f2e1c]/30'
+                            }`}
+                            title={!completed.includes(activeModule.id) ? "Tandai modul ini selesai terlebih dahulu" : currentModuleIndex === path.modules.length - 1 ? "Anda sudah di modul terakhir" : ""}>
+                            <span className="hidden sm:inline">Lanjut</span>
+                            <iconify-icon icon="mdi:arrow-right" width="20" height="20"></iconify-icon>
+                        </button>
+                    </div>
+                </div>
 
 
             {/* ================= SIDEBAR ================= */}
-            <div className="w-80 bg-gray-50 border-l p-6 overflow-y-auto">
-                <h2 className="font-bold mb-4 text-gray-700">Daftar Materi</h2>
+            {/* Mobile/Tablet Overlay */}
+            {sidebarOpen && (
+                <div
+                    className="fixed inset-0 bg-black bg-opacity-50 lg:hidden z-30"
+                    onClick={() => setSidebarOpen(false)}
+                />
+            )}
 
-                <div className="space-y-2 text-sm">
-                    {path.modules.map((mod, i) => {
-                        const isActive = i === currentModuleIndex;
-                        const isDone = completed.includes(mod.id);
-                        const unlocked = isUnlocked(i);
+            {/* Sidebar - Desktop: Always visible, Mobile: Slide-out drawer */}
+            <div className={`fixed lg:static left-0 top-0 h-screen w-72 lg:w-80 bg-white lg:bg-gray-50 border-l p-3 lg:p-6 overflow-y-auto z-40 transition-transform duration-300 flex flex-col ${
+                sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+            } sidebar-mobile`}>
+                <div>
+                    <div className="flex justify-between items-center mb-4">
+                        <h2 className="font-bold text-gray-800 text-base lg:text-lg">Daftar Materi</h2>
+                        <button
+                            onClick={() => setSidebarOpen(false)}
+                            className="lg:hidden p-1 hover:bg-gray-200 rounded transition"
+                        >
+                            <iconify-icon icon="mdi:close" width="20" height="20"></iconify-icon>
+                        </button>
+                    </div>
 
-                        return (
-                            <div
-                                key={mod.id}
-                                onClick={() => loadMateri(i)}
-                                className={`menu-item px-4 py-2 rounded-lg transition ${unlocked ? "cursor-pointer" : "cursor-not-allowed opacity-50"
-                                    } ${isActive ? "active" : unlocked ? "hover:bg-gray-200" : ""
+                    <div className="space-y-1 text-sm">
+                        {path.modules.map((mod, i) => {
+                            const isActive = i === currentModuleIndex;
+                            const isDone = completed.includes(mod.id);
+                            const unlocked = isUnlocked(i);
+
+                            return (
+                                <div
+                                    key={mod.id}
+                                    onClick={() => {
+                                        loadMateri(i);
+                                        setSidebarOpen(false);
+                                    }}
+                                    className={`menu-item px-3 py-2 rounded-lg transition cursor-pointer ${
+                                        !unlocked ? "opacity-50 cursor-not-allowed" : ""
+                                    } ${
+                                        isActive 
+                                            ? "bg-gradient-to-r from-green-200 to-green-100 border-l-4 border-green-600 text-gray-800 font-semibold"
+                                            : unlocked 
+                                            ? "hover:bg-gray-100 text-gray-700" 
+                                            : "text-gray-600"
                                     }`}
-                            >
-                                {unlocked ? (
-                                    <>
-                                        {isDone && <><iconify-icon icon="mdi:check" width="16" height="16" style={{ display: 'inline-block', marginRight: '4px' }}></iconify-icon></>}
-                                        {mod.title}
-                                    </>
-                                ) : (
-                                    <>
-                                        <iconify-icon icon="mdi:lock" width="16" height="16" style={{ display: 'inline-block', marginRight: '4px' }}></iconify-icon>
-                                        {mod.title}
-                                    </>
-                                )}
-                            </div>
-                        );
-                    })}
+                                >
+                                    <div className="flex items-center gap-2">
+                                        {isDone && <iconify-icon icon="mdi:check-circle" width="18" height="18" className="text-green-600 flex-shrink-0"></iconify-icon>}
+                                        {!unlocked && !isDone && <iconify-icon icon="mdi:lock" width="18" height="18" className="text-gray-400 flex-shrink-0"></iconify-icon>}
+                                        <span className="truncate">{mod.title}</span>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+
+                {/* Navigation Buttons - Only Desktop */}
+                <div className="hidden lg:flex flex-col gap-2 mt-auto pt-4 border-t">
+                    <button 
+                        onClick={prevMateri} 
+                        disabled={currentModuleIndex === 0}
+                        className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg font-semibold transition-all text-gray-600 hover:text-gray-900 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm">
+                        <iconify-icon icon="mdi:arrow-left" width="18" height="18"></iconify-icon>
+                        Kembali
+                    </button>
+
+                    <button 
+                        onClick={nextMateri}
+                        disabled={!completed.includes(activeModule.id) || currentModuleIndex === path.modules.length - 1}
+                        className={`flex items-center justify-center gap-2 px-3 py-2 rounded-lg font-semibold transition-all text-sm ${
+                            !completed.includes(activeModule.id) || currentModuleIndex === path.modules.length - 1
+                                ? 'bg-gray-300 text-gray-600 cursor-not-allowed opacity-60'
+                                : 'bg-gradient-to-r from-[#0f2e1c] to-[#174d2e] text-white hover:shadow-lg hover:shadow-[#0f2e1c]/30'
+                        }`}
+                        title={!completed.includes(activeModule.id) ? "Tandai modul ini selesai terlebih dahulu" : currentModuleIndex === path.modules.length - 1 ? "Anda sudah di modul terakhir" : ""}>
+                        Lanjut
+                        <iconify-icon icon="mdi:arrow-right" width="18" height="18"></iconify-icon>
+                    </button>
                 </div>
             </div>
         </div>

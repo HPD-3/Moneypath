@@ -5,7 +5,9 @@ import {
     updateUserSettings,
     changePassword,
     getSettingsProfile,
-    updateSettingsProfile
+    updateSettingsProfile,
+    updateUsername,
+    deleteAccount
 } from "../controllers/settingsController.js";
 
 const router = express.Router();
@@ -18,5 +20,11 @@ router.post("/change-password", verifyToken, changePassword);
 // Profile routes
 router.get("/profile", verifyToken, getSettingsProfile);
 router.post("/profile", verifyToken, updateSettingsProfile);
+
+// Username update
+router.post("/update-username", verifyToken, updateUsername);
+
+// Delete account
+router.post("/delete-account", verifyToken, deleteAccount);
 
 export default router;

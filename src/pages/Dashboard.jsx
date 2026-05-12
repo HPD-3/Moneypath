@@ -445,7 +445,7 @@ export default function Dashboard() {
                                 <div>
                                     <p style={{ fontSize: 11, color: "rgba(255,255,255,0.45)", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 8 }}>Level Kamu</p>
                                     <p data-responsive-text-lg style={{ fontSize: 48, fontWeight: 800, color: "#9FF782", lineHeight: 1 }}>Lv. {quizStats?.level || 1}</p>
-                                    <p style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", marginTop: 8 }}>{quizStats?.totalExp || 0}/100 xp</p>
+                                    <p style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", marginTop: 8 }}>Total XP: {quizStats?.totalExp || 0}</p>
                                 </div>
                                 <div style={{ textAlign: "center", background: "white", borderRadius: 12, padding: "12px 16px", flexShrink: 0 }}>
                                     <iconify-icon icon="mdi:fire" style={{ fontSize: 24, color: "#ff6b6b" }}></iconify-icon>
