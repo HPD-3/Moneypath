@@ -1,5 +1,7 @@
 import { db } from "../firebaseAdmin.js";
 import { getAuth } from "firebase-admin/auth";
+import { LEVELS } from "./levelsController.js";
+import { calcLevel } from "../utils/expSystem.js";
 
 /**
  * Get user settings
@@ -230,5 +232,79 @@ export async function deleteAccount(req, res) {
         } else {
             res.status(500).json({ message: err.message || "Failed to delete account" });
         }
+    }
+}
+
+/**
+ * Get badge showcase and active badge settings
+ * GET /settings/badges
+ */
+export async function getBadgeSettings(req, res) {
+    try {
+        const uid = req.user.uid;
+        const userDoc = await db.collection("users").doc(uid).get();
+
+        if (!userDoc.exists) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        const userData = userDoc.data();
+        const totalExp = userData.totalExp || 0;
+        const levelInfo = calcLevel(totalExp);
+
+        const badgeCatalog = LEVELS
+            .filter((level) => level.reward?.type === "badge" || level.reward?.type === "legendary")
+            .map((level) => ({
+                id: level.id,
+                name: level.reward.name || level.key,
+                title: level.key,
+                xp: level.xp,
+                rewardType: level.reward.type,
+                rewardText: level.reward.title || level.reward.name || level.key,
+            }));
+
+        res.json({
+            totalExp,
+            coins: userData.coins || 0,
+            level: levelInfo.level,
+            levelProgress: levelInfo.progress,
+            activeBadge: userData.activeBadge || "",
+            unlockedBadges: userData.badges || [],
+            badgeCatalog,
+        });
+    } catch (err) {
+        res.status(500).json({ message: err.message || "Failed to fetch badge settings" });
+    }
+}
+
+/**
+ * Update active badge selection
+ * POST /settings/badges
+ */
+export async function updateBadgeSettings(req, res) {
+    try {
+        const uid = req.user.uid;
+        const { activeBadge } = req.body;
+
+        const userDoc = await db.collection("users").doc(uid).get();
+        if (!userDoc.exists) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        const userData = userDoc.data();
+        const unlockedBadges = userData.badges || [];
+
+        if (activeBadge && !unlockedBadges.includes(activeBadge)) {
+            return res.status(400).json({ message: "Badge is not unlocked" });
+        }
+
+        await db.collection("users").doc(uid).update({
+            activeBadge: activeBadge || "",
+            updatedAt: new Date().toISOString(),
+        });
+
+        res.json({ message: "Badge settings updated successfully", activeBadge: activeBadge || "" });
+    } catch (err) {
+        res.status(500).json({ message: err.message || "Failed to update badge settings" });
     }
 }

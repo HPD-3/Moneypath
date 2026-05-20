@@ -202,14 +202,14 @@ export default function RekapBulanan() {
                                     <button
                                         onClick={handleExportPdf}
                                         disabled={exporting === "pdf"}
-                                        style={{ flex: 1, minWidth: 160, background: exporting === "pdf" ? "#9ca3af" : "#0f2a18", color: "white", border: "none", borderRadius: 12, padding: "12px 16px", fontSize: 13, fontWeight: 700, cursor: exporting === "pdf" ? "not-allowed" : "pointer", fontFamily: "Plus Jakarta Sans, sans-serif" }}
+                                        style={{ flex: 1, minWidth: 160, background: exporting === "pdf" ? "#E93628" : "#E93628", color: "white", border: "none", borderRadius: 12, padding: "12px 16px", fontSize: 13, fontWeight: 700, cursor: exporting === "pdf" ? "not-allowed" : "pointer", fontFamily: "Plus Jakarta Sans, sans-serif" }}
                                     >
                                         {exporting === "pdf" ? "Mengekspor PDF..." : "📄 Export PDF"}
                                     </button>
                                     <button
                                         onClick={handleExportExcel}
                                         disabled={exporting === "excel"}
-                                        style={{ flex: 1, minWidth: 160, background: exporting === "excel" ? "#9ca3af" : "#166534", color: "white", border: "none", borderRadius: 12, padding: "12px 16px", fontSize: 13, fontWeight: 700, cursor: exporting === "excel" ? "not-allowed" : "pointer", fontFamily: "Plus Jakarta Sans, sans-serif" }}
+                                        style={{ flex: 1, minWidth: 160, background: exporting === "excel" ? "#0DA8C5" : "#0DA8C5", color: "white", border: "none", borderRadius: 12, padding: "12px 16px", fontSize: 13, fontWeight: 700, cursor: exporting === "excel" ? "not-allowed" : "pointer", fontFamily: "Plus Jakarta Sans, sans-serif" }}
                                     >
                                         {exporting === "excel" ? "Mengekspor Excel..." : "📊 Export Excel"}
                                     </button>
@@ -229,7 +229,7 @@ export default function RekapBulanan() {
                                         </div>
                                     ) : (
                                         <button onClick={handleSend} disabled={sending}
-                                            style={{ width: "100%", background: sending ? "#9ca3af" : "linear-gradient(135deg,#1a3a1f,#0f2a18)", color: "#9FF782", border: "none", borderRadius: 12, padding: "14px", fontSize: 14, fontWeight: 700, cursor: sending ? "not-allowed" : "pointer", fontFamily: "Plus Jakarta Sans, sans-serif", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+                                            style={{ width: "100%", background: sending ? "#9ca3af" : "#FFA117", color: "white", border: "none", borderRadius: 12, padding: "14px", fontSize: 14, fontWeight: 700, cursor: sending ? "not-allowed" : "pointer", fontFamily: "Plus Jakarta Sans, sans-serif", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
                                             {sending ? "Mengirim..." : `📧 Kirim Rekap ke ${data.email}`}
                                         </button>
                                     )}

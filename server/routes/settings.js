@@ -7,7 +7,9 @@ import {
     getSettingsProfile,
     updateSettingsProfile,
     updateUsername,
-    deleteAccount
+    deleteAccount,
+    getBadgeSettings,
+    updateBadgeSettings
 } from "../controllers/settingsController.js";
 
 const router = express.Router();
@@ -20,6 +22,10 @@ router.post("/change-password", verifyToken, changePassword);
 // Profile routes
 router.get("/profile", verifyToken, getSettingsProfile);
 router.post("/profile", verifyToken, updateSettingsProfile);
+
+// Badge routes
+router.get("/badges", verifyToken, getBadgeSettings);
+router.post("/badges", verifyToken, updateBadgeSettings);
 
 // Username update
 router.post("/update-username", verifyToken, updateUsername);

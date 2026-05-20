@@ -6,6 +6,7 @@ import { doc, getDoc, updateDoc, deleteDoc } from "firebase/firestore";
 import API from "../services/api.js";
 import Sidebar from "../components/Sidebar.jsx";
 import Navbar from "../components/Navbar.jsx";
+import BadgeIllustration from "../components/BadgeIllustration.jsx";
 import "../Profile.css";
 
 export default function UserSetting() {
@@ -49,6 +50,13 @@ export default function UserSetting() {
     const [editProfileError, setEditProfileError] = useState("");
     const [editProfileMessage, setEditProfileMessage] = useState("");
 
+    // Badge showcase state
+    const [badgeSettings, setBadgeSettings] = useState(null);
+    const [badgeLoading, setBadgeLoading] = useState(false);
+    const [badgeMessage, setBadgeMessage] = useState("");
+    const [badgeError, setBadgeError] = useState("");
+    const [selectedBadge, setSelectedBadge] = useState("");
+
     // Delete account state
     const [showDeleteAccount, setShowDeleteAccount] = useState(false);
     const [deleteConfirmPassword, setDeleteConfirmPassword] = useState("");
@@ -87,6 +95,23 @@ export default function UserSetting() {
 
         fetchData();
     }, [navigate]);
+
+    useEffect(() => {
+        const fetchBadges = async () => {
+            try {
+                setBadgeLoading(true);
+                const res = await API.get("/settings/badges");
+                setBadgeSettings(res.data);
+                setSelectedBadge(res.data?.activeBadge || "");
+            } catch (err) {
+                console.error("Error fetching badge settings:", err);
+            } finally {
+                setBadgeLoading(false);
+            }
+        };
+
+        fetchBadges();
+    }, []);
 
     // Handle forgot password
     const handleForgotPassword = async (e) => {
@@ -177,6 +202,24 @@ export default function UserSetting() {
             }
         } finally {
             setDeleteAccountLoading(false);
+        }
+    };
+
+    const handleBadgeSave = async (e) => {
+        e.preventDefault();
+        setBadgeError("");
+        setBadgeMessage("");
+
+        try {
+            setBadgeLoading(true);
+            await API.post("/settings/badges", { activeBadge: selectedBadge });
+            setBadgeMessage("Badge aktif berhasil disimpan.");
+            const res = await API.get("/settings/badges");
+            setBadgeSettings(res.data);
+        } catch (err) {
+            setBadgeError(err.response?.data?.message || "Failed to save badge settings");
+        } finally {
+            setBadgeLoading(false);
         }
     };
 
@@ -363,6 +406,81 @@ export default function UserSetting() {
                             )}
                         </div>
                     )}
+
+                    {/* Badge Settings Section */}
+                    <div className="bg-white rounded-xl shadow-md p-6 mb-6 border-l-4 border-amber-500">
+                        <h2 className="text-xl font-bold mb-4 text-[#1a3a1f] flex items-center gap-2">
+                            <span>🏅</span> Badge Settings
+                        </h2>
+
+                        {badgeLoading && !badgeSettings ? (
+                            <div className="text-sm text-gray-500">Loading badges...</div>
+                        ) : (
+                            <>
+                                <div className="mb-4 rounded-2xl bg-gradient-to-r from-[#0f2e1c] to-[#1d4b2e] text-white p-4 flex items-center gap-4">
+                                    <div className="rounded-2xl bg-white/10 p-3 border border-white/10">
+                                        <BadgeIllustration tone="gold" active size={72} />
+                                    </div>
+                                    <div>
+                                        <p className="text-xs uppercase tracking-[0.28em] text-green-100/70">Active badge</p>
+                                        <p className="text-lg font-semibold">{badgeSettings?.activeBadge || "None selected"}</p>
+                                        <p className="text-sm text-green-100/70">Choose one unlocked badge to highlight on your profile.</p>
+                                    </div>
+                                </div>
+
+                                <form onSubmit={handleBadgeSave} className="space-y-4">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                        {(badgeSettings?.badgeCatalog || []).map((badge, index) => {
+                                            const unlocked = (badgeSettings?.unlockedBadges || []).includes(badge.name);
+                                            const tone = index % 3 === 0 ? "emerald" : index % 3 === 1 ? "gold" : "rose";
+                                            const isSelected = selectedBadge === badge.name;
+
+                                            return (
+                                                <button
+                                                    key={badge.id}
+                                                    type="button"
+                                                    onClick={() => unlocked && setSelectedBadge(badge.name)}
+                                                    className={`text-left rounded-2xl border p-4 transition-all ${
+                                                        isSelected
+                                                            ? "border-emerald-500 bg-emerald-50 shadow-lg"
+                                                            : unlocked
+                                                                ? "border-gray-200 bg-gray-50 hover:border-emerald-300 hover:shadow"
+                                                                : "border-gray-100 bg-gray-50 opacity-60 cursor-not-allowed"
+                                                    }`}
+                                                >
+                                                    <div className="flex items-start gap-3">
+                                                        <div className="shrink-0 rounded-2xl bg-white p-2 shadow-sm border border-gray-100">
+                                                            <BadgeIllustration tone={tone} active={isSelected} size={60} />
+                                                        </div>
+                                                        <div className="min-w-0 flex-1">
+                                                            <div className="flex items-center gap-2">
+                                                                <h3 className="font-semibold text-gray-900 truncate">{badge.title}</h3>
+                                                                {isSelected && <span className="text-[11px] px-2 py-1 rounded-full bg-emerald-500 text-white">Selected</span>}
+                                                                {!unlocked && <span className="text-[11px] px-2 py-1 rounded-full bg-gray-200 text-gray-600">Locked</span>}
+                                                            </div>
+                                                            <p className="text-sm text-gray-600 mt-1">{badge.rewardText}</p>
+                                                            <p className="text-xs text-gray-500 mt-2">{badge.xp} XP required</p>
+                                                        </div>
+                                                    </div>
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+
+                                    {badgeError && <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg p-3">{badgeError}</div>}
+                                    {badgeMessage && <div className="text-sm text-green-700 bg-green-50 border border-green-200 rounded-lg p-3">{badgeMessage}</div>}
+
+                                    <button
+                                        type="submit"
+                                        disabled={badgeLoading || !selectedBadge}
+                                        className="w-full px-4 py-3 bg-amber-500 hover:bg-amber-600 text-white rounded-lg font-semibold transition disabled:opacity-50"
+                                    >
+                                        {badgeLoading ? "Saving badge..." : "Save Active Badge"}
+                                    </button>
+                                </form>
+                            </>
+                        )}
+                    </div>
 
                     {/* Account Security Section */}
                     <div className="bg-white rounded-xl shadow-md p-6 mb-6 border-l-4 border-[#0f2e1c]">

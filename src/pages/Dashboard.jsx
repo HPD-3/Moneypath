@@ -5,6 +5,7 @@ import { getFirestore, doc, getDoc } from "firebase/firestore";
 import API from "../services/api.js";
 import Sidebar from "../components/Sidebar.jsx";
 import Navbar from "../components/Navbar.jsx";
+import BadgeIllustration from "../components/BadgeIllustration.jsx";
 import SEO from "../components/SEO";
 import seoConfig from "../seo.config";
 
@@ -213,6 +214,7 @@ export default function Dashboard() {
     const [personal, setPersonal] = useState(null);
     const [quizStats, setQuizStats] = useState(null);
     const [xpHistory, setXpHistory] = useState([]);
+    const [badgeSettings, setBadgeSettings] = useState(null);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
     const [activeNav, setActiveNav] = useState("beranda");
@@ -306,6 +308,21 @@ export default function Dashboard() {
         fetchAll();
     }, [navigate]);
 
+    useEffect(() => {
+        if (!profile) return;
+
+        const fetchBadges = async () => {
+            try {
+                const res = await API.get("/settings/badges");
+                setBadgeSettings(res.data);
+            } catch (err) {
+                console.error("Error fetching badges:", err);
+            }
+        };
+
+        fetchBadges();
+    }, [profile]);
+
     // Fetch analytics on main effect, after loading, and when profile/personal available
     useEffect(() => {
         // Fetch health data separately - don't wait for personal data
@@ -392,6 +409,9 @@ export default function Dashboard() {
         navigate(routes[navId] || "/dashboard");
     };
 
+    const activeBadge = badgeSettings?.activeBadge || badgeSettings?.unlockedBadges?.[0] || "";
+    const activeBadgeTitle = badgeSettings?.badgeCatalog?.find((badge) => badge.name === activeBadge)?.title || activeBadge || "No badge unlocked yet";
+
     if (error) return (
         <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Plus Jakarta Sans, sans-serif" }}>
             <p style={{ color: "#ef4444" }}>Error: {error}</p>
@@ -450,10 +470,24 @@ export default function Dashboard() {
                                     <p data-responsive-text-lg style={{ fontSize: 48, fontWeight: 800, color: "#9FF782", lineHeight: 1 }}>Lv. {quizStats?.level || 1}</p>
                                     <p style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", marginTop: 8 }}>Total XP: {quizStats?.totalExp || 0}</p>
                                 </div>
-                                <div style={{ textAlign: "center", background: "white", borderRadius: 12, padding: "12px 16px", flexShrink: 0 }}>
-                                    <iconify-icon icon="mdi:fire" style={{ fontSize: 24, color: "#ff6b6b" }}></iconify-icon>
-                                    <p style={{ fontSize: 20, fontWeight: 700, color: "#1a3a1f", lineHeight: 1.1 }}>{quizStats?.streak || 0}</p>
-                                    <p style={{ fontSize: 10, color: "#6b7280" }}>streak</p>
+                                <div style={{ display: "flex", flexDirection: "column", gap: 10, flexShrink: 0 }}>
+                                    <div style={{ textAlign: "center", background: "white", borderRadius: 12, padding: "12px 16px" }}>
+                                        <iconify-icon icon="mdi:fire" style={{ fontSize: 24, color: "#ff6b6b" }}></iconify-icon>
+                                        <p style={{ fontSize: 20, fontWeight: 700, color: "#1a3a1f", lineHeight: 1.1 }}>{quizStats?.streak || 0}</p>
+                                        <p style={{ fontSize: 10, color: "#6b7280" }}>streak</p>
+                                    </div>
+
+                                    {badgeSettings && (
+                                        <div style={{ display: "flex", alignItems: "center", gap: 10, background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 14, padding: "10px 12px", minWidth: 210 }}>
+                                            <div style={{ flexShrink: 0, borderRadius: 14, background: "rgba(255,255,255,0.08)", padding: 6, border: "1px solid rgba(255,255,255,0.12)" }}>
+                                                <BadgeIllustration tone="emerald" active size={42} />
+                                            </div>
+                                            <div style={{ minWidth: 0, textAlign: "left" }}>
+                                                <p style={{ fontSize: 10, color: "rgba(255,255,255,0.55)", textTransform: "uppercase", letterSpacing: 1.2, margin: 0 }}>Current badge</p>
+                                                <p style={{ fontSize: 13, fontWeight: 700, color: "white", margin: "2px 0 0", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{activeBadgeTitle}</p>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 

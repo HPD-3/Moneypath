@@ -5,6 +5,7 @@ import API from "../services/api.js";
 import Sidebar from "../components/Sidebar.jsx";
 import Navbar from "../components/Navbar.jsx";
 import { ReviewForm } from "../components/ReviewForm.jsx";
+import BadgeIllustration from "../components/BadgeIllustration.jsx";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
 // Custom Hook untuk Intersection Observer
@@ -44,6 +45,7 @@ export default function Profile() {
     const [balances, setBalances] = useState([]);
     const [transactions, setTransactions] = useState([]);
     const [tabungan, setTabungan] = useState([]);
+    const [badgeSettings, setBadgeSettings] = useState(null);
 
     // Refs untuk Intersection Observer
     const personalInfoRef = useRef(null);
@@ -276,6 +278,22 @@ export default function Profile() {
         fetchFinancialData();
     }, [profile, financialStatsVisible]);
 
+    // 🔹 Fetch active badge
+    useEffect(() => {
+        if (!profile) return;
+
+        const fetchBadges = async () => {
+            try {
+                const res = await API.get("/settings/badges");
+                setBadgeSettings(res.data);
+            } catch (err) {
+                console.error("Error fetching badges:", err);
+            }
+        };
+
+        fetchBadges();
+    }, [profile]);
+
     // 📊 Calculate Statistics
     const calculateStats = () => {
         const totalBalance = balances.reduce((sum, b) => sum + (b.balance || 0), 0);
@@ -292,6 +310,9 @@ export default function Profile() {
     };
 
     const { totalBalance, totalTabungan, totalPemasukan, totalPengeluaran, completedTabungan } = calculateStats();
+
+    const activeBadge = badgeSettings?.activeBadge || badgeSettings?.unlockedBadges?.[0] || "";
+    const activeBadgeTitle = badgeSettings?.badgeCatalog?.find((badge) => badge.name === activeBadge)?.title || activeBadge || "No badge unlocked yet";
 
     const fmt = (n) => `Rp ${(n || 0).toLocaleString("id-ID")}`;
 
@@ -310,8 +331,8 @@ export default function Profile() {
 
                             {/* PROFILE HEADER CARD */}
                             {profile && (
-                                <div className="bg-[#172619] text-white rounded-3xl p-4 md:p-8 mb-8 flex flex-col md:flex-row md:justify-between md:items-center gap-4 shadow-lg">
-                                    <div className="flex gap-4 md:gap-6 items-center flex-col sm:flex-row">
+                                <div className="bg-[#172619] text-white rounded-3xl p-4 md:p-8 mb-8 flex flex-col md:flex-row md:justify-between md:items-center gap-6 shadow-lg">
+                                    <div className="flex flex-col sm:flex-row sm:items-center gap-4 md:gap-6 flex-1 min-w-0">
                                         {/* Avatar */}
                                         <div className="w-20 h-20 md:w-24 md:h-24 bg-gradient-to-br from-orange-300 to-orange-400 rounded-full flex-shrink-0 flex items-center justify-center text-3xl md:text-4xl font-bold">
                                             <iconify-icon icon="mdi:account" className="text-3xl md:text-4xl"></iconify-icon>
@@ -323,6 +344,16 @@ export default function Profile() {
                                             <div className="flex items-center gap-2 mt-2 justify-center sm:justify-start">
                                                 <span className="inline-block w-2 h-2 bg-green-400 rounded-full"></span>
                                                 <span className="text-xs md:text-sm text-green-200">Total XP: {quizStats?.totalExp || 0}</span>
+                                            </div>
+
+                                            <div className="mt-4 flex items-center gap-3 rounded-2xl bg-white/10 border border-white/10 px-3 py-2 backdrop-blur-sm w-full sm:w-fit">
+                                                <div className="shrink-0 rounded-2xl bg-white/10 p-2 border border-white/10">
+                                                    <BadgeIllustration tone="emerald" active size={48} />
+                                                </div>
+                                                <div className="text-left min-w-0">
+                                                    <p className="text-[11px] uppercase tracking-[0.25em] text-green-100/70">Current badge</p>
+                                                    <p className="text-sm font-semibold text-white truncate">{activeBadgeTitle}</p>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>

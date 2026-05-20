@@ -74,7 +74,7 @@ export function ReviewForm({ onSubmit, loading = false }) {
     <form onSubmit={handleSubmit} className="space-y-4">
       {/* Name Input */}
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-2">
+        <label className="block text-sm font-medium text-black mb-2">
           Nama Anda
         </label>
         <input
@@ -83,7 +83,7 @@ export function ReviewForm({ onSubmit, loading = false }) {
           value={formData.name}
           onChange={handleChange}
           placeholder="Masukkan nama Anda..."
-          className="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#9FF782] focus:border-transparent"
+          className="w-full px-4 py-2 rounded-lg bg-[#f0f0f0] border border-black text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[black] focus:border-transparent"
         />
         {errors.name && (
           <p className="mt-1 text-sm text-red-400">{errors.name}</p>
@@ -92,7 +92,7 @@ export function ReviewForm({ onSubmit, loading = false }) {
 
       {/* Star Rating */}
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-2">
+        <label className="block text-sm font-medium text-black mb-2">
           Berikan Rating
         </label>
         <div className="flex items-center">
@@ -111,7 +111,7 @@ export function ReviewForm({ onSubmit, loading = false }) {
 
       {/* Review Textarea */}
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-2">
+        <label className="block text-sm font-medium text-black mb-2">
           Review Anda
         </label>
         <textarea
@@ -120,9 +120,9 @@ export function ReviewForm({ onSubmit, loading = false }) {
           onChange={handleChange}
           placeholder="Bagikan pengalaman Anda menggunakan MoneyPath..."
           rows="5"
-          className="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#9FF782] focus:border-transparent resize-none"
+          className="w-full px-4 py-2 rounded-lg bg-[#f0f0f0] border border-black text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#172619] focus:border-transparent resize-none"
         />
-        <p className="mt-1 text-xs text-gray-400">
+        <p className="mt-1 text-xs text-black">
           {formData.review.length}/500 karakter
         </p>
         {errors.review && (
@@ -134,7 +134,7 @@ export function ReviewForm({ onSubmit, loading = false }) {
       <button
         type="submit"
         disabled={loading}
-        className="w-full py-2 px-4 rounded-lg bg-[#9FF782] text-[#0B2E1E] font-semibold hover:bg-[#8FE670] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full py-2 px-4 rounded-lg bg-[#172619] text-[white] font-semibold hover:bg-[#8FE670] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {loading ? "Mengirim..." : "Kirim Review"}
       </button>

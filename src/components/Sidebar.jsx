@@ -14,6 +14,7 @@ export default function Sidebar({ active, setActive, handleLogout, isOpen, setOp
         { id: "shared-tabungan", icon: "mdi:account-group", label: "Tabungan Bersama", path: "/shared-tabungan" },
         { id: "shared-balance", icon: "mdi:bank", label: "Saldo Bersama", path: "/shared-balance" },
         { id: "rekap", icon: "mdi:chart-box", label: "Rekap Bulanan", path: "/rekap" },
+        { id: "levels", icon: "mdi:trophy-outline", label: "Levels", path: "/levels" },
         { id: "profil", icon: "mdi:account", label: "Profil", path: "/profile" },
         { id: "settings", icon: "mdi:cog", label: "Pengaturan", path: "/settings" },
     ];

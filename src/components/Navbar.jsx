@@ -32,6 +32,7 @@ export default function Navbar({ profile, personal, isSidebarOpen, setSidebarOpe
         { name: "Tabungan Bersama", path: "/shared-tabungan", icon: "👥", category: "Finance" },
         { name: "Saldo Bersama", path: "/shared-balance", icon: "💰", category: "Finance" },
         { name: "Target Tabungan", path: "/tabungan", icon: "🎯", category: "Finance" },
+        { name: "Levels", path: "/levels", icon: "🏅", category: "Progress" },
         { name: "Profil", path: "/profile", icon: "👤", category: "Account" },
         { name: "Pengaturan", path: "/settings", icon: "⚙️", category: "Account" },
     ];

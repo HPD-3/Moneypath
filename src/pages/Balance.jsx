@@ -101,12 +101,12 @@ function Toast({ message, type, onClose }) {
 function Modal({ title, onClose, children }) {
     return (
         <div className="fixed inset-0 z-40 flex items-end sm:items-center justify-center bg-black/40 px-4 pb-4 sm:pb-0">
-            <div style={{ background: "#172619" }} className="rounded-2xl w-full max-w-md shadow-2xl border border-9FF782">
-                <div style={{ borderBottomColor: "#9FF782" }} className="flex items-center justify-between px-5 pt-5 pb-3 border-b">
-                    <h3 style={{ color: "#9FF782" }} className="font-semibold">{title}</h3>
+            <div style={{ background: "#f0f0f0" }} className="rounded-2xl w-full max-w-md shadow-2xl border border-9FF782">
+                <div style={{ borderBottomColor: "black" }} className="flex items-center justify-between px-5 pt-5 pb-3 border-b">
+                    <h3 style={{ color: "#1a3a1f" }} className="font-semibold">{title}</h3>
                     <button
                         onClick={onClose}
-                        style={{ color: "#9FF782" }}
+                        style={{ color: "#172619" }}
                         className="hover:opacity-70 text-xl leading-none transition"
                     >×</button>
                 </div>
@@ -119,10 +119,10 @@ function Modal({ title, onClose, children }) {
 function InputField({ label, error, ...props }) {
     return (
         <div>
-            {label && <label className="block text-sm font-medium text-[#9FF782] dark:text-[#9FF782] mb-1">{label}</label>}
+            {label && <label className="block text-sm font-medium text-[#1a3a1f] dark:text-[#1a3a1f] mb-1">{label}</label>}
             <input
                 {...props}
-                style={{ background: "white", borderColor: "#9FF782", color: "#1a3a1f" }}
+                style={{ background: "#E0F1DA", borderColor: "#172619", color: "#1a3a1f" }}
                 className={`w-full rounded-xl border px-3 py-2.5 text-sm outline-none focus:ring-2 transition
                     ${error
                         ? "focus:ring-red-200 dark:focus:ring-red-900"
@@ -137,11 +137,11 @@ function InputField({ label, error, ...props }) {
 function SelectField({ label, children, ...props }) {
     return (
         <div>
-            {label && <label className="block text-sm font-medium text-text-[#9FF782] dark:text-[#9FF782] mb-1">{label}</label>}
+            {label && <label className="block text-sm font-medium text-text-[#1a3a1f] dark:text-[#1a3a1f] mb-1">{label}</label>}
             <select
                 {...props}
-                style={{ background: "white", borderColor: "#9FF782", color: "#1a3a1f" }}
-                className="w-full rounded-xl border px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-200 dark:focus:ring-emerald-900 transition"
+                style={{ background: "#E0F1DA", borderColor: "#172619", color: "#1a3a1f" }}
+                className="w-full rounded-xl border px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-900 dark:focus:ring-emerald-900 transition"
             >
                 {children}
             </select>
@@ -589,7 +589,7 @@ export default function Balance() {
                                                 fontSize: 13,
                                                 border: "none",
                                                 cursor: "pointer",
-                                                background: selectedBalanceFilter === "all" ? "#1a3a1f" : "#f3f4f6",
+                                                background: selectedBalanceFilter === "all" ? "#FF6D00" : "#f3f4f6",
                                                 color: selectedBalanceFilter === "all" ? "white" : "#374151",
                                                 transition: "all 0.2s"
                                             }}
@@ -608,7 +608,7 @@ export default function Balance() {
                                                     fontSize: 13,
                                                     border: "none",
                                                     cursor: "pointer",
-                                                    background: selectedBalanceFilter === balance.id ? "#1a3a1f" : "#f3f4f6",
+                                                    background: selectedBalanceFilter === balance.id ? "#FF6D00" : "#f3f4f6",
                                                     color: selectedBalanceFilter === balance.id ? "white" : "#374151",
                                                     transition: "all 0.2s"
                                                 }}
@@ -757,8 +757,8 @@ export default function Balance() {
                             <div className="space-y-6">
                                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                     {/* Pie Chart - Spending by Category */}
-                                    <div className="bg-gradient-to-b from-[#0b2a17] to-[#123d23] rounded-2xl p-6 shadow-lg">
-                                        <h3 className="font-semibold text-white dark:text-white mb-4">Pengeluaran per Kategori</h3>
+                                    <div className="bg-gradient-to-b from-[white] to-[white] rounded-2xl p-6 shadow-lg">
+                                        <h3 className="font-semibold text-black dark:text-black mb-4">Pengeluaran per Kategori</h3>
                                         {(() => {
                                             const categorySpending = balances.map(b => ({
                                                 name: b.name,
@@ -768,7 +768,7 @@ export default function Balance() {
 
                                             if (categorySpending.length === 0) {
                                                 return (
-                                                    <div className="text-center py-8 text-gray-400">
+                                                    <div className="text-center py-8 text-black">
                                                         <iconify-icon icon="mdi:chart-box-outline" style={{ fontSize: 32, marginBottom: 8, color: "#9ca3af", display: "block" }}></iconify-icon>
                                                         <p className="text-sm">Belum ada data pengeluaran</p>
                                                     </div>
@@ -816,7 +816,7 @@ export default function Balance() {
                                                         }}
                                                         sx={{
                                                             '& text': {
-                                                                fill: '#ffffff !important',
+                                                                fill: '#00000 !important',
                                                                 fontSize: '14px',
                                                                 fontWeight: 'bold',
                                                             }
@@ -828,7 +828,7 @@ export default function Balance() {
                                     </div>
 
                                     {/* Bar Chart - Category Spending */}
-                                    <div className="bg-gradient-to-b from-[#0b2a17] to-[#123d23] rounded-2xl p-6 shadow-lg">
+                                    <div className="bg-gradient-to-b from-[white] to-[white] rounded-2xl p-6 shadow-lg">
                                         <h3 className="font-semibold text-white dark:text-white mb-4">Rincian Pengeluaran</h3>
                                         {(() => {
                                             const categorySpending = balances.map(b => ({
@@ -839,7 +839,7 @@ export default function Balance() {
 
                                             if (categorySpending.length === 0) {
                                                 return (
-                                                    <div className="text-center py-8 text-gray-400">
+                                                    <div className="text-center py-8 text-black">
                                                         <iconify-icon icon="mdi:chart-box-outline" style={{ fontSize: 32, marginBottom: 8, color: "#9ca3af", display: "block" }}></iconify-icon>
                                                         <p className="text-sm">Belum ada data pengeluaran</p>
                                                     </div>
@@ -873,7 +873,7 @@ export default function Balance() {
                                                         colors={categorySpending.map(c => c.color)}
                                                         sx={{
                                                             '& text': {
-                                                                fill: '#ffffff !important',
+                                                                fill: '#00000 !important',
                                                                 fontSize: '13px',
                                                             }
                                                         }}
@@ -1029,7 +1029,7 @@ export default function Balance() {
                                     <button
                                         type="submit"
                                         disabled={submitting}
-                                        style={{ background: "#9FF782", color: "#172619" }}
+                                        style={{ background: "#172619", color: "white" }}
                                         className="w-full disabled:opacity-60 text-white py-3 rounded-xl font-semibold text-sm transition hover:opacity-90"
                                     >
                                         {submitting ? "Menyimpan..." : "Simpan Transaksi"}
@@ -1077,7 +1077,7 @@ export default function Balance() {
                                     <button
                                         type="submit"
                                         disabled={submitting}
-                                        style={{ background: "#9FF782", color: "#172619" }}
+                                        style={{ background: "#172619", color: "white" }}
                                         className="w-full disabled:opacity-60 text-white py-3 rounded-xl font-semibold text-sm transition hover:opacity-90"
                                     >
                                         {submitting ? "Menyimpan..." : "Buat Sumber Dana"}
