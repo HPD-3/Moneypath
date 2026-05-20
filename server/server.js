@@ -18,6 +18,7 @@ import sharedTabunganRoutes from "./routes/sharedTabungan.js";
 import analyticsRoutes from "./routes/analytics.js";
 import rekapExportRoutes from "./routes/rekapExport.js";
 import levelsRoutes from "./routes/levels.js";
+import shopRoutes from "./routes/shop.js";
 
 
 const app = express();
@@ -41,7 +42,15 @@ const corsOptions = {
     origin: (origin, callback) => {
         // Non-browser clients (curl/server-to-server) may not send Origin
         if (!origin) return callback(null, true);
-        return callback(null, allowedOrigins.has(origin));
+
+        const isLocalhost = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
+        const isVercelPreview = /\.vercel\.app$/.test(new URL(origin).hostname);
+
+        if (allowedOrigins.has(origin) || isLocalhost || isVercelPreview) {
+            return callback(null, true);
+        }
+
+        return callback(null, false);
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
@@ -50,6 +59,19 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
+app.use((req, res, next) => {
+    const origin = req.headers.origin;
+    if (origin) {
+        const isLocalhost = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
+        const isVercelPreview = /\.vercel\.app$/.test(new URL(origin).hostname);
+        if (allowedOrigins.has(origin) || isLocalhost || isVercelPreview) {
+            res.header("Access-Control-Allow-Origin", origin);
+            res.header("Access-Control-Allow-Credentials", "true");
+            res.header("Vary", "Origin");
+        }
+    }
+    next();
+});
 // Express v5's path-to-regexp doesn't accept "*" as a path pattern.
 app.options(/.*/, cors(corsOptions));
 
@@ -72,5 +94,6 @@ app.use("/shared-balance", sharedBalanceRoutes);
 app.use("/shared-tabungan", sharedTabunganRoutes);
 app.use("/analytics", analyticsRoutes);
 app.use("/levels", levelsRoutes);
+app.use("/shop", shopRoutes);
 
 export default app;

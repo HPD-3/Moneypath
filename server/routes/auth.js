@@ -9,12 +9,16 @@ router.get("/profile", verifyToken, async (req, res) => {
     try {
 
         const userDoc = await db.collection("users").doc(req.user.uid).get();
-        const role = userDoc.exists ? userDoc.data().role : "user";
+        const userData = userDoc.exists ? userDoc.data() : {};
+        const role = userData.role || "user";
 
         res.json({
             uid: req.user.uid,
             email: req.user .email,
-            role
+            role,
+            avatarUrl: userData.avatarUrl || "",
+            badges: userData.badges || [],
+            claimedLevels: userData.claimedLevels || [],
         });
     } catch (err) {
         res.status(500).json({ error: err.message });

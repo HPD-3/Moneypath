@@ -9,7 +9,10 @@ import {
     updateUsername,
     deleteAccount,
     getBadgeSettings,
-    updateBadgeSettings
+    updateBadgeSettings,
+    updateAvatar,
+    uploadAvatar,
+    deleteAvatar
 } from "../controllers/settingsController.js";
 
 const router = express.Router();
@@ -26,6 +29,12 @@ router.post("/profile", verifyToken, updateSettingsProfile);
 // Badge routes
 router.get("/badges", verifyToken, getBadgeSettings);
 router.post("/badges", verifyToken, updateBadgeSettings);
+
+// Avatar upload/save
+router.post("/avatar", verifyToken, updateAvatar);
+router.post("/avatar/upload", verifyToken, uploadAvatar);
+// Avatar delete
+router.post("/avatar/delete", verifyToken, deleteAvatar);
 
 // Username update
 router.post("/update-username", verifyToken, updateUsername);

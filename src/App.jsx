@@ -24,6 +24,7 @@ const SharedTabungan = lazy(() => import("./pages/SharedTabungan.jsx"));
 const AdminProfile = lazy(() => import("./pages/admin/AdminProfile.jsx"));
 const AdminLearningPathDetail = lazy(() => import("./pages/admin/AdminLearningPathDetail.jsx"));
 const LevelsRoadmap = lazy(() => import("./pages/LevelsRoadmap.jsx"));
+const CoinShop = lazy(() => import("./pages/CoinShop.jsx"));
 
 function LoadingFallback() {
   return (
@@ -136,6 +137,9 @@ function App() {
 
         <Route path="/levels" element={
           <ProtectedRoute><LevelsRoadmap /></ProtectedRoute>
+        } />
+        <Route path="/shop" element={
+          <ProtectedRoute><CoinShop /></ProtectedRoute>
         } />
 
         <Route path="*" element={<Navigate to="/" />} />

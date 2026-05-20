@@ -2,6 +2,8 @@ import { db } from "../firebaseAdmin.js";
 import { getAuth } from "firebase-admin/auth";
 import { LEVELS } from "./levelsController.js";
 import { calcLevel } from "../utils/expSystem.js";
+import supabase from "../supabase.js";
+import path from "path";
 
 /**
  * Get user settings
@@ -306,5 +308,118 @@ export async function updateBadgeSettings(req, res) {
         res.json({ message: "Badge settings updated successfully", activeBadge: activeBadge || "" });
     } catch (err) {
         res.status(500).json({ message: err.message || "Failed to update badge settings" });
+    }
+}
+
+/**
+ * Update avatar URL and avatar border
+ * POST /settings/avatar
+ */
+export async function updateAvatar(req, res) {
+    try {
+        const uid = req.user.uid;
+        const { avatarUrl, avatarBorder, storagePath } = req.body;
+
+        if (!avatarUrl) return res.status(400).json({ message: "avatarUrl is required" });
+
+        const updateData = {
+            avatarUrl,
+            updatedAt: new Date().toISOString()
+        };
+
+        if (avatarBorder !== undefined) updateData.avatarBorder = avatarBorder;
+        if (storagePath) updateData.avatarStoragePath = storagePath;
+
+        await db.collection("users").doc(uid).update(updateData);
+
+        res.json({ message: "Avatar updated", avatarUrl, avatarBorder, storagePath });
+    } catch (err) {
+        res.status(500).json({ message: err.message || "Failed to update avatar" });
+    }
+}
+
+/**
+ * Upload avatar through Supabase service role
+ * POST /settings/avatar/upload
+ */
+export async function uploadAvatar(req, res) {
+    try {
+        const uid = req.user.uid;
+        const { avatarBase64, fileName, mimeType } = req.body;
+
+        if (!avatarBase64 || !fileName || !mimeType) {
+            return res.status(400).json({ message: "avatarBase64, fileName, and mimeType are required" });
+        }
+
+        const bucket = process.env.SUPABASE_STORAGE_BUCKET || "Moneypath";
+        const safeName = path.basename(fileName).replace(/\s+/g, "_");
+        const storagePath = `${uid}/${Date.now()}_${safeName}`;
+        const buffer = Buffer.from(avatarBase64, "base64");
+
+        const { error: uploadError } = await supabase.storage
+            .from(bucket)
+            .upload(storagePath, buffer, {
+                contentType: mimeType,
+                upsert: false,
+            });
+
+        if (uploadError) {
+            return res.status(400).json({ message: uploadError.message || "Failed to upload avatar" });
+        }
+
+        const { data } = supabase.storage.from(bucket).getPublicUrl(storagePath);
+        const avatarUrl = data.publicUrl;
+
+        await db.collection("users").doc(uid).update({
+            avatarUrl,
+            avatarStoragePath: `${bucket}/${storagePath}`,
+            updatedAt: new Date().toISOString(),
+        });
+
+        res.json({ message: "Avatar uploaded", avatarUrl, storagePath: `${bucket}/${storagePath}` });
+    } catch (err) {
+        res.status(500).json({ message: err.message || "Failed to upload avatar" });
+    }
+}
+
+/**
+ * Delete avatar URL and optionally remove storage object
+ * POST /settings/avatar/delete
+ */
+export async function deleteAvatar(req, res) {
+    try {
+        const uid = req.user.uid;
+
+        const userDocRef = db.collection("users").doc(uid);
+        const userDoc = await userDocRef.get();
+        if (!userDoc.exists) return res.status(404).json({ message: "User not found" });
+
+        const userData = userDoc.data();
+        const storagePath = userData?.avatarStoragePath;
+
+        // Attempt to delete from Supabase storage if storagePath present
+        if (storagePath) {
+            try {
+                const parts = storagePath.split('/');
+                const bucket = parts.shift();
+                const filePath = parts.join('/');
+                if (bucket && filePath) {
+                    await supabase.storage.from(bucket).remove([filePath]).catch(() => null);
+                }
+            } catch (e) {
+                // ignore storage delete errors
+            }
+        }
+
+        // Clear avatar fields in user doc
+        await userDocRef.update({
+            avatarUrl: "",
+            avatarStoragePath: "",
+            updatedAt: new Date().toISOString()
+        });
+
+        res.json({ message: "Avatar removed" });
+    } catch (err) {
+        res.status(500).json({ message: err.message || "Failed to delete avatar" });
     }
 }

@@ -39,6 +39,10 @@ export default function UserSetting() {
 
     // Edit profile form state
     const [showEditProfile, setShowEditProfile] = useState(false);
+    const [avatarUploading, setAvatarUploading] = useState(false);
+    const [avatarUrl, setAvatarUrl] = useState(profile?.avatarUrl || "");
+    const [pendingAvatarFile, setPendingAvatarFile] = useState(null);
+    const [pendingAvatarPreview, setPendingAvatarPreview] = useState("");
     const [editForm, setEditForm] = useState({
         name: "",
         phoneNumber: "",
@@ -56,6 +60,7 @@ export default function UserSetting() {
     const [badgeMessage, setBadgeMessage] = useState("");
     const [badgeError, setBadgeError] = useState("");
     const [selectedBadge, setSelectedBadge] = useState("");
+    const canEditAvatar = (badgeSettings?.unlockedBadges || []).includes("Custom Avatar Unlock");
 
     // Delete account state
     const [showDeleteAccount, setShowDeleteAccount] = useState(false);
@@ -85,6 +90,8 @@ export default function UserSetting() {
                     address: profileRes.data?.address || ""
                 });
                 setForgotPasswordEmail(user.email || "");
+                setAvatarUrl(user.photoURL || "");
+                setAvatarUrl(profileRes.data?.avatarUrl || user.photoURL || "");
 
             } catch (err) {
                 console.error("Error fetching data:", err);
@@ -148,6 +155,24 @@ export default function UserSetting() {
     // Handle edit profile submit
     const handleEditProfileSubmit = async (e) => {
         e.preventDefault();
+        setEditProfileError("");
+        setEditProfileMessage("");
+
+        try {
+            setEditProfileLoading(true);
+            await API.post("/personal/profile", editForm);
+            setProfile({ ...profile, ...editForm });
+            setShowEditProfile(false);
+            showToast("success", "Profile updated successfully!");
+        } catch (err) {
+            showToast("error", err.response?.data?.message || "Failed to update profile");
+        } finally {
+            setEditProfileLoading(false);
+        }
+    };
+
+    // Save profile helper (callable from header Save button)
+    const saveProfileNow = async () => {
         setEditProfileError("");
         setEditProfileMessage("");
 
@@ -330,12 +355,115 @@ export default function UserSetting() {
                                 </div>
                             </div>
 
-                            <button
-                                onClick={() => setShowEditProfile(!showEditProfile)}
-                                className="w-full px-4 py-2 bg-[#9FF782] hover:bg-[#7dd65f] text-[#1a3a1f] rounded-lg font-semibold transition"
-                            >
-                                {showEditProfile ? "Cancel Edit Profile" : "Edit Profile"}
-                            </button>
+                            <div className="flex gap-3">
+                                {showEditProfile ? (
+                                    <>
+                                        <button
+                                            onClick={saveProfileNow}
+                                            disabled={editProfileLoading}
+                                            className="flex-1 px-4 py-2 bg-[#0f2e1c] hover:bg-[#174d2e] text-[#9FF782] rounded-lg font-semibold transition disabled:opacity-50"
+                                        >
+                                            {editProfileLoading ? "Saving..." : "Save Profile"}
+                                        </button>
+
+                                        <button
+                                            onClick={() => setShowEditProfile(false)}
+                                            className="flex-1 px-4 py-2 bg-[#9FF782] hover:bg-[#7dd65f] text-[#1a3a1f] rounded-lg font-semibold transition"
+                                        >
+                                            Cancel
+                                        </button>
+                                    </>
+                                ) : (
+                                    <button
+                                        onClick={() => setShowEditProfile(true)}
+                                        className="w-full px-4 py-2 bg-[#9FF782] hover:bg-[#7dd65f] text-[#1a3a1f] rounded-lg font-semibold transition"
+                                    >
+                                        Edit Profile
+                                    </button>
+                                )}
+                            </div>
+
+                            {/* Avatar Upload */}
+                            <div className={`mt-6 bg-white/5 p-4 rounded-lg border border-gray-100 ${!canEditAvatar ? "opacity-70" : ""}`}>
+                                <h3 className="font-semibold text-gray-900 mb-2">Avatar</h3>
+                                <p className="text-sm text-gray-600 mb-3">Upload a custom avatar once you unlock the avatar reward.</p>
+                                <div className="flex items-center gap-4">
+                                    <div className="w-20 h-20 rounded-full bg-gray-100 overflow-hidden flex items-center justify-center">
+                                        {(pendingAvatarPreview || avatarUrl) ? <img src={pendingAvatarPreview || avatarUrl} alt="avatar" className="w-full h-full object-cover" /> : <iconify-icon icon="mdi:account" style={{ fontSize: 36 }}></iconify-icon>}
+                                    </div>
+                                    <div className="flex flex-col gap-2">
+                                        {!canEditAvatar ? (
+                                            <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+                                                Locked until you claim Level 5, <strong>Goal Hunter</strong>.
+                                            </div>
+                                        ) : (
+                                            <>
+                                                <input type="file" accept="image/*" onChange={(e) => {
+                                                    const file = e.target.files?.[0];
+                                                    if (!file) return;
+                                                    // stage file preview, do not upload yet
+                                                    const preview = URL.createObjectURL(file);
+                                                    setPendingAvatarFile(file);
+                                                    setPendingAvatarPreview(preview);
+                                                }} />
+                                                <div className="flex items-center gap-2">
+                                                    <button disabled={avatarUploading || !pendingAvatarFile} onClick={async () => {
+                                                        if (!pendingAvatarFile) return;
+                                                        setAvatarUploading(true);
+                                                        try {
+                                                            const base64 = await new Promise((resolve, reject) => {
+                                                                const reader = new FileReader();
+                                                                reader.onload = () => {
+                                                                    const result = reader.result || "";
+                                                                    resolve(String(result).split(",")[1] || "");
+                                                                };
+                                                                reader.onerror = () => reject(new Error("Failed to read avatar file"));
+                                                                reader.readAsDataURL(pendingAvatarFile);
+                                                            });
+
+                                                            const { data } = await API.post('/settings/avatar/upload', {
+                                                                avatarBase64: base64,
+                                                                fileName: pendingAvatarFile.name,
+                                                                mimeType: pendingAvatarFile.type || 'image/jpeg',
+                                                            });
+
+                                                            const url = data?.avatarUrl;
+                                                            setAvatarUrl(url);
+                                                            showToast('success', 'Avatar uploaded and saved');
+                                                        } catch (err) {
+                                                            console.error(err);
+                                                            showToast('error', err.response?.data?.message || err.message || 'Upload failed');
+                                                        } finally {
+                                                            setAvatarUploading(false);
+                                                            // cleanup pending preview
+                                                            if (pendingAvatarPreview) URL.revokeObjectURL(pendingAvatarPreview);
+                                                            setPendingAvatarFile(null);
+                                                            setPendingAvatarPreview("");
+                                                        }
+                                                    }} className="text-sm text-amber-500 bg-green-50 px-3 py-1 rounded">{avatarUploading ? 'Saving...' : 'Save Avatar'}</button>
+                                                    <button disabled={avatarUploading || !pendingAvatarFile} onClick={() => {
+                                                        if (pendingAvatarPreview) URL.revokeObjectURL(pendingAvatarPreview);
+                                                        setPendingAvatarFile(null);
+                                                        setPendingAvatarPreview("");
+                                                    }} className="text-sm text-gray-600">Cancel</button>
+                                                    <button disabled={avatarUploading} onClick={async () => {
+                                                        // Remove avatar with server-side delete and confirmation
+                                                        const ok = window.confirm('Remove avatar from your profile? This will also attempt to delete the uploaded file.');
+                                                        if (!ok) return;
+                                                        try {
+                                                            await API.post('/settings/avatar/delete');
+                                                            setAvatarUrl("");
+                                                            showToast('success', 'Avatar removed');
+                                                        } catch (err) {
+                                                            showToast('error', err.response?.data?.message || err.message || 'Failed to remove avatar');
+                                                        }
+                                                    }} className="text-sm text-amber-500">Remove</button>
+                                                </div>
+                                            </>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
 
                             {showEditProfile && (
                                 <form onSubmit={handleEditProfileSubmit} className="bg-gray-50 p-4 rounded-lg space-y-4 mt-4">

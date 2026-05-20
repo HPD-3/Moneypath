@@ -16,6 +16,7 @@ export default function Navbar({ profile, personal, isSidebarOpen, setSidebarOpe
     const [showNotifications, setShowNotifications] = useState(false);
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
     const [quizStats, setQuizStats] = useState(null);
+    const [coins, setCoins] = useState(0);
     const [notifications, setNotifications] = useState([]);
     const [searchQuery, setSearchQuery] = useState("");
     const [searchResults, setSearchResults] = useState([]);
@@ -60,6 +61,14 @@ export default function Navbar({ profile, personal, isSidebarOpen, setSidebarOpe
             try {
                 const res = await API.get("/quiz/stats");
                 setQuizStats(res.data);
+
+                // fetch coin balance
+                try {
+                    const lvl = await API.get("/levels");
+                    setCoins(lvl.data.coins || 0);
+                } catch (err) {
+                    // ignore
+                }
 
                 // Get XP history from expLog (last 5 entries)
                 if (res.data.expLog && res.data.expLog.length > 0) {
@@ -423,6 +432,26 @@ export default function Navbar({ profile, personal, isSidebarOpen, setSidebarOpe
                 )}
 
                 {/* XP Display - Lightning Icon - Shows number on mobile */}
+                {/* Coins Display */}
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <div style={{
+                        width: 44,
+                        height: 44,
+                        borderRadius: "50%",
+                        border: "2px solid #EAB308",
+                        background: "white",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+                    }}>
+                        <iconify-icon icon="mdi:currency-usd" style={{ fontSize: 20, color: "#D97706" }}></iconify-icon>
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                        <span style={{ fontWeight: 700, color: "#374151", fontSize: 13 }}>{coins} 🪙</span>
+                        <span style={{ fontSize: 10, color: "#9ca3af" }}>Coins</span>
+                    </div>
+                </div>
                 <div data-navbar-xp style={{
                     display: "flex",
                     alignItems: "center",
