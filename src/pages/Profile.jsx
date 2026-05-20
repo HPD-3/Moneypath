@@ -335,7 +335,14 @@ export default function Profile() {
                                 <div className="bg-[#172619] text-white rounded-3xl p-4 md:p-8 mb-8 flex flex-col md:flex-row md:justify-between md:items-center gap-6 shadow-lg">
                                     <div className="flex flex-col sm:flex-row sm:items-center gap-4 md:gap-6 flex-1 min-w-0">
                                         {/* Avatar */}
-                                        <div className="w-20 h-20 md:w-24 md:h-24 bg-gradient-to-br from-orange-300 to-orange-400 rounded-full flex-shrink-0 overflow-hidden flex items-center justify-center text-3xl md:text-4xl font-bold">
+                                        <div className="w-20 h-20 md:w-24 md:h-24 flex-shrink-0 overflow-hidden flex items-center justify-center text-3xl md:text-4xl font-bold"
+                                            style={{
+                                                borderRadius: "50%",
+                                                background: "linear-gradient(135deg, #fb923c, #fb7185)",
+                                                overflow: "hidden",
+                                                border: profile?.avatarBorder === "border_gold" ? "3px solid #d4af37" : "2px solid rgba(255,255,255,0.12)",
+                                                boxShadow: profile?.avatarBorder === "border_gold" ? "0 4px 18px rgba(212,175,55,0.25)" : undefined
+                                            }}>
                                             {profile?.avatarUrl || firebaseAuth.currentUser?.photoURL ? (
                                                 <img
                                                     src={profile.avatarUrl || firebaseAuth.currentUser.photoURL}

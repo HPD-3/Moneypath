@@ -43,6 +43,8 @@ export async function purchaseItem(req, res) {
                 break;
             case "avatarBorder":
                 updates.avatarBorders = Array.from(new Set([...(userData.avatarBorders || []), item.id]));
+                // Auto-equip the purchased avatar border
+                updates.avatarBorder = item.id;
                 break;
             case "streakProtector":
                 updates.streakProtectors = (userData.streakProtectors || 0) + 1;

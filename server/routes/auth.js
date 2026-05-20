@@ -14,9 +14,17 @@ router.get("/profile", verifyToken, async (req, res) => {
 
         res.json({
             uid: req.user.uid,
-            email: req.user .email,
+            email: req.user.email,
             role,
             avatarUrl: userData.avatarUrl || "",
+            avatarBorder: userData.avatarBorder || "",
+            avatarBorders: userData.avatarBorders || [],
+            profileTheme: userData.profileTheme || "",
+            ownedThemes: userData.ownedThemes || [],
+            cosmetics: userData.cosmetics || [],
+            streakProtectors: userData.streakProtectors || 0,
+            coins: userData.coins || 0,
+            totalExp: userData.totalExp || 0,
             badges: userData.badges || [],
             claimedLevels: userData.claimedLevels || [],
         });

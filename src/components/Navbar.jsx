@@ -519,17 +519,22 @@ export default function Navbar({ profile, personal, isSidebarOpen, setSidebarOpe
                             width: 40,
                             height: 40,
                             borderRadius: "50%",
-                            border: "2px solid #06b6d4",
-                            background: "white",
+                            overflow: "hidden",
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
                             flexShrink: 0,
+                            background: "white",
+                            border: profile?.avatarBorder === "border_gold" ? "3px solid #d4af37" : "2px solid #06b6d4",
                         }}>
-                            <iconify-icon icon="mdi:account" style={{
-                                fontSize: 20,
-                                color: "#9ca3af",
-                            }}></iconify-icon>
+                            {profile?.avatarUrl ? (
+                                <img src={profile.avatarUrl} alt="avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                            ) : (
+                                <iconify-icon icon="mdi:account" style={{
+                                    fontSize: 20,
+                                    color: "#9ca3af",
+                                }}></iconify-icon>
+                            )}
                         </div>
                         <iconify-icon data-chevron icon="mdi:chevron-down" style={{
                             fontSize: 20,

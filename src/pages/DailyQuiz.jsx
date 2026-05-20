@@ -83,7 +83,7 @@ function QuestionCard({ question, index, total, selectedAnswer, onAnswer, submit
 }
 
 // ── Result Screen ─────────────────────────────────────────────
-function ResultScreen({ score, correct, total, expEarned, streak, levelUp, newLevel, onClose }) {
+function ResultScreen({ score, correct, total, expEarned, streak, levelUp, newLevel, onClose, profile }) {
     const passed = score >= 60;
     return (
         <div style={{ textAlign: "center", padding: "20px 0" }}>
@@ -128,7 +128,7 @@ function ResultScreen({ score, correct, total, expEarned, streak, levelUp, newLe
             {/* Level Up */}
             {levelUp && (
                 <div style={{ background: "linear-gradient(135deg, #1a3a1f, #0f2a18)", borderRadius: 12, padding: 16, marginBottom: 16, textAlign: "center" }}>
-                    <p style={{ fontSize: 28, marginBottom: 4 }}>🆙</p>
+                    <p style={{ fontSize: 28, marginBottom: 4 }}>{profile?.cosmetics?.includes?.("cosmetic_confetti") ? "🎊" : "🆙"}</p>
                     <p style={{ color: "#9FF782", fontWeight: 700, fontSize: 18 }}>Level Up! Sekarang Level {newLevel}</p>
                 </div>
             )}
@@ -290,6 +290,7 @@ export default function DailyQuiz() {
                                     streak={result.streak}
                                     levelUp={result.levelUp}
                                     newLevel={result.newLevel}
+                                    profile={profile}
                                     onClose={() => navigate("/dashboard")}
                                 />
                             )}
