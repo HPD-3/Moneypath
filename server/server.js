@@ -58,20 +58,36 @@ const corsOptions = {
     optionsSuccessStatus: 204,
 };
 
-app.use(cors(corsOptions));
 app.use((req, res, next) => {
     const origin = req.headers.origin;
+
     if (origin) {
         const isLocalhost = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
-        const isVercelPreview = /\.vercel\.app$/.test(new URL(origin).hostname);
+        let isVercelPreview = false;
+
+        try {
+            isVercelPreview = /\.vercel\.app$/.test(new URL(origin).hostname);
+        } catch {
+            isVercelPreview = false;
+        }
+
         if (allowedOrigins.has(origin) || isLocalhost || isVercelPreview) {
             res.header("Access-Control-Allow-Origin", origin);
             res.header("Access-Control-Allow-Credentials", "true");
+            res.header("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS");
+            res.header("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With, x-firebase-appcheck, x-goog-authuser");
             res.header("Vary", "Origin");
         }
     }
-    next();
+
+    if (req.method === "OPTIONS") {
+        return res.sendStatus(204);
+    }
+
+    return next();
 });
+
+app.use(cors(corsOptions));
 // Express v5's path-to-regexp doesn't accept "*" as a path pattern.
 app.options(/.*/, cors(corsOptions));
 

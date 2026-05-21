@@ -138,7 +138,8 @@ export default function Navbar({ profile, personal, isSidebarOpen, setSidebarOpe
 
     return (
         <nav style={{
-            background: "white",
+            background: "var(--theme-surface-solid, white)",
+            color: "var(--theme-text)",
             padding: "12px 16px",
             display: "flex",
             justifyContent: "space-between",
@@ -146,8 +147,8 @@ export default function Navbar({ profile, personal, isSidebarOpen, setSidebarOpe
             position: "sticky",
             top: 0,
             zIndex: 50,
-            boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
-            borderBottom: "1px solid #e5e7eb",
+            boxShadow: "var(--theme-shadow)",
+            borderBottom: "1px solid var(--theme-card-border)",
             gap: 12,
             flexWrap: "wrap",
         }}>
@@ -187,14 +188,14 @@ export default function Navbar({ profile, personal, isSidebarOpen, setSidebarOpe
                         width: 36,
                         height: 36,
                         borderRadius: 8,
-                        background: "#f3f4f6",
+                        background: "var(--theme-page-bg-alt)",
                         border: "none",
                         cursor: "pointer",
                         transition: "background 0.2s",
                         flexShrink: 0,
                     }}
-                    onMouseEnter={e => e.currentTarget.style.background = "#e5e7eb"}
-                    onMouseLeave={e => e.currentTarget.style.background = "#f3f4f6"}>
+                    onMouseEnter={e => e.currentTarget.style.background = "var(--theme-card-border)"}
+                    onMouseLeave={e => e.currentTarget.style.background = "var(--theme-page-bg-alt)"}>
                     <span style={{
                         width: 20,
                         height: 14,
@@ -205,21 +206,21 @@ export default function Navbar({ profile, personal, isSidebarOpen, setSidebarOpe
                         <span style={{
                             width: "100%",
                             height: 2,
-                            background: "#1a3a1f",
+                            background: "var(--theme-accent)",
                             borderRadius: 1,
                             transition: "all 0.3s",
                         }}></span>
                         <span style={{
                             width: "100%",
                             height: 2,
-                            background: "#1a3a1f",
+                            background: "var(--theme-accent)",
                             borderRadius: 1,
                             transition: "all 0.3s",
                         }}></span>
                         <span style={{
                             width: "100%",
                             height: 2,
-                            background: "#1a3a1f",
+                            background: "var(--theme-accent)",
                             borderRadius: 1,
                             transition: "all 0.3s",
                         }}></span>
@@ -243,11 +244,11 @@ export default function Navbar({ profile, personal, isSidebarOpen, setSidebarOpe
                             transition: "background 0.2s",
                             flexShrink: 0,
                         }}
-                        onMouseEnter={e => e.currentTarget.style.background = "#f3f4f6"}
+                        onMouseEnter={e => e.currentTarget.style.background = "var(--theme-page-bg-alt)"}
                         onMouseLeave={e => e.currentTarget.style.background = "none"}>
                         <iconify-icon icon="mdi:magnify" style={{
                             fontSize: 20,
-                            color: "#374151",
+                            color: "var(--theme-text)",
                         }}></iconify-icon>
                     </button>
                 )}
@@ -266,18 +267,18 @@ export default function Navbar({ profile, personal, isSidebarOpen, setSidebarOpe
                             onChange={handleSearch}
                             style={{
                                 width: "100%",
-                                border: "1px solid #d1d5db",
+                                border: "1px solid var(--theme-card-border)",
                                 borderRadius: 8,
                                 padding: "8px 12px 8px 36px",
                                 fontSize: 13,
-                                color: "#374151",
+                                color: "var(--theme-text)",
                                 outline: "none",
                                 transition: "border-color 0.2s",
                                 fontFamily: "Plus Jakarta Sans, sans-serif",
                             }}
                             onFocus={e => e.currentTarget.style.borderColor = "#9FF782"}
                             onBlur={(e) => {
-                                e.currentTarget.style.borderColor = "#d1d5db";
+                                e.currentTarget.style.borderColor = "var(--theme-card-border)";
                                 setTimeout(() => setShowSearchResults(false), 200);
                             }}
                         />
@@ -289,7 +290,7 @@ export default function Navbar({ profile, personal, isSidebarOpen, setSidebarOpe
                                 top: "50%",
                                 transform: "translateY(-50%)",
                                 fontSize: 18,
-                                color: "#9ca3af",
+                                color: "var(--theme-surface-muted)",
                                 pointerEvents: "none",
                             }}>
                         </iconify-icon>
@@ -301,8 +302,8 @@ export default function Navbar({ profile, personal, isSidebarOpen, setSidebarOpe
                                 top: "100%",
                                 left: 0,
                                 right: 0,
-                                background: "white",
-                                border: "1px solid #e5e7eb",
+                                background: "var(--theme-surface-solid)",
+                                border: "1px solid var(--theme-card-border)",
                                 borderRadius: 8,
                                 boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
                                 marginTop: 4,
@@ -322,21 +323,21 @@ export default function Navbar({ profile, personal, isSidebarOpen, setSidebarOpe
                                             border: "none",
                                             cursor: "pointer",
                                             fontSize: 13,
-                                            color: "#374151",
+                                            color: "var(--theme-text)",
                                             transition: "background 0.2s",
                                             display: "flex",
                                             alignItems: "center",
                                             gap: 12,
-                                            borderBottom: idx < searchResults.length - 1 ? "1px solid #f3f4f6" : "none",
+                                            borderBottom: idx < searchResults.length - 1 ? "1px solid var(--theme-card-border)" : "none",
                                         }}
-                                        onMouseEnter={e => e.currentTarget.style.background = "#f9fafb"}
+                                        onMouseEnter={e => e.currentTarget.style.background = "var(--theme-page-bg-alt)"}
                                         onMouseLeave={e => e.currentTarget.style.background = "none"}>
                                         <span style={{ fontSize: 16 }}>{feature.icon}</span>
                                         <div style={{ flex: 1 }}>
-                                            <p style={{ margin: "0 0 2px 0", fontWeight: 600, color: "#1a3a1f" }}>
+                                            <p style={{ margin: "0 0 2px 0", fontWeight: 600, color: "var(--theme-surface-text)" }}>
                                                 {feature.name}
                                             </p>
-                                            <p style={{ margin: 0, fontSize: 11, color: "#9ca3af" }}>
+                                            <p style={{ margin: 0, fontSize: 11, color: "var(--theme-surface-muted)" }}>
                                                 {feature.category}
                                             </p>
                                         </div>
@@ -352,14 +353,14 @@ export default function Navbar({ profile, personal, isSidebarOpen, setSidebarOpe
                                 top: "100%",
                                 left: 0,
                                 right: 0,
-                                background: "white",
-                                border: "1px solid #e5e7eb",
+                                background: "var(--theme-surface-solid)",
+                                border: "1px solid var(--theme-card-border)",
                                 borderRadius: 8,
                                 boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
                                 marginTop: 4,
                                 padding: "16px",
                                 textAlign: "center",
-                                color: "#9ca3af",
+                                color: "var(--theme-surface-muted)",
                                 fontSize: 13,
                                 zIndex: 1000,
                             }}>
@@ -416,14 +417,14 @@ export default function Navbar({ profile, personal, isSidebarOpen, setSidebarOpe
                         }}>
                             <span style={{
                                 fontWeight: 700,
-                                color: "#374151",
+                                color: "var(--theme-text)",
                                 fontSize: 13,
                             }}>
                                 {quizStats?.streak || 0}
                             </span>
                             <span style={{
                                 fontSize: 10,
-                                color: "#9ca3af",
+                                color: "var(--theme-surface-muted)",
                             }}>
                                 Streak
                             </span>
@@ -448,8 +449,8 @@ export default function Navbar({ profile, personal, isSidebarOpen, setSidebarOpe
                         <iconify-icon icon="mdi:currency-usd" style={{ fontSize: 20, color: "#D97706" }}></iconify-icon>
                     </div>
                     <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                        <span style={{ fontWeight: 700, color: "#374151", fontSize: 13 }}>{coins} 🪙</span>
-                        <span style={{ fontSize: 10, color: "#9ca3af" }}>Coins</span>
+                        <span style={{ fontWeight: 700, color: "var(--theme-text)", fontSize: 13 }}>{coins} 🪙</span>
+                        <span style={{ fontSize: 10, color: "var(--theme-surface-muted)" }}>Coins</span>
                     </div>
                 </div>
                 <div data-navbar-xp style={{
@@ -470,7 +471,7 @@ export default function Navbar({ profile, personal, isSidebarOpen, setSidebarOpe
                     }}>
                         <iconify-icon data-navbar-xp-icon icon="mdi:lightning-bolt" style={{
                             fontSize: 22,
-                            color: "#059669",
+                            color: "var(--theme-accent)",
                         }}></iconify-icon>
                         <span data-navbar-xp-number style={{
                             display: "none",
@@ -488,14 +489,14 @@ export default function Navbar({ profile, personal, isSidebarOpen, setSidebarOpe
                     }}>
                         <span style={{
                             fontWeight: 700,
-                            color: "#374151",
+                            color: "var(--theme-text)",
                             fontSize: 13,
                         }}>
                             {quizStats?.totalExp || 0}
                         </span>
                         <span style={{
                             fontSize: 10,
-                            color: "#9ca3af",
+                            color: "var(--theme-surface-muted)",
                         }}>
                             XP
                         </span>
@@ -525,20 +526,20 @@ export default function Navbar({ profile, personal, isSidebarOpen, setSidebarOpe
                             justifyContent: "center",
                             flexShrink: 0,
                             background: "white",
-                            border: profile?.avatarBorder === "border_gold" ? "3px solid #d4af37" : "2px solid #06b6d4",
+                            border: profile?.avatarBorder === "border_gold" ? "3px solid #d4af37" : "2px solid var(--theme-card-border)",
                         }}>
                             {profile?.avatarUrl ? (
                                 <img src={profile.avatarUrl} alt="avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                             ) : (
                                 <iconify-icon icon="mdi:account" style={{
                                     fontSize: 20,
-                                    color: "#9ca3af",
+                                    color: "var(--theme-surface-muted)",
                                 }}></iconify-icon>
                             )}
                         </div>
                         <iconify-icon data-chevron icon="mdi:chevron-down" style={{
                             fontSize: 20,
-                            color: "#4b5563",
+                            color: "var(--theme-text)",
                         }}></iconify-icon>
                     </button>
 
@@ -548,8 +549,8 @@ export default function Navbar({ profile, personal, isSidebarOpen, setSidebarOpe
                             position: "absolute",
                             right: 0,
                             top: 48,
-                            background: "white",
-                            border: "1px solid #e5e7eb",
+                            background: "var(--theme-surface-solid)",
+                            border: "1px solid var(--theme-card-border)",
                             borderRadius: 12,
                             boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
                             minWidth: 200,
@@ -566,13 +567,13 @@ export default function Navbar({ profile, personal, isSidebarOpen, setSidebarOpe
                                     border: "none",
                                     cursor: "pointer",
                                     fontSize: 13,
-                                    color: "#374151",
+                                    color: "var(--theme-text)",
                                     transition: "background 0.2s",
                                     display: "flex",
                                     alignItems: "center",
                                     gap: 12,
                                 }}
-                                onMouseEnter={e => e.currentTarget.style.background = "#f9fafb"}
+                                onMouseEnter={e => e.currentTarget.style.background = "var(--theme-page-bg-alt)"}
                                 onMouseLeave={e => e.currentTarget.style.background = "none"}>
                                 <iconify-icon icon="mdi:account" style={{ fontSize: 16 }}></iconify-icon>
                                 Profil
@@ -587,13 +588,13 @@ export default function Navbar({ profile, personal, isSidebarOpen, setSidebarOpe
                                     border: "none",
                                     cursor: "pointer",
                                     fontSize: 13,
-                                    color: "#374151",
+                                    color: "var(--theme-text)",
                                     transition: "background 0.2s",
                                     display: "flex",
                                     alignItems: "center",
                                     gap: 12,
                                 }}
-                                onMouseEnter={e => e.currentTarget.style.background = "#f9fafb"}
+                                onMouseEnter={e => e.currentTarget.style.background = "var(--theme-page-bg-alt)"}
                                 onMouseLeave={e => e.currentTarget.style.background = "none"}>
                                 <iconify-icon icon={profile?.role === "admin" ? "mdi:shield-admin" : "mdi:cog"} style={{ fontSize: 16 }}></iconify-icon>
                                 {profile?.role === "admin" ? "Admin Dashboard" : "Pengaturan"}
@@ -608,13 +609,13 @@ export default function Navbar({ profile, personal, isSidebarOpen, setSidebarOpe
                                     border: "none",
                                     cursor: "pointer",
                                     fontSize: 13,
-                                    color: "#ef4444",
+                                    color: "#dc2626",
                                     transition: "background 0.2s",
                                     display: "flex",
                                     alignItems: "center",
                                     gap: 12,
                                 }}
-                                onMouseEnter={e => e.currentTarget.style.background = "#fef2f2"}
+                                onMouseEnter={e => e.currentTarget.style.background = "rgba(220,38,38,0.08)"}
                                 onMouseLeave={e => e.currentTarget.style.background = "none"}>
                                 <iconify-icon icon="mdi:logout" style={{ fontSize: 16 }}></iconify-icon>
                                 Logout
@@ -639,7 +640,7 @@ export default function Navbar({ profile, personal, isSidebarOpen, setSidebarOpe
                         onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}>
                         <iconify-icon icon="mdi:bell-outline" style={{
                             fontSize: 28,
-                            color: "#374151",
+                            color: "var(--theme-text)",
                         }}></iconify-icon>
                         {notifications.length > 0 && (
                             <span style={{
@@ -668,8 +669,8 @@ export default function Navbar({ profile, personal, isSidebarOpen, setSidebarOpe
                             position: "absolute",
                             right: 0,
                             top: 48,
-                            background: "white",
-                            border: "1px solid #e5e7eb",
+                                background: "var(--theme-surface-solid)",
+                                border: "1px solid var(--theme-card-border)",
                             borderRadius: 12,
                             boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
                             minWidth: 320,
@@ -679,9 +680,9 @@ export default function Navbar({ profile, personal, isSidebarOpen, setSidebarOpe
                         }}>
                             <div style={{
                                 padding: "12px 16px",
-                                borderBottom: "1px solid #f0f0f0",
+                                borderBottom: "1px solid var(--theme-card-border)",
                                 fontWeight: 700,
-                                color: "#1a3a1f",
+                                color: "var(--theme-surface-text)",
                                 fontSize: 13,
                             }}>
                                 Notifikasi Terbaru
@@ -690,7 +691,7 @@ export default function Navbar({ profile, personal, isSidebarOpen, setSidebarOpe
                                 <div style={{
                                     padding: "24px 16px",
                                     textAlign: "center",
-                                    color: "#9ca3af",
+                                    color: "var(--theme-surface-muted)",
                                     fontSize: 13,
                                 }}>
                                     Belum ada notifikasi
@@ -699,14 +700,14 @@ export default function Navbar({ profile, personal, isSidebarOpen, setSidebarOpe
                                 notifications.map((notif, idx) => (
                                     <div key={idx} style={{
                                         padding: "12px 16px",
-                                        borderBottom: idx < notifications.length - 1 ? "1px solid #f9fafb" : "none",
+                                        borderBottom: idx < notifications.length - 1 ? "1px solid var(--theme-card-border)" : "none",
                                         display: "flex",
                                         alignItems: "center",
                                         gap: 12,
                                         transition: "background 0.2s",
                                     }}
-                                        onMouseEnter={e => e.currentTarget.style.background = "#f9fafb"}
-                                        onMouseLeave={e => e.currentTarget.style.background = "white"}>
+                                        onMouseEnter={e => e.currentTarget.style.background = "var(--theme-page-bg-alt)"}
+                                        onMouseLeave={e => e.currentTarget.style.background = "var(--theme-surface-solid)"}>
                                         <iconify-icon icon="mdi:lightning-bolt" style={{
                                             fontSize: 18,
                                             color: "#059669",
@@ -716,21 +717,21 @@ export default function Navbar({ profile, personal, isSidebarOpen, setSidebarOpe
                                             <p style={{
                                                 fontSize: 13,
                                                 fontWeight: 600,
-                                                color: "#1a3a1f",
+                                                color: "var(--theme-surface-text)",
                                                 margin: "0 0 4px 0",
                                             }}>
                                                 +{notif.exp || 0} XP
                                             </p>
                                             <p style={{
                                                 fontSize: 11,
-                                                color: "#9ca3af",
+                                                color: "var(--theme-surface-muted)",
                                                 margin: 0,
                                             }}>
                                                 {notif.activity || "Quiz selesai"}
                                             </p>
                                             <p style={{
                                                 fontSize: 10,
-                                                color: "#d1d5db",
+                                                color: "var(--theme-surface-muted)",
                                                 margin: "4px 0 0 0",
                                             }}>
                                                 {notif.date ? new Date(notif.date).toLocaleDateString("id-ID", {
@@ -774,7 +775,7 @@ export default function Navbar({ profile, personal, isSidebarOpen, setSidebarOpe
                     <div style={{
                         background: "white",
                         padding: "16px",
-                        borderBottom: "1px solid #e5e7eb",
+                        borderBottom: "1px solid var(--theme-card-border)",
                         display: "flex",
                         alignItems: "center",
                         gap: 12,
@@ -797,7 +798,7 @@ export default function Navbar({ profile, personal, isSidebarOpen, setSidebarOpe
                             }}>
                             <iconify-icon icon="mdi:close" style={{
                                 fontSize: 24,
-                                color: "#374151",
+                                color: "var(--theme-text)",
                             }}></iconify-icon>
                         </button>
 
@@ -813,17 +814,17 @@ export default function Navbar({ profile, personal, isSidebarOpen, setSidebarOpe
                                 autoFocus
                                 style={{
                                     width: "100%",
-                                    border: "1px solid #d1d5db",
+                                    border: "1px solid var(--theme-card-border)",
                                     borderRadius: 8,
                                     padding: "10px 12px 10px 36px",
                                     fontSize: 14,
-                                    color: "#374151",
+                                    color: "var(--theme-text)",
                                     outline: "none",
                                     transition: "border-color 0.2s",
                                     fontFamily: "Plus Jakarta Sans, sans-serif",
                                 }}
                                 onFocus={e => e.currentTarget.style.borderColor = "#9FF782"}
-                                onBlur={e => e.currentTarget.style.borderColor = "#d1d5db"}
+                                onBlur={e => e.currentTarget.style.borderColor = "var(--theme-card-border)"}
                             />
                             <iconify-icon
                                 icon="mdi:magnify"
@@ -833,7 +834,7 @@ export default function Navbar({ profile, personal, isSidebarOpen, setSidebarOpe
                                     top: "50%",
                                     transform: "translateY(-50%)",
                                     fontSize: 18,
-                                    color: "#9ca3af",
+                                    color: "var(--theme-surface-muted)",
                                     pointerEvents: "none",
                                 }}>
                             </iconify-icon>
@@ -844,13 +845,13 @@ export default function Navbar({ profile, personal, isSidebarOpen, setSidebarOpe
                     <div style={{
                         flex: 1,
                         overflowY: "auto",
-                        background: "white",
+                        background: "var(--theme-surface-solid)",
                     }}>
                         {searchQuery.trim() === "" ? (
                             <div style={{
                                 padding: "24px 16px",
                                 textAlign: "center",
-                                color: "#9ca3af",
+                                color: "var(--theme-surface-muted)",
                                 fontSize: 13,
                             }}>
                                 Mulai ketik untuk mencari fitur
@@ -859,7 +860,7 @@ export default function Navbar({ profile, personal, isSidebarOpen, setSidebarOpe
                             <div style={{
                                 padding: "24px 16px",
                                 textAlign: "center",
-                                color: "#9ca3af",
+                                color: "var(--theme-surface-muted)",
                                 fontSize: 13,
                             }}>
                                 Fitur tidak ditemukan
@@ -876,23 +877,23 @@ export default function Navbar({ profile, personal, isSidebarOpen, setSidebarOpe
                                             textAlign: "left",
                                             background: "none",
                                             border: "none",
-                                            borderBottom: "1px solid #f3f4f6",
+                                            borderBottom: "1px solid var(--theme-card-border)",
                                             cursor: "pointer",
                                             fontSize: 14,
-                                            color: "#374151",
+                                            color: "var(--theme-text)",
                                             transition: "background 0.2s",
                                             display: "flex",
                                             alignItems: "center",
                                             gap: 12,
                                         }}
-                                        onMouseEnter={e => e.currentTarget.style.background = "#f9fafb"}
-                                        onMouseLeave={e => e.currentTarget.style.background = "white"}>
+                                        onMouseEnter={e => e.currentTarget.style.background = "var(--theme-page-bg-alt)"}
+                                        onMouseLeave={e => e.currentTarget.style.background = "var(--theme-surface-solid)"}>
                                         <span style={{ fontSize: 20 }}>{feature.icon}</span>
                                         <div style={{ flex: 1 }}>
-                                            <p style={{ margin: "0 0 4px 0", fontWeight: 600, color: "#1a3a1f" }}>
+                                            <p style={{ margin: "0 0 4px 0", fontWeight: 600, color: "var(--theme-surface-text)" }}>
                                                 {feature.name}
                                             </p>
-                                            <p style={{ margin: 0, fontSize: 12, color: "#9ca3af" }}>
+                                            <p style={{ margin: 0, fontSize: 12, color: "var(--theme-surface-muted)" }}>
                                                 {feature.category}
                                             </p>
                                         </div>

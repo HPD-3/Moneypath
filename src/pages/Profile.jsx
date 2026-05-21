@@ -332,7 +332,7 @@ export default function Profile() {
 
                             {/* PROFILE HEADER CARD */}
                             {profile && (
-                                <div className="bg-[#172619] text-white rounded-3xl p-4 md:p-8 mb-8 flex flex-col md:flex-row md:justify-between md:items-center gap-6 shadow-lg">
+                                <div className="theme-hero-bg text-[var(--theme-accent-contrast)] rounded-3xl p-4 md:p-8 mb-8 flex flex-col md:flex-row md:justify-between md:items-center gap-6 shadow-lg">
                                     <div className="flex flex-col sm:flex-row sm:items-center gap-4 md:gap-6 flex-1 min-w-0">
                                         {/* Avatar */}
                                         <div className="w-20 h-20 md:w-24 md:h-24 flex-shrink-0 overflow-hidden flex items-center justify-center text-3xl md:text-4xl font-bold"
@@ -362,13 +362,13 @@ export default function Profile() {
                                                 <span className="text-xs md:text-sm text-green-200">Total XP: {quizStats?.totalExp || 0}</span>
                                             </div>
 
-                                            <div className="mt-4 flex items-center gap-3 rounded-2xl bg-white/10 border border-white/10 px-3 py-2 backdrop-blur-sm w-full sm:w-fit">
-                                                <div className="shrink-0 rounded-2xl bg-white/10 p-2 border border-white/10">
+                                            <div className="mt-4 flex items-center gap-3 rounded-2xl bg-white/10 border border-white/15 px-3 py-2 backdrop-blur-sm w-full sm:w-fit">
+                                                <div className="shrink-0 rounded-2xl bg-white/10 p-2 border border-white/15">
                                                     <BadgeIllustration tone="emerald" active size={48} />
                                                 </div>
                                                 <div className="text-left min-w-0">
-                                                    <p className="text-[11px] uppercase tracking-[0.25em] text-green-100/70">Current badge</p>
-                                                    <p className="text-sm font-semibold text-white truncate">{activeBadgeTitle}</p>
+                                                    <p className="text-[11px] uppercase tracking-[0.25em] text-white/70">Current badge</p>
+                                                    <p className="text-sm font-semibold text-[var(--theme-accent-contrast)] truncate">{activeBadgeTitle}</p>
                                                 </div>
                                             </div>
                                         </div>
@@ -377,14 +377,16 @@ export default function Profile() {
                                     <div className="flex flex-row md:flex-col gap-2 md:gap-3 w-full sm:w-auto">
                                         <button
                                             onClick={() => navigate("/settings")}
-                                            className="flex-1 md:flex-none px-3 md:px-4 py-2 rounded-full bg-[#9FF782] text-green-900 font-semibold hover:bg-green-300 transition-all text-xs md:text-sm flex items-center gap-2 justify-center"
+                                            className="flex-1 md:flex-none px-3 md:px-4 py-2 rounded-full text-xs md:text-sm flex items-center gap-2 justify-center"
+                                            style={{ background: "var(--theme-accent)", color: "var(--theme-accent-contrast)", fontWeight: 700 }}
                                         >
                                             <iconify-icon icon="mdi:pencil"></iconify-icon> Edit Profil
                                         </button>
 
                                         <button
                                             onClick={() => navigate("/settings")}
-                                            className="flex-1 md:flex-none px-3 md:px-4 py-2 rounded-full bg-[#9FF782] text-green-900 font-semibold hover:bg-green-300 transition-all text-xs md:text-sm flex items-center gap-2 justify-center"
+                                            className="flex-1 md:flex-none px-3 md:px-4 py-2 rounded-full text-xs md:text-sm flex items-center gap-2 justify-center"
+                                            style={{ background: "var(--theme-accent)", color: "var(--theme-accent-contrast)", fontWeight: 700 }}
                                         >
                                             <iconify-icon icon="mdi:cog"></iconify-icon> Setting
                                         </button>
@@ -395,7 +397,8 @@ export default function Profile() {
                                                 setReviewMessage("");
                                                 setShowReviewModal(true);
                                             }}
-                                            className="flex-1 md:flex-none px-3 md:px-4 py-2 rounded-full bg-[#9FF782] text-green-900 font-semibold hover:bg-green-300 transition-all text-xs md:text-sm flex items-center gap-2 justify-center"
+                                            className="flex-1 md:flex-none px-3 md:px-4 py-2 rounded-full text-xs md:text-sm flex items-center gap-2 justify-center"
+                                            style={{ background: "var(--theme-accent)", color: "var(--theme-accent-contrast)", fontWeight: 700 }}
                                         >
                                             <iconify-icon icon="mdi:star"></iconify-icon> Bagikan Review
                                         </button>
@@ -409,7 +412,7 @@ export default function Profile() {
                                 {/* LEFT: INFORMASI PRIBADI */}
                                 <div ref={personalInfoRef}>
                                     {personalLoading ? (
-                                        <div className="bg-white p-6 rounded-2xl shadow-md animate-pulse">
+                                        <div className="theme-card p-6 rounded-2xl shadow-md animate-pulse">
                                             <div className="h-6 bg-gray-300 rounded mb-6 w-32"></div>
                                             <div className="space-y-4">
                                                 {[...Array(5)].map((_, i) => (
@@ -424,47 +427,47 @@ export default function Profile() {
                                             </div>
                                         </div>
                                     ) : personal && (
-                                        <div className="bg-white p-6 rounded-2xl shadow-md">
-                                            <h3 className="text-xl font-bold text-gray-900 mb-6">Informasi Pribadi</h3>
+                                        <div className="theme-card p-6 rounded-2xl shadow-md">
+                                            <h3 className="text-xl font-bold text-[var(--theme-surface-text)] mb-6">Informasi Pribadi</h3>
 
                                             <div className="space-y-4">
-                                                <div className="flex items-center gap-4 pb-4 border-b border-gray-200">
+                                                <div className="flex items-center gap-4 pb-4 border-b border-[var(--theme-card-border)]">
                                                     <iconify-icon icon="mdi:account" className="text-2xl"></iconify-icon>
                                                     <div>
-                                                        <p className="text-xs text-gray-500 font-semibold">Nama</p>
-                                                        <p className="text-gray-900 font-medium">{personal.name || "-"}</p>
+                                                        <p className="text-xs text-[var(--theme-surface-muted)] font-semibold">Nama</p>
+                                                        <p className="text-[var(--theme-surface-text)] font-medium">{personal.name || "-"}</p>
                                                     </div>
                                                 </div>
 
-                                                <div className="flex items-center gap-4 pb-4 border-b border-gray-200">
+                                                <div className="flex items-center gap-4 pb-4 border-b border-[var(--theme-card-border)]">
                                                     <iconify-icon icon="mdi:calendar" className="text-2xl"></iconify-icon>
                                                     <div>
-                                                        <p className="text-xs text-gray-500 font-semibold">Tanggal Lahir</p>
-                                                        <p className="text-gray-900 font-medium">{personal.dateOfBirth || "-"}</p>
+                                                        <p className="text-xs text-[var(--theme-surface-muted)] font-semibold">Tanggal Lahir</p>
+                                                        <p className="text-[var(--theme-surface-text)] font-medium">{personal.dateOfBirth || "-"}</p>
                                                     </div>
                                                 </div>
 
-                                                <div className="flex items-center gap-4 pb-4 border-b border-gray-200">
+                                                <div className="flex items-center gap-4 pb-4 border-b border-[var(--theme-card-border)]">
                                                     <iconify-icon icon="mdi:phone" className="text-2xl"></iconify-icon>
                                                     <div>
-                                                        <p className="text-xs text-gray-500 font-semibold">Nomor HP</p>
-                                                        <p className="text-gray-900 font-medium">{personal.phoneNumber || "-"}</p>
+                                                        <p className="text-xs text-[var(--theme-surface-muted)] font-semibold">Nomor HP</p>
+                                                        <p className="text-[var(--theme-surface-text)] font-medium">{personal.phoneNumber || "-"}</p>
                                                     </div>
                                                 </div>
 
-                                                <div className="flex items-center gap-4 pb-4 border-b border-gray-200">
+                                                <div className="flex items-center gap-4 pb-4 border-b border-[var(--theme-card-border)]">
                                                     <iconify-icon icon="mdi:gender-female" className="text-2xl"></iconify-icon>
                                                     <div>
-                                                        <p className="text-xs text-gray-500 font-semibold">Jenis Kelamin</p>
-                                                        <p className="text-gray-900 font-medium">{personal.gender || "-"}</p>
+                                                        <p className="text-xs text-[var(--theme-surface-muted)] font-semibold">Jenis Kelamin</p>
+                                                        <p className="text-[var(--theme-surface-text)] font-medium">{personal.gender || "-"}</p>
                                                     </div>
                                                 </div>
 
                                                 <div className="flex items-center gap-4">
                                                     <iconify-icon icon="mdi:map-marker" className="text-2xl"></iconify-icon>
                                                     <div>
-                                                        <p className="text-xs text-gray-500 font-semibold">Alamat</p>
-                                                        <p className="text-gray-900 font-medium">{personal.address || "-"}</p>
+                                                        <p className="text-xs text-[var(--theme-surface-muted)] font-semibold">Alamat</p>
+                                                        <p className="text-[var(--theme-surface-text)] font-medium">{personal.address || "-"}</p>
                                                     </div>
                                                 </div>
                                             </div>
@@ -493,32 +496,32 @@ export default function Profile() {
 
                                             <div className="grid grid-cols-2 gap-4 mb-6">
                                                 {/* Total Tabungan */}
-                                                <div className="bg-[#172619] text-white p-4 rounded-xl flex flex-col gap-2">
-                                                    <span className="text-xs font-semibold bg-green-400 text-green-900 px-3 py-1 rounded-full w-fit">
+                                                <div className="theme-panel text-[var(--theme-accent-contrast)] p-4 rounded-xl flex flex-col gap-2">
+                                                    <span className="text-xs font-semibold bg-[var(--theme-accent)] text-[var(--theme-accent-contrast)] px-3 py-1 rounded-full w-fit">
                                                         Total Tabungan
                                                     </span>
                                                     <p className="text-lg font-bold"><iconify-icon icon="mdi:wallet" style={{ marginRight: "6px" }}></iconify-icon>{fmt(totalTabungan)}</p>
                                                 </div>
 
                                                 {/* Total Pengeluaran */}
-                                                <div className="bg-[#172619] text-white p-4 rounded-xl flex flex-col gap-2">
-                                                    <span className="text-xs font-semibold bg-green-400 text-green-900 px-3 py-1 rounded-full w-fit">
+                                                <div className="theme-panel text-[var(--theme-accent-contrast)] p-4 rounded-xl flex flex-col gap-2">
+                                                    <span className="text-xs font-semibold bg-[var(--theme-accent)] text-[var(--theme-accent-contrast)] px-3 py-1 rounded-full w-fit">
                                                         Total Pengeluaran
                                                     </span>
                                                     <p className="text-lg font-bold"><iconify-icon icon="mdi:trending-down" style={{ marginRight: "6px" }}></iconify-icon>{fmt(totalPengeluaran)}</p>
                                                 </div>
 
                                                 {/* Total Pemasukan */}
-                                                <div className="bg-[#172619] text-white p-4 rounded-xl flex flex-col gap-2">
-                                                    <span className="text-xs font-semibold bg-green-400 text-green-900 px-3 py-1 rounded-full w-fit">
+                                                <div className="theme-panel text-[var(--theme-accent-contrast)] p-4 rounded-xl flex flex-col gap-2">
+                                                    <span className="text-xs font-semibold bg-[var(--theme-accent)] text-[var(--theme-accent-contrast)] px-3 py-1 rounded-full w-fit">
                                                         Total Pemasukan
                                                     </span>
                                                     <p className="text-lg font-bold"><iconify-icon icon="mdi:trending-up" style={{ marginRight: "6px" }}></iconify-icon>{fmt(totalPemasukan)}</p>
                                                 </div>
 
                                                 {/* Target Keuangan */}
-                                                <div className="bg-[#172619] text-white p-4 rounded-xl flex flex-col gap-2">
-                                                    <span className="text-xs font-semibold bg-green-400 text-green-900 px-3 py-1 rounded-full w-fit">
+                                                <div className="theme-panel text-[var(--theme-accent-contrast)] p-4 rounded-xl flex flex-col gap-2">
+                                                    <span className="text-xs font-semibold bg-[var(--theme-accent)] text-[var(--theme-accent-contrast)] px-3 py-1 rounded-full w-fit">
                                                         Target Keuangan
                                                     </span>
                                                     <p className="text-lg font-bold"><iconify-icon icon="mdi:target" style={{ marginRight: "6px" }}></iconify-icon>{completedTabungan} Tercapai</p>
@@ -527,13 +530,13 @@ export default function Profile() {
 
                                             {/* Progress Bar */}
                                             <div>
-                                                <div className="h-2 bg-gray-300 rounded-full overflow-hidden mb-2">
+                                                <div className="h-2 bg-[var(--theme-card-border)] rounded-full overflow-hidden mb-2">
                                                     <div
-                                                        className="h-full bg-gradient-to-r from-green-900 to-green-400 transition-all duration-500"
+                                                        className="h-full bg-gradient-to-r from-[var(--theme-accent)] to-[var(--theme-accent-2)] transition-all duration-500"
                                                         style={{ width: totalBalance > 0 ? `${Math.min((totalBalance / (totalPemasukan || 1)) * 100, 100)}%` : "0%" }}
                                                     ></div>
                                                 </div>
-                                                <p className="text-xs text-gray-600 font-medium">
+                                                <p className="text-xs text-[var(--theme-surface-muted)] font-medium">
                                                     {fmt(totalBalance)} - {fmt(totalPemasukan)}
                                                 </p>
                                             </div>
@@ -569,16 +572,16 @@ export default function Profile() {
 
                                             <div className="overflow-y-auto max-h-96">
                                                 <table className="w-full text-sm">
-                                                    <thead className="sticky top-0 bg-gray-50 border-b border-gray-200">
+                                                    <thead className="sticky top-0 bg-[var(--theme-page-bg-alt)] border-b border-[var(--theme-card-border)]">
                                                         <tr>
-                                                            <th className="text-left font-semibold text-gray-700 py-3 px-4">Deskripsi</th>
-                                                            <th className="text-right font-semibold text-gray-700 py-3 px-4">Jumlah</th>
+                                                            <th className="text-left font-semibold text-[var(--theme-surface-text)] py-3 px-4">Deskripsi</th>
+                                                            <th className="text-right font-semibold text-[var(--theme-surface-text)] py-3 px-4">Jumlah</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
                                                         {(transactions.slice(0, 4)).map((tx, i) => (
-                                                            <tr key={i} className="border-b border-gray-100 hover:bg-gray-50 transition">
-                                                                <td className="py-3 px-4 text-gray-700">{tx.description || "-"}</td>
+                                                            <tr key={i} className="border-b border-[var(--theme-card-border)] hover:bg-[var(--theme-page-bg-alt)] transition">
+                                                                <td className="py-3 px-4 text-[var(--theme-text)]">{tx.description || "-"}</td>
                                                                 <td className={`py-3 px-4 text-right font-medium ${tx.type === "income" ? "text-green-600" : "text-red-600"}`}>
                                                                     {tx.type === "income" ? "+" : "-"}{fmt(tx.amount)}
                                                                 </td>

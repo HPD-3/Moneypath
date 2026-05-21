@@ -12,41 +12,41 @@ const CATEGORIES = ["semua", "budgeting", "investing", "saving", "debt"];
 
 const PAGE_FONT = "'Plus Jakarta Sans', sans-serif";
 const HERO_BG = "linear-gradient(135deg, #18331e 0%, #102416 100%)";
-const PAGE_BG = "#eef2eb";
-const BORDER = "#d7ddd6";
+const PAGE_BG = "var(--theme-page-bg)";
+const BORDER = "var(--theme-card-border)";
 
 function VideoCard({ video, onClick }) {
     return (
         <div
             onClick={() => onClick(video)}
-            style={{ background: "white", borderRadius: 14, overflow: "hidden", cursor: "pointer", boxShadow: "0 2px 10px rgba(16, 24, 40, 0.12)", transition: "transform 0.2s ease, box-shadow 0.2s ease", display: "flex", gap: 16, padding: 12, border: `1px solid ${BORDER}` }}
+            style={{ background: "var(--theme-surface-solid)", color: "var(--theme-text)", borderRadius: 14, overflow: "hidden", cursor: "pointer", boxShadow: "var(--theme-shadow)", transition: "transform 0.2s ease, box-shadow 0.2s ease", display: "flex", gap: 16, padding: 12, border: `1px solid ${BORDER}` }}
             onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = "0 12px 26px rgba(16, 24, 40, 0.14)"; }}
             onMouseLeave={e => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "0 2px 10px rgba(16, 24, 40, 0.12)"; }}>
 
-            <div style={{ position: "relative", flexShrink: 0, width: 170, height: 100, borderRadius: 10, overflow: "hidden", background: "#dfe6de" }}>
+            <div style={{ position: "relative", flexShrink: 0, width: 170, height: 100, borderRadius: 10, overflow: "hidden", background: "var(--theme-page-bg-alt)" }}>
                 <img
                     src={video.thumbnail}
                     alt={video.title}
                     style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
                 />
                 <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(0,0,0,0.1), rgba(0,0,0,0.16))", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <div style={{ width: 42, height: 42, background: "rgba(255,255,255,0.92)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, boxShadow: "0 6px 14px rgba(0,0,0,0.12)" }}>
-                        <iconify-icon icon="mdi:play" style={{ color: "black", fontSize: 20 }}></iconify-icon>
+                    <div style={{ width: 42, height: 42, background: "var(--theme-surface-solid)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, boxShadow: "var(--theme-shadow)" }}>
+                        <iconify-icon icon="mdi:play" style={{ color: "var(--theme-text)", fontSize: 20 }}></iconify-icon>
                     </div>
                 </div>
                 {video.duration && (
-                    <span style={{ position: "absolute", bottom: 8, right: 8, background: "rgba(0,0,0,0.75)", color: "white", fontSize: 10, padding: "2px 7px", borderRadius: 4, fontWeight: 600 }}>
+                    <span style={{ position: "absolute", bottom: 8, right: 8, background: "rgba(0,0,0,0.75)", color: "var(--theme-accent-contrast)", fontSize: 10, padding: "2px 7px", borderRadius: 4, fontWeight: 600 }}>
                         {video.duration}
                     </span>
                 )}
             </div>
 
             <div style={{ flex: 1 }}>
-                <span style={{ fontSize: 10, fontWeight: 600, color: "#2f5f3a", background: "#e6f4e9", padding: "3px 10px", borderRadius: 20, textTransform: "capitalize", display: "inline-block", marginBottom: 8, border: "1px solid #b9dfc0" }}>
+                <span style={{ fontSize: 10, fontWeight: 600, color: "var(--theme-accent-contrast)", background: "var(--theme-accent-2)", padding: "3px 10px", borderRadius: 20, textTransform: "capitalize", display: "inline-block", marginBottom: 8, border: `1px solid var(--theme-card-border)` }}>
                     {video.category}
                 </span>
-                <p style={{ fontWeight: 700, fontSize: 14, color: "#1f2d21", lineHeight: 1.35, marginBottom: 4 }}>{video.title}</p>
-                <p style={{ fontSize: 11.5, color: "#7b867d", lineHeight: 1.55, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                <p style={{ fontWeight: 700, fontSize: 14, color: "var(--theme-text)", lineHeight: 1.35, marginBottom: 4 }}>{video.title}</p>
+                <p style={{ fontSize: 11.5, color: "var(--theme-muted)", lineHeight: 1.55, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
                     {video.description}
                 </p>
             </div>
@@ -138,18 +138,18 @@ export default function VideoEdukasi() {
     return (
         <>
         <SEO {...seoConfig["/video"]} />
-        <div className="flex h-screen bg-gray-50 font-sans overflow-hidden">
+        <div className="flex h-screen bg-[var(--theme-page-bg)] font-sans overflow-hidden text-[var(--theme-text)]">
             <Sidebar active={activeNav} setActive={(navId) => { setActiveNav(navId); handleNavigation(navId); }} handleLogout={handleLogout} isOpen={isSidebarOpen} setOpen={setIsSidebarOpen} />
 
             <div className="flex-1 flex flex-col overflow-hidden w-full">
                 <Navbar profile={profile} personal={personal} isOpen={isProfileOpen} setOpen={setIsProfileOpen} isSidebarOpen={isSidebarOpen} setSidebarOpen={setIsSidebarOpen} />
 
-                <div className="flex-1 overflow-y-auto bg-gray-100">
-                    <div style={{ minHeight: "100vh", background: PAGE_BG, fontFamily: PAGE_FONT, paddingTop: "60px" }}>
+                <div className="flex-1 overflow-y-auto bg-[var(--theme-page-bg)]">
+                    <div style={{ minHeight: "100vh", background: PAGE_BG, fontFamily: PAGE_FONT, paddingTop: "60px", color: "var(--theme-text)" }}>
                         <style>{`@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');`}</style>
 
                         <div style={{ background: HERO_BG, padding: "28px 24px 30px", textAlign: "center", boxShadow: "0 1px 0 rgba(255,255,255,0.04) inset" }}>
-                            <h1 style={{ color: "#f4f7f2", fontSize: 30, fontWeight: 800, marginBottom: 6, letterSpacing: "-0.02em", display: "flex", alignItems: "center", justifyContent: "center", gap: 10 }}>
+                            <h1 style={{ color: "var(--theme-surface-solid)", fontSize: 30, fontWeight: 800, marginBottom: 6, letterSpacing: "-0.02em", display: "flex", alignItems: "center", justifyContent: "center", gap: 10 }}>
                                 <iconify-icon icon="mdi:video-camera" style={{ fontSize: 28, color: "#9FF782" }}></iconify-icon>
                                 Vidio Edukasi
                             </h1>
@@ -157,18 +157,18 @@ export default function VideoEdukasi() {
                                 Tingkatkan literasi finansialmu dengan video edukasi pilihan
                             </p>
                             <div style={{ maxWidth: 420, margin: "0 auto", position: "relative" }}>
-                                <iconify-icon icon="mdi:magnify" style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", fontSize: 18, color: "#9ca3af" }}></iconify-icon>
+                                <iconify-icon icon="mdi:magnify" style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", fontSize: 18, color: "var(--theme-muted)" }}></iconify-icon>
                                 <input
                                     value={search}
                                     onChange={e => setSearch(e.target.value)}
                                     placeholder="Cari video..."
-                                    style={{ width: "100%", padding: "11px 12px 11px 36px", borderRadius: 12, border: "none", fontSize: 14, outline: "none", fontFamily: PAGE_FONT, boxShadow: "0 8px 20px rgba(0,0,0,0.12)" }}
+                                    style={{ width: "100%", padding: "11px 12px 11px 36px", borderRadius: 12, border: "none", fontSize: 14, outline: "none", fontFamily: PAGE_FONT, boxShadow: "var(--theme-shadow)", background: "var(--theme-surface-solid)", color: "var(--theme-text)" }}
                                 />
                             </div>
                         </div>
 
                         <div style={{ padding: "22px 24px 14px" }}>
-                            <div style={{ maxWidth: 540, margin: "0 auto", background: "#f8faf8", border: `1px solid ${BORDER}`, borderRadius: 14, padding: 4, display: "grid", gridTemplateColumns: `repeat(${CATEGORIES.length}, minmax(0, 1fr))`, gap: 4, boxShadow: "0 4px 16px rgba(16, 24, 40, 0.08)" }}>
+                            <div style={{ maxWidth: 540, margin: "0 auto", background: "var(--theme-surface)", border: `1px solid ${BORDER}`, borderRadius: 14, padding: 4, display: "grid", gridTemplateColumns: `repeat(${CATEGORIES.length}, minmax(0, 1fr))`, gap: 4, boxShadow: "var(--theme-shadow)" }}>
                                 {CATEGORIES.map(cat => (
                                     <button
                                         key={cat}
@@ -183,17 +183,17 @@ export default function VideoEdukasi() {
                                             textTransform: "capitalize",
                                             whiteSpace: "nowrap",
                                             fontFamily: PAGE_FONT,
-                                            background: activeCategory === cat ? "#314d36" : "transparent",
-                                            color: activeCategory === cat ? "#f4f7f2" : "#2f4034",
+                                            background: activeCategory === cat ? "var(--theme-accent)" : "transparent",
+                                            color: activeCategory === cat ? "var(--theme-accent-contrast)" : "var(--theme-text)",
                                             transition: "all 0.2s ease",
-                                            boxShadow: activeCategory === cat ? "0 4px 12px rgba(49, 77, 54, 0.25)" : "none",
+                                            boxShadow: activeCategory === cat ? "var(--theme-shadow)" : "none",
                                         }}
                                     >
                                         {cat}
                                     </button>
                                 ))}
                             </div>
-                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 14, color: "#66756b", fontSize: 12, fontWeight: 600 }}>
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 14, color: "var(--theme-muted)", fontSize: 12, fontWeight: 600 }}>
                                 <span>Daftar Vidio Edukasi</span>
                                 <span>{filtered.length} video</span>
                             </div>
@@ -201,10 +201,10 @@ export default function VideoEdukasi() {
 
                         <div style={{ padding: "6px 24px 24px" }}>
                             {loading ? (
-                                <div style={{ textAlign: "center", padding: 60, color: "#9ca3af" }}>Loading video...</div>
+                                <div style={{ textAlign: "center", padding: 60, color: "var(--theme-muted)" }}>Loading video...</div>
                             ) : filtered.length === 0 ? (
-                                <div style={{ textAlign: "center", padding: 60, color: "#9ca3af" }}>
-                                    <iconify-icon icon="mdi:film-reel" style={{ fontSize: 60, marginBottom: 10, display: "block", color: "#d1d5db" }}></iconify-icon>
+                                <div style={{ textAlign: "center", padding: 60, color: "var(--theme-muted)" }}>
+                                    <iconify-icon icon="mdi:film-reel" style={{ fontSize: 60, marginBottom: 10, display: "block", color: "var(--theme-card-border)" }}></iconify-icon>
                                     <p>Tidak ada video ditemukan.</p>
                                 </div>
                             ) : (
@@ -218,7 +218,7 @@ export default function VideoEdukasi() {
 
                         {playing && (
                             <div onClick={() => setPlaying(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.8)", zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
-                                <div onClick={e => e.stopPropagation()} style={{ background: "white", borderRadius: 14, overflow: "hidden", width: "100%", maxWidth: 760 }}>
+                                <div onClick={e => e.stopPropagation()} style={{ background: "var(--theme-surface-solid)", color: "var(--theme-text)", borderRadius: 14, overflow: "hidden", width: "100%", maxWidth: 760, boxShadow: "var(--theme-shadow)" }}>
                                     <div style={{ position: "relative", paddingBottom: "56.25%", height: 0 }}>
                                         <iframe
                                             src={`https://www.youtube.com/embed/${playing.youtubeId}?autoplay=1&rel=0`}
@@ -232,33 +232,33 @@ export default function VideoEdukasi() {
                                     <div style={{ padding: 20 }}>
                                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                                             <div style={{ flex: 1 }}>
-                                                <h2 style={{ fontWeight: 800, color: "#1f2d21", fontSize: 17, marginBottom: 8 }}>{playing.title}</h2>
+                                                <h2 style={{ fontWeight: 800, color: "var(--theme-text)", fontSize: 17, marginBottom: 8 }}>{playing.title}</h2>
                                                 <div style={{ display: "flex", gap: 8, marginBottom: 10, flexWrap: "wrap" }}>
-                                                    <span style={{ fontSize: 11, fontWeight: 700, color: "#2f5f3a", background: "#e6f4e9", padding: "3px 10px", borderRadius: 20, textTransform: "capitalize", border: "1px solid #b9dfc0" }}>
+                                                    <span style={{ fontSize: 11, fontWeight: 700, color: "var(--theme-accent-contrast)", background: "var(--theme-accent-2)", padding: "3px 10px", borderRadius: 20, textTransform: "capitalize", border: `1px solid ${BORDER}` }}>
                                                         {playing.category}
                                                     </span>
                                                     {playing.duration && (
-                                                        <span style={{ fontSize: 11, fontWeight: 700, color: "#374151", background: "#f3f4f6", padding: "3px 10px", borderRadius: 20, display: "flex", alignItems: "center", gap: 4 }}>
+                                                        <span style={{ fontSize: 11, fontWeight: 700, color: "var(--theme-text)", background: "var(--theme-page-bg-alt)", padding: "3px 10px", borderRadius: 20, display: "flex", alignItems: "center", gap: 4 }}>
                                                             <iconify-icon icon="mdi:clock" style={{ fontSize: 12 }}></iconify-icon>
                                                             {playing.duration}
                                                         </span>
                                                     )}
                                                 </div>
-                                                <p style={{ fontSize: 13, color: "#6b7280", lineHeight: 1.6 }}>{playing.description}</p>
+                                                <p style={{ fontSize: 13, color: "var(--theme-muted)", lineHeight: 1.6 }}>{playing.description}</p>
                                             </div>
-                                            <button onClick={() => setPlaying(null)} style={{ background: "#f3f4f6", border: "none", borderRadius: "50%", width: 32, height: 32, cursor: "pointer", fontSize: 16, flexShrink: 0, marginLeft: 16, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                                                <iconify-icon icon="mdi:close" style={{ fontSize: 18, color: "#6b7280" }}></iconify-icon>
+                                            <button onClick={() => setPlaying(null)} style={{ background: "var(--theme-page-bg-alt)", border: "none", borderRadius: "50%", width: 32, height: 32, cursor: "pointer", fontSize: 16, flexShrink: 0, marginLeft: 16, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                                <iconify-icon icon="mdi:close" style={{ fontSize: 18, color: "var(--theme-muted)" }}></iconify-icon>
                                             </button>
                                         </div>
 
                                         {videos.filter(v => v.id !== playing.id && v.category === playing.category).length > 0 && (
                                             <div style={{ marginTop: 16, borderTop: `1px solid ${BORDER}`, paddingTop: 16 }}>
-                                                <p style={{ fontSize: 12, fontWeight: 700, color: "#6b7280", marginBottom: 10 }}>VIDEO TERKAIT</p>
+                                                <p style={{ fontSize: 12, fontWeight: 700, color: "var(--theme-muted)", marginBottom: 10 }}>VIDEO TERKAIT</p>
                                                 <div style={{ display: "flex", gap: 10, overflowX: "auto" }}>
                                                     {videos.filter(v => v.id !== playing.id && v.category === playing.category).slice(0, 4).map(v => (
                                                         <div key={v.id} onClick={() => setPlaying(v)} style={{ cursor: "pointer", flexShrink: 0, width: 140 }}>
                                                             <img src={v.thumbnail} alt={v.title} style={{ width: "100%", borderRadius: 6, marginBottom: 4, aspectRatio: "16/9", objectFit: "cover" }} />
-                                                            <p style={{ fontSize: 11, fontWeight: 600, color: "#1f2d21", lineHeight: 1.3 }}>{v.title}</p>
+                                                            <p style={{ fontSize: 11, fontWeight: 600, color: "var(--theme-text)", lineHeight: 1.3 }}>{v.title}</p>
                                                         </div>
                                                     ))}
                                                 </div>

@@ -4,6 +4,15 @@ import { LEVELS } from "./levelsController.js";
 import { calcLevel } from "../utils/expSystem.js";
 import supabase from "../supabase.js";
 import path from "path";
+import {
+    DEFAULT_THEME_ID,
+    THEME_LEVEL_UNLOCK,
+    THEME_PRESETS,
+    buildThemeVariables,
+    getThemePresetById,
+    getThemeStateFromUserData,
+    normalizeThemeState,
+} from "./themePresets.shared.js";
 
 /**
  * Get user settings
@@ -20,12 +29,16 @@ export async function getUserSettings(req, res) {
         }
 
         const userData = userDoc.data();
+        const themeState = getThemeStateFromUserData(userData);
         const settings = {
             notificationsEmail: userData.settings?.notificationsEmail ?? true,
             notificationsInApp: userData.settings?.notificationsInApp ?? true,
             privacyLevel: userData.settings?.privacyLevel ?? "private",
             language: userData.settings?.language ?? "id",
-            theme: userData.settings?.theme ?? "light"
+            theme: userData.settings?.theme ?? userData.themeMode ?? "light",
+            themeMode: userData.themeMode ?? userData.settings?.theme ?? "light",
+            activeTheme: themeState.activeTheme,
+            themeAccessUnlocked: calcLevel(userData.totalExp || 0).level >= THEME_LEVEL_UNLOCK,
         };
 
         res.json(settings);
@@ -41,7 +54,7 @@ export async function getUserSettings(req, res) {
 export async function updateUserSettings(req, res) {
     try {
         const uid = req.user.uid;
-        const { notificationsEmail, notificationsInApp, privacyLevel, language, theme } = req.body;
+        const { notificationsEmail, notificationsInApp, privacyLevel, language, theme, themeMode } = req.body;
 
         // Validate settings
         if (notificationsEmail !== undefined && typeof notificationsEmail !== 'boolean') {
@@ -60,7 +73,9 @@ export async function updateUserSettings(req, res) {
             return res.status(400).json({ message: "Invalid language" });
         }
 
-        if (theme && !['light', 'dark'].includes(theme)) {
+        const resolvedTheme = themeMode || theme;
+
+        if (resolvedTheme && !['light', 'dark'].includes(resolvedTheme)) {
             return res.status(400).json({ message: "Invalid theme" });
         }
 
@@ -71,7 +86,8 @@ export async function updateUserSettings(req, res) {
                 notificationsInApp: notificationsInApp ?? true,
                 privacyLevel: privacyLevel ?? "private",
                 language: language ?? "id",
-                theme: theme ?? "light",
+                theme: resolvedTheme ?? "light",
+                themeMode: resolvedTheme ?? "light",
                 updatedAt: new Date().toISOString()
             }
         });
@@ -144,7 +160,10 @@ export async function getSettingsProfile(req, res) {
             phoneNumber: userData.phoneNumber || "",
             gender: userData.gender || "",
             address: userData.address || "",
-            dateOfBirth: userData.dateOfBirth || ""
+            dateOfBirth: userData.dateOfBirth || "",
+            avatarUrl: userData.avatarUrl || "",
+            avatarBorder: userData.avatarBorder || "",
+            avatarStoragePath: userData.avatarStoragePath || ""
         };
 
         res.json(profile);
@@ -421,5 +440,169 @@ export async function deleteAvatar(req, res) {
         res.json({ message: "Avatar removed" });
     } catch (err) {
         res.status(500).json({ message: err.message || "Failed to delete avatar" });
+    }
+}
+
+/**
+ * Get theme presets + user theme state
+ * GET /settings/themes
+ */
+export async function getThemeSettings(req, res) {
+    try {
+        const uid = req.user.uid;
+        const userDoc = await db.collection("users").doc(uid).get();
+
+        if (!userDoc.exists) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        const userData = userDoc.data();
+        const totalExp = userData.totalExp || 0;
+        const levelInfo = calcLevel(totalExp);
+        const themeState = getThemeStateFromUserData(userData);
+        const ownedThemes = new Set([...(userData.purchasedThemes || []), ...(userData.ownedThemes || [])]);
+
+        const presets = THEME_PRESETS.map((preset) => ({
+            ...preset,
+            owned: preset.isFree || ownedThemes.has(preset.id),
+            equipped: themeState.activeTheme === preset.id,
+        }));
+
+        res.json({
+            level: levelInfo.level,
+            totalExp,
+            coins: userData.coins || 0,
+            themeAccessUnlocked: levelInfo.level >= THEME_LEVEL_UNLOCK,
+            themeState,
+            activePreset: getThemePresetById(themeState.activeTheme),
+            presets,
+            customThemeCount: (themeState.customThemes || []).length,
+            themeVariables: buildThemeVariables(getThemePresetById(themeState.activeTheme), themeState),
+            ownedThemes: Array.from(ownedThemes),
+        });
+    } catch (err) {
+        res.status(500).json({ message: err.message || "Failed to fetch theme settings" });
+    }
+}
+
+/**
+ * Save theme customization
+ * POST /settings/themes
+ */
+export async function updateThemeSettings(req, res) {
+    try {
+        const uid = req.user.uid;
+        const userDoc = await db.collection("users").doc(uid).get();
+
+        if (!userDoc.exists) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        const userData = userDoc.data();
+        const levelInfo = calcLevel(userData.totalExp || 0);
+        const themeAccessUnlocked = levelInfo.level >= THEME_LEVEL_UNLOCK;
+        const payload = normalizeThemeState(req.body || {});
+        const ownedThemes = new Set([...(userData.purchasedThemes || []), ...(userData.ownedThemes || [])]);
+        const activePreset = getThemePresetById(payload.activeTheme || DEFAULT_THEME_ID);
+
+        if (!themeAccessUnlocked) {
+            return res.status(403).json({ message: `Theme customization unlocks at level ${THEME_LEVEL_UNLOCK}.` });
+        }
+
+        if (!activePreset.isFree && !ownedThemes.has(activePreset.id)) {
+            return res.status(403).json({ message: "You must own this theme before applying it." });
+        }
+
+        const themeState = {
+            ...payload,
+            activeTheme: activePreset.id,
+            purchasedThemes: Array.from(new Set([...(payload.purchasedThemes || []), ...(userData.purchasedThemes || []), ...(userData.ownedThemes || [])])),
+            recentThemes: [activePreset.id, ...(payload.recentThemes || [])].filter(Boolean).filter((value, index, array) => array.indexOf(value) === index).slice(0, 8),
+            favoriteThemes: Array.from(new Set(payload.favoriteThemes || [])),
+        };
+
+        await db.collection("users").doc(uid).set({
+            activeTheme: activePreset.id,
+            profileTheme: activePreset.id,
+            themeMode: payload.themeMode,
+            customColors: payload.customColors,
+            sidebarSettings: payload.sidebarSettings,
+            dashboardSettings: payload.dashboardSettings,
+            purchasedThemes: themeState.purchasedThemes,
+            ownedThemes: themeState.purchasedThemes,
+            favoriteThemes: themeState.favoriteThemes,
+            recentThemes: themeState.recentThemes,
+            customThemes: payload.customThemes || [],
+            theme: themeState,
+            themeUpdatedAt: new Date().toISOString(),
+        }, { merge: true });
+
+        res.json({
+            message: "Theme saved",
+            themeState,
+            activePreset,
+            themeVariables: buildThemeVariables(activePreset, themeState),
+        });
+    } catch (err) {
+        res.status(500).json({ message: err.message || "Failed to save theme settings" });
+    }
+}
+
+/**
+ * Apply theme preset without changing customization metadata
+ * POST /settings/themes/apply
+ */
+export async function applyThemePreset(req, res) {
+    try {
+        const uid = req.user.uid;
+        const { themeId } = req.body;
+
+        if (!themeId) {
+            return res.status(400).json({ message: "themeId is required" });
+        }
+
+        const userDoc = await db.collection("users").doc(uid).get();
+        if (!userDoc.exists) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        const userData = userDoc.data();
+        const levelInfo = calcLevel(userData.totalExp || 0);
+        const themeAccessUnlocked = levelInfo.level >= THEME_LEVEL_UNLOCK;
+        const themePreset = getThemePresetById(themeId);
+        const ownedThemes = new Set([...(userData.purchasedThemes || []), ...(userData.ownedThemes || [])]);
+
+        if (!themeAccessUnlocked) {
+            return res.status(403).json({ message: `Theme customization unlocks at level ${THEME_LEVEL_UNLOCK}.` });
+        }
+
+        if (!themePreset.isFree && !ownedThemes.has(themePreset.id)) {
+            return res.status(403).json({ message: "This theme is locked. Purchase it first." });
+        }
+
+        const themeState = getThemeStateFromUserData(userData);
+        themeState.activeTheme = themePreset.id;
+        themeState.customColors = { ...themePreset.colors };
+        themeState.recentThemes = [themePreset.id, ...(themeState.recentThemes || [])]
+            .filter(Boolean)
+            .filter((value, index, array) => array.indexOf(value) === index)
+            .slice(0, 8);
+
+        await db.collection("users").doc(uid).set({
+            activeTheme: themePreset.id,
+            profileTheme: themePreset.id,
+            recentThemes: themeState.recentThemes,
+            theme: themeState,
+            themeUpdatedAt: new Date().toISOString(),
+        }, { merge: true });
+
+        res.json({
+            message: "Theme applied",
+            themeState,
+            activePreset: themePreset,
+            themeVariables: buildThemeVariables(themePreset, themeState),
+        });
+    } catch (err) {
+        res.status(500).json({ message: err.message || "Failed to apply theme" });
     }
 }

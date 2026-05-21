@@ -8,10 +8,63 @@
 @layer base {
     body {
         font-family: 'Open Sans', sans-serif;
+        background: var(--theme-page-bg, #f3fbf5);
+        color: var(--theme-text, #12301f);
+        transition: background 260ms ease, color 260ms ease;
     }
 
     .heading {
         font-family: 'Libre Caslon Text', serif;
         font-weight: 700;
     }
+
+    #root {
+        min-height: 100vh;
+    }
+}
+
+:root {
+    --theme-page-bg: #f3fbf5;
+    --theme-page-bg-alt: #e7f6eb;
+    --theme-surface: rgba(255, 255, 255, 0.92);
+    --theme-surface-solid: #ffffff;
+    --theme-surface-text: #111827;
+    --theme-surface-muted: rgba(17, 24, 39, 0.66);
+    --theme-sidebar-bg: #0f2e1c;
+    --theme-sidebar-text: #f5fff2;
+    --theme-card-bg: #ffffff;
+    --theme-card-border: rgba(39, 76, 52, 0.12);
+    --theme-text: #12301f;
+    --theme-muted: #5f7569;
+    --theme-accent: #15a34a;
+    --theme-accent-2: #9ff782;
+    --theme-accent-contrast: #0b1f14;
+    --theme-gradient: linear-gradient(135deg, #0f2e1c 0%, #174d2e 42%, #9ff782 160%);
+    --theme-gradient-accent: linear-gradient(135deg, #9ff782 0%, #15a34a 100%);
+    --theme-glass-bg: rgba(255, 255, 255, 0.84);
+    --theme-glass-border: rgba(255,255,255,0.22);
+    --theme-glass-blur: 16px;
+    --theme-shadow: 0 24px 60px rgba(15, 23, 42, 0.1);
+}
+
+.theme-card {
+    background: var(--theme-card-bg);
+    border: 1px solid var(--theme-card-border);
+    box-shadow: var(--theme-shadow);
+    backdrop-filter: blur(var(--theme-glass-blur));
+}
+
+.theme-panel {
+    background: var(--theme-surface);
+    border: 1px solid var(--theme-card-border);
+    backdrop-filter: blur(var(--theme-glass-blur));
+    box-shadow: var(--theme-shadow);
+}
+
+.theme-accent-bg {
+    background: var(--theme-gradient-accent);
+}
+
+.theme-hero-bg {
+    background: var(--theme-gradient);
 }

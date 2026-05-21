@@ -12,7 +12,10 @@ import {
     updateBadgeSettings,
     updateAvatar,
     uploadAvatar,
-    deleteAvatar
+    deleteAvatar,
+    getThemeSettings,
+    updateThemeSettings,
+    applyThemePreset
 } from "../controllers/settingsController.js";
 
 const router = express.Router();
@@ -29,6 +32,11 @@ router.post("/profile", verifyToken, updateSettingsProfile);
 // Badge routes
 router.get("/badges", verifyToken, getBadgeSettings);
 router.post("/badges", verifyToken, updateBadgeSettings);
+
+// Theme routes
+router.get("/themes", verifyToken, getThemeSettings);
+router.post("/themes", verifyToken, updateThemeSettings);
+router.post("/themes/apply", verifyToken, applyThemePreset);
 
 // Avatar upload/save
 router.post("/avatar", verifyToken, updateAvatar);

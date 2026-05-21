@@ -56,6 +56,11 @@ export default function Sidebar({ active, setActive, handleLogout, isOpen, setOp
             <aside
                 className={`fixed md:static w-64 h-screen bg-[#172619] text-white flex flex-col flex-shrink-0 transition-all duration-300 z-40
                     ${isOpen ? "left-0" : "-left-64 md:left-0"}`}
+                style={{
+                    background: "var(--theme-sidebar-bg)",
+                    color: "var(--theme-sidebar-text)",
+                    boxShadow: "var(--theme-shadow)",
+                }}
             >
                 <div className="px-6 py-4">
                     {/* LOGO */}
@@ -69,8 +74,12 @@ export default function Sidebar({ active, setActive, handleLogout, isOpen, setOp
                             onClick={() => handleNavClick(item.id, item.path)}
                             className={`flex items-center w-full gap-3 px-4 py-2 transition-all duration-200
                                 ${currentActive === item.id
-                                    ? "hover:bg-white/10 text-white border border-white/40 "
-                                    : "bg-[#9FF782] text-black font-semibold "}`}
+                                    ? "hover:bg-white/10 text-white border border-white/30 "
+                                    : "font-semibold "}`}
+                            style={currentActive === item.id ? undefined : {
+                                background: "var(--theme-accent-2)",
+                                color: "var(--theme-accent-contrast)",
+                            }}
                         >
                             <iconify-icon icon={item.icon} className="w-4 h-4"></iconify-icon>
                             {item.label}

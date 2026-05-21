@@ -37,10 +37,10 @@ function AnalyticsCard({ analytic, loading }) {
     if (loading) {
         return (
             <div style={{
-                background: "#f3f4f6",
+                background: "var(--theme-surface)",
                 borderRadius: 16,
                 padding: 18,
-                border: "2px solid #9FF782",
+                border: "2px solid var(--theme-card-border)",
                 minHeight: 90,
                 marginBottom: 6,
                 display: "flex",
@@ -48,27 +48,26 @@ function AnalyticsCard({ analytic, loading }) {
                 justifyContent: "center"
             }}>
                 <div style={{
-                    width: 24, height: 24, border: "3px solid #9FF782", borderTopColor: "transparent",
+                    width: 24, height: 24, border: "3px solid var(--theme-accent)", borderTopColor: "transparent",
                     borderRadius: "50%", animation: "spin 0.8s linear infinite"
                 }} />
                 <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
             </div>
         );
     }
-    if (!analytic)
-        return null;
+    if (!analytic) return null;
 
     return (
         <div style={{
-            background: "#edffe9",
+            background: "var(--theme-surface)",
             borderRadius: 16,
             padding: 18,
-            border: "2px solid #A3F181",
+            border: "2px solid var(--theme-card-border)",
             marginBottom: 8,
-            color: "#13320c",
+            color: "var(--theme-surface-text)",
             fontSize: 15,
             lineHeight: 1.5,
-            boxShadow: "0 4px 18px rgba(159, 247, 130, 0.07)"
+            boxShadow: "var(--theme-shadow)"
         }}>
             {typeof analytic === "string" ? (
                 <span dangerouslySetInnerHTML={{ __html: analytic.replaceAll("\n", "<br/>") }} />
@@ -84,17 +83,17 @@ function HealthSummaryCard({ health, loading }) {
     if (loading) {
         return (
             <div style={{
-                background: "white",
+                background: "var(--theme-surface)",
                 borderRadius: 16,
                 padding: "20px",
-                border: "2px solid #d1d5db",
+                border: "2px solid var(--theme-card-border)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 minHeight: 160
             }}>
                 <div style={{
-                    width: 24, height: 24, border: "3px solid #10b981", borderTopColor: "transparent",
+                    width: 24, height: 24, border: "3px solid var(--theme-accent)", borderTopColor: "transparent",
                     borderRadius: "50%", animation: "spin 0.8s linear infinite"
                 }} />
                 <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
@@ -105,17 +104,17 @@ function HealthSummaryCard({ health, loading }) {
     if (!health || health.error) {
         return (
             <div style={{
-                background: "white",
+                background: "var(--theme-surface)",
                 borderRadius: 16,
                 padding: "20px",
-                border: "2px solid #fecaca",
+                border: "2px solid rgba(239,68,68,0.25)",
             }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                    <iconify-icon icon="mdi:alert-circle" style={{ fontSize: 20, color: "#991b1b" }}></iconify-icon>
-                    <p style={{ color: "#991b1b", fontSize: 14, fontWeight: 600, margin: 0 }}>Gagal memuat kondisi kesehatan keuangan</p>
+                    <iconify-icon icon="mdi:alert-circle" style={{ fontSize: 20, color: "#dc2626" }}></iconify-icon>
+                    <p style={{ color: "#dc2626", fontSize: 14, fontWeight: 600, margin: 0 }}>Gagal memuat kondisi kesehatan keuangan</p>
                 </div>
                 {health?.details && (
-                    <p style={{ color: "#7f1d1d", fontSize: 12, margin: 0, fontFamily: "monospace", whiteSpace: "pre-wrap" }}>
+                    <p style={{ color: "#991b1b", fontSize: 12, margin: 0, fontFamily: "monospace", whiteSpace: "pre-wrap" }}>
                         {health.details}
                     </p>
                 )}
@@ -126,30 +125,30 @@ function HealthSummaryCard({ health, loading }) {
     const score = health.score || 0;
     const status = (health.status || "unknown").toUpperCase();
     const statusColor =
-        health.status === "baik" ? "#10b981" :
+        health.status === "baik" ? "var(--theme-accent)" :
             health.status === "cukup" ? "#f59e0b" :
                 "#ef4444";
 
     const statusBg =
-        health.status === "baik" ? "#d1fae5" :
+        health.status === "baik" ? "rgba(16,185,129,0.08)" :
             health.status === "cukup" ? "#fef3c7" :
                 "#fee2e2";
 
     return (
         <div style={{
-            background: "white",
+            background: "var(--theme-surface)",
             borderRadius: 16,
             padding: "20px",
-            border: "2px solid #e5e7eb",
+            border: "2px solid var(--theme-card-border)",
             cursor: "pointer",
             transition: "all 0.2s"
         }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
                 <div>
-                    <p style={{ fontSize: 12, fontWeight: 700, color: "#9ca3af", marginBottom: 6, textTransform: "uppercase", letterSpacing: 1 }}>
+                    <p style={{ fontSize: 12, fontWeight: 700, color: "var(--theme-surface-muted)", marginBottom: 6, textTransform: "uppercase", letterSpacing: 1 }}>
                         Kesehatan Keuangan Bulan Ini
                     </p>
-                    <p style={{ fontSize: 28, fontWeight: 800, color: "#1a3a1f", margin: 0 }}>{score}/100</p>
+                    <p style={{ fontSize: 28, fontWeight: 800, color: "var(--theme-surface-text)", margin: 0 }}>{score}/100</p>
                 </div>
                 <div style={{
                     width: 100,
@@ -173,31 +172,31 @@ function HealthSummaryCard({ health, loading }) {
             </div>
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 14 }}>
-                <div style={{ background: "#f9fafb", borderRadius: 12, padding: "12px", textAlign: "center" }}>
-                    <p style={{ fontSize: 11, color: "#9ca3af", margin: "0 0 4px 0", fontWeight: 600 }}>PEMASUKAN</p>
-                    <p style={{ fontSize: 16, fontWeight: 800, color: "#1a3a1f", margin: 0 }}>Rp{(health.summary?.totalIncome || 0).toLocaleString()}</p>
+                <div style={{ background: "var(--theme-page-bg-alt)", borderRadius: 12, padding: "12px", textAlign: "center" }}>
+                    <p style={{ fontSize: 11, color: "var(--theme-surface-muted)", margin: "0 0 4px 0", fontWeight: 600 }}>PEMASUKAN</p>
+                    <p style={{ fontSize: 16, fontWeight: 800, color: "var(--theme-surface-text)", margin: 0 }}>Rp{(health.summary?.totalIncome || 0).toLocaleString()}</p>
                 </div>
-                <div style={{ background: "#f9fafb", borderRadius: 12, padding: "12px", textAlign: "center" }}>
-                    <p style={{ fontSize: 11, color: "#9ca3af", margin: "0 0 4px 0", fontWeight: 600 }}>PENGELUARAN</p>
+                <div style={{ background: "var(--theme-page-bg-alt)", borderRadius: 12, padding: "12px", textAlign: "center" }}>
+                    <p style={{ fontSize: 11, color: "var(--theme-surface-muted)", margin: "0 0 4px 0", fontWeight: 600 }}>PENGELUARAN</p>
                     <p style={{ fontSize: 16, fontWeight: 800, color: "#ef4444", margin: 0 }}>Rp{(health.summary?.totalExpense || 0).toLocaleString()}</p>
                 </div>
             </div>
 
-            <div style={{ background: "#f0fdf4", borderRadius: 12, padding: "12px", marginBottom: 12, borderLeft: "4px solid #10b981" }}>
-                <p style={{ fontSize: 11, color: "#166534", fontWeight: 600, margin: "0 0 4px 0" }}>NETO</p>
-                <p style={{ fontSize: 16, fontWeight: 800, color: health.summary?.netBalance >= 0 ? "#10b981" : "#ef4444", margin: 0 }}>
+            <div style={{ background: "var(--theme-page-bg-alt)", borderRadius: 12, padding: "12px", marginBottom: 12, borderLeft: "4px solid var(--theme-accent)" }}>
+                <p style={{ fontSize: 11, color: "var(--theme-surface-muted)", fontWeight: 600, margin: "0 0 4px 0" }}>NETO</p>
+                <p style={{ fontSize: 16, fontWeight: 800, color: health.summary?.netBalance >= 0 ? "var(--theme-accent)" : "#ef4444", margin: 0 }}>
                     Rp{(health.summary?.netBalance || 0).toLocaleString()}
                 </p>
             </div>
 
-            <div style={{ borderTop: "1px solid #e5e7eb", paddingTop: 12 }}>
+            <div style={{ borderTop: "1px solid var(--theme-card-border)", paddingTop: 12 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
-                    <iconify-icon icon="mdi:lightbulb-outline" style={{ fontSize: 16, color: "#6b7280" }}></iconify-icon>
-                    <p style={{ fontSize: 11, fontWeight: 700, color: "#6b7280", margin: 0, textTransform: "uppercase" }}>Saran:</p>
+                    <iconify-icon icon="mdi:lightbulb-outline" style={{ fontSize: 16, color: "var(--theme-surface-muted)" }}></iconify-icon>
+                    <p style={{ fontSize: 11, fontWeight: 700, color: "var(--theme-surface-muted)", margin: 0, textTransform: "uppercase" }}>Saran:</p>
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                     {(health.suggestions || []).slice(0, 3).map((suggestion, idx) => (
-                        <p key={idx} style={{ fontSize: 12, color: "#374151", margin: 0, lineHeight: 1.4 }}>
+                        <p key={idx} style={{ fontSize: 12, color: "var(--theme-text)", margin: 0, lineHeight: 1.4 }}>
                             • {suggestion}
                         </p>
                     ))}
@@ -433,7 +432,7 @@ export default function Dashboard() {
     return (
         <>
         <SEO {...seoConfig["/dashboard"]} />
-        <div className="flex h-screen bg-white overflow-hidden w-full" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+        <div className="flex h-screen overflow-hidden w-full" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", background: "var(--theme-page-bg)", color: "var(--theme-text)" }}>
             <style>{`
                 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Lilita+One&display=swap');
                 
@@ -456,25 +455,25 @@ export default function Dashboard() {
                 <Navbar profile={profile} personal={personal} isOpen={isProfileOpen} setOpen={setIsProfileOpen} isSidebarOpen={isSidebarOpen} setSidebarOpen={setIsSidebarOpen} />
 
                 {/* ── MAIN CONTENT ──────────────────────────────────── */}
-                <div className="flex-1 overflow-y-auto bg-gray-50">
+                <div className="flex-1 overflow-y-auto" style={{ background: "var(--theme-page-bg-alt)" }}>
                     <div style={{ maxWidth: 1400, margin: "0 auto", padding: "16px", paddingTop: "80px" }}>
 
                         {/* ── TOP SECTION: Level Card ──────────────────────── */}
-                        <div data-responsive-padding style={{ background: "linear-gradient(135deg, #1a3a1f 0%, #0f2a18 100%)", borderRadius: 20, padding: "24px", color: "white", position: "relative", overflow: "hidden", marginBottom: 24 }}>
-                            <div style={{ position: "absolute", right: -30, top: -30, width: 120, height: 120, borderRadius: "50%", background: "rgba(159,247,130,0.07)" }} />
-                            <div style={{ position: "absolute", right: 20, top: 20, width: 60, height: 60, borderRadius: "50%", background: "rgba(159,247,130,0.05)" }} />
+                        <div data-responsive-padding className="theme-hero-bg" style={{ borderRadius: 20, padding: "24px", color: "var(--theme-accent-contrast)", position: "relative", overflow: "hidden", marginBottom: 24 }}>
+                            <div style={{ position: "absolute", right: -30, top: -30, width: 120, height: 120, borderRadius: "50%", background: "rgba(255,255,255,0.06)" }} />
+                            <div style={{ position: "absolute", right: 20, top: 20, width: 60, height: 60, borderRadius: "50%", background: "rgba(255,255,255,0.04)" }} />
 
                             <div data-responsive-flex style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", position: "relative", flexWrap: "wrap", gap: 16 }}>
                                 <div>
-                                    <p style={{ fontSize: 11, color: "rgba(255,255,255,0.45)", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 8 }}>Level Kamu</p>
-                                    <p data-responsive-text-lg style={{ fontSize: 48, fontWeight: 800, color: "#9FF782", lineHeight: 1 }}>Lv. {quizStats?.level || 1}</p>
-                                    <p style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", marginTop: 8 }}>Total XP: {quizStats?.totalExp || 0}</p>
+                                    <p style={{ fontSize: 11, color: "rgba(255,255,255,0.65)", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 8 }}>Level Kamu</p>
+                                    <p data-responsive-text-lg style={{ fontSize: 48, fontWeight: 800, color: "var(--theme-accent-2, #9FF782)", lineHeight: 1 }}>Lv. {quizStats?.level || 1}</p>
+                                    <p style={{ fontSize: 12, color: "rgba(255,255,255,0.8)", marginTop: 8 }}>Total XP: {quizStats?.totalExp || 0}</p>
                                 </div>
                                 <div style={{ display: "flex", flexDirection: "column", gap: 10, flexShrink: 0 }}>
-                                    <div style={{ textAlign: "center", background: "white", borderRadius: 12, padding: "12px 16px" }}>
+                                    <div style={{ textAlign: "center", background: "rgba(255,255,255,0.92)", borderRadius: 12, padding: "12px 16px" }}>
                                         <iconify-icon icon="mdi:fire" style={{ fontSize: 24, color: "#ff6b6b" }}></iconify-icon>
-                                        <p style={{ fontSize: 20, fontWeight: 700, color: "#1a3a1f", lineHeight: 1.1 }}>{quizStats?.streak || 0}</p>
-                                        <p style={{ fontSize: 10, color: "#6b7280" }}>streak</p>
+                                        <p style={{ fontSize: 20, fontWeight: 700, color: "var(--theme-surface-text)", lineHeight: 1.1 }}>{quizStats?.streak || 0}</p>
+                                        <p style={{ fontSize: 10, color: "var(--theme-surface-muted)" }}>streak</p>
                                     </div>
 
                                     {badgeSettings && (
@@ -510,43 +509,43 @@ export default function Dashboard() {
                         {/* ── DAILY QUIZ & LEARNING PATH CARDS ──────────────────────── */}
                         <div data-responsive-grid-2 style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 24 }}>
                             {/* Daily Quiz Card */}
-                            <div style={{ background: "linear-gradient(135deg, #fef9c3, #fef3c7)", borderRadius: 20, padding: "24px", position: "relative", overflow: "hidden", border: "2px solid #fde68a", transition: "all 0.2s", display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 12, cursor: "pointer" }}
+                            <div style={{ background: "var(--theme-page-bg-alt)", borderRadius: 20, padding: "24px", position: "relative", overflow: "hidden", border: "2px solid var(--theme-card-border)", transition: "all 0.2s", display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 12, cursor: "pointer" }}
                                 onClick={() => navigate("/quiz")}
                                 onMouseEnter={e => {
                                     e.currentTarget.style.transform = "translateY(-2px)";
-                                    e.currentTarget.style.boxShadow = "0 8px 20px rgba(253, 230, 138, 0.3)";
+                                    e.currentTarget.style.boxShadow = "var(--theme-shadow)";
                                 }}
                                 onMouseLeave={e => {
                                     e.currentTarget.style.transform = "none";
                                     e.currentTarget.style.boxShadow = "none";
                                 }}>
-                                <iconify-icon icon="mdi:lightbulb-outline" style={{ fontSize: 40, color: "#92400e" }}></iconify-icon>
+                                <iconify-icon icon="mdi:lightbulb-outline" style={{ fontSize: 40, color: "var(--theme-accent)" }}></iconify-icon>
                                 <div style={{ flex: 1 }}>
-                                    <p style={{ fontWeight: 700, fontSize: 18, color: "#92400e", marginBottom: 4 }}>Daily Quiz Tersedia</p>
-                                    <p style={{ fontSize: 12, color: "#b45309" }}>nyalakan streak mu dengan memulai kuis!</p>
+                                    <p style={{ fontWeight: 700, fontSize: 18, color: "var(--theme-surface-text)", marginBottom: 4 }}>Daily Quiz Tersedia</p>
+                                    <p style={{ fontSize: 12, color: "var(--theme-surface-muted)" }}>nyalakan streak mu dengan memulai kuis!</p>
                                 </div>
-                                <button style={{ background: "#1a3a1f", color: "#9FF782", borderRadius: 8, padding: "10px 20px", fontSize: 13, fontWeight: 600, border: "none", cursor: "pointer", whiteSpace: "nowrap" }}>
+                                <button style={{ background: "var(--theme-accent)", color: "var(--theme-accent-contrast)", borderRadius: 8, padding: "10px 20px", fontSize: 13, fontWeight: 600, border: "none", cursor: "pointer", whiteSpace: "nowrap" }}>
                                     Mulai
                                 </button>
                             </div>
 
                             {/* Learning Path Card */}
-                            <div style={{ background: "linear-gradient(135deg, #fef9c3, #fef3c7)", borderRadius: 20, padding: "24px", position: "relative", overflow: "hidden", border: "2px solid #fde68a", transition: "all 0.2s", display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 12, cursor: "pointer" }}
+                            <div style={{ background: "var(--theme-page-bg-alt)", borderRadius: 20, padding: "24px", position: "relative", overflow: "hidden", border: "2px solid var(--theme-card-border)", transition: "all 0.2s", display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 12, cursor: "pointer" }}
                                 onClick={() => navigate("/learning")}
                                 onMouseEnter={e => {
                                     e.currentTarget.style.transform = "translateY(-2px)";
-                                    e.currentTarget.style.boxShadow = "0 8px 20px rgba(253, 230, 138, 0.3)";
+                                    e.currentTarget.style.boxShadow = "var(--theme-shadow)";
                                 }}
                                 onMouseLeave={e => {
                                     e.currentTarget.style.transform = "none";
                                     e.currentTarget.style.boxShadow = "none";
                                 }}>
-                                <iconify-icon icon="mdi:chart-box-outline" style={{ fontSize: 40, color: "#92400e" }}></iconify-icon>
+                                <iconify-icon icon="mdi:chart-box-outline" style={{ fontSize: 40, color: "var(--theme-accent)" }}></iconify-icon>
                                 <div>
-                                    <p style={{ fontSize: 18, fontWeight: 800, color: "#92400e" }}>Learning</p>
-                                    <p style={{ fontSize: 18, fontWeight: 800, color: "#92400e" }}>path</p>
+                                    <p style={{ fontSize: 18, fontWeight: 800, color: "var(--theme-surface-text)" }}>Learning</p>
+                                    <p style={{ fontSize: 18, fontWeight: 800, color: "var(--theme-surface-text)" }}>path</p>
                                 </div>
-                                <button style={{ background: "#1a3a1f", color: "#9FF782", borderRadius: 8, padding: "10px 20px", fontSize: 13, fontWeight: 600, border: "none", cursor: "pointer", whiteSpace: "nowrap" }}>
+                                <button style={{ background: "var(--theme-accent)", color: "var(--theme-accent-contrast)", borderRadius: 8, padding: "10px 20px", fontSize: 13, fontWeight: 600, border: "none", cursor: "pointer", whiteSpace: "nowrap" }}>
                                     Mulai
                                 </button>
                             </div>
@@ -555,20 +554,20 @@ export default function Dashboard() {
                         {/* ── MAIN GRID: Features ──────────────────────── */}
                         <div data-responsive-grid-2 style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: 16, marginBottom: 24 }}>
                             {/* Left Column: Video Edukasi */}
-                            <div style={{ background: "white", borderRadius: 16, padding: "20px", border: "2px solid #d1d5db", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12, transition: "all 0.2s", minHeight: 200 }}
+                            <div style={{ background: "var(--theme-surface)", borderRadius: 16, padding: "20px", border: "2px solid var(--theme-card-border)", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12, transition: "all 0.2s", minHeight: 200 }}
                                 onClick={() => navigate("/video")}
                                 onMouseEnter={e => {
-                                    e.currentTarget.style.borderColor = "#9FF782";
-                                    e.currentTarget.style.boxShadow = "0 8px 16px rgba(159, 247, 130, 0.1)";
+                                    e.currentTarget.style.borderColor = "var(--theme-accent)";
+                                    e.currentTarget.style.boxShadow = "var(--theme-shadow)";
                                 }}
                                 onMouseLeave={e => {
-                                    e.currentTarget.style.borderColor = "#d1d5db";
+                                    e.currentTarget.style.borderColor = "var(--theme-card-border)";
                                     e.currentTarget.style.boxShadow = "none";
                                 }}>
-                                <iconify-icon icon="mdi:play-circle-outline" style={{ fontSize: 56, color: "#1a3a1f" }}></iconify-icon>
-                                <p style={{ fontSize: 16, fontWeight: 800, color: "#1a3a1f" }}>Video Edukasi</p>
-                                <p style={{ fontSize: 12, color: "#9ca3af", textAlign: "center" }}>Tonton dan Belajar</p>
-                                <button style={{ background: "#1a3a1f", color: "white", borderRadius: 8, padding: "6px 12px", fontSize: 11, fontWeight: 600, border: "none", cursor: "pointer", marginTop: 8 }}>
+                                <iconify-icon icon="mdi:play-circle-outline" style={{ fontSize: 56, color: "var(--theme-accent)" }}></iconify-icon>
+                                <p style={{ fontSize: 16, fontWeight: 800, color: "var(--theme-surface-text)" }}>Video Edukasi</p>
+                                <p style={{ fontSize: 12, color: "var(--theme-surface-muted)", textAlign: "center" }}>Tonton dan Belajar</p>
+                                <button style={{ background: "var(--theme-accent)", color: "var(--theme-accent-contrast)", borderRadius: 8, padding: "6px 12px", fontSize: 11, fontWeight: 600, border: "none", cursor: "pointer", marginTop: 8 }}>
                                     Tonton Sekarang
                                 </button>
                             </div>
@@ -576,77 +575,77 @@ export default function Dashboard() {
                             {/* Right Column: Feature Grid */}
                             <div data-responsive-grid-3 style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
                                 {/* Saldo Saya */}
-                                <div style={{ background: "white", borderRadius: 16, padding: "16px", border: "2px solid #d1d5db", cursor: "pointer", transition: "all 0.2s" }}
+                                <div style={{ background: "var(--theme-surface)", borderRadius: 16, padding: "16px", border: "2px solid var(--theme-card-border)", cursor: "pointer", transition: "all 0.2s" }}
                                     onClick={() => navigate("/balance")}
                                     onMouseEnter={e => {
-                                        e.currentTarget.style.borderColor = "#9FF782";
-                                        e.currentTarget.style.boxShadow = "0 8px 16px rgba(159, 247, 130, 0.1)";
+                                        e.currentTarget.style.borderColor = "var(--theme-accent)";
+                                        e.currentTarget.style.boxShadow = "var(--theme-shadow)";
                                     }}
                                     onMouseLeave={e => {
-                                        e.currentTarget.style.borderColor = "#d1d5db";
+                                        e.currentTarget.style.borderColor = "var(--theme-card-border)";
                                         e.currentTarget.style.boxShadow = "none";
                                     }}>
-                                    <iconify-icon icon="mdi:home-outline" style={{ fontSize: 32, marginBottom: 8, color: "#1a3a1f" }}></iconify-icon>
-                                    <p style={{ fontSize: 14, fontWeight: 800, color: "#1a3a1f", marginBottom: 2 }}>Saldo Saya</p>
-                                    <p style={{ fontSize: 11, color: "#9ca3af", marginBottom: 12 }}>Kelola Keuangan Anda</p>
-                                    <button style={{ background: "#1a3a1f", color: "white", borderRadius: 6, padding: "4px 10px", fontSize: 10, fontWeight: 600, border: "none", cursor: "pointer" }}>
+                                    <iconify-icon icon="mdi:home-outline" style={{ fontSize: 32, marginBottom: 8, color: "var(--theme-accent)" }}></iconify-icon>
+                                    <p style={{ fontSize: 14, fontWeight: 800, color: "var(--theme-surface-text)", marginBottom: 2 }}>Saldo Saya</p>
+                                    <p style={{ fontSize: 11, color: "var(--theme-surface-muted)", marginBottom: 12 }}>Kelola Keuangan Anda</p>
+                                    <button style={{ background: "var(--theme-accent)", color: "var(--theme-accent-contrast)", borderRadius: 6, padding: "4px 10px", fontSize: 10, fontWeight: 600, border: "none", cursor: "pointer" }}>
                                         Click
                                     </button>
                                 </div>
 
                                 {/* Saldo Bersama */}
-                                <div style={{ background: "white", borderRadius: 16, padding: "16px", border: "2px solid #d1d5db", cursor: "pointer", transition: "all 0.2s" }}
+                                <div style={{ background: "var(--theme-surface)", borderRadius: 16, padding: "16px", border: "2px solid var(--theme-card-border)", cursor: "pointer", transition: "all 0.2s" }}
                                     onClick={() => navigate("/shared-balance")}
                                     onMouseEnter={e => {
-                                        e.currentTarget.style.borderColor = "#9FF782";
-                                        e.currentTarget.style.boxShadow = "0 8px 16px rgba(159, 247, 130, 0.1)";
+                                        e.currentTarget.style.borderColor = "var(--theme-accent)";
+                                        e.currentTarget.style.boxShadow = "var(--theme-shadow)";
                                     }}
                                     onMouseLeave={e => {
-                                        e.currentTarget.style.borderColor = "#d1d5db";
+                                        e.currentTarget.style.borderColor = "var(--theme-card-border)";
                                         e.currentTarget.style.boxShadow = "none";
                                     }}>
-                                    <iconify-icon icon="mdi:handshake-outline" style={{ fontSize: 32, marginBottom: 8, color: "#1a3a1f" }}></iconify-icon>
-                                    <p style={{ fontSize: 14, fontWeight: 800, color: "#1a3a1f", marginBottom: 2 }}>Saldo Bersama</p>
-                                    <p style={{ fontSize: 11, color: "#9ca3af", marginBottom: 12 }}>Kelola Bersama</p>
-                                    <button style={{ background: "#1a3a1f", color: "white", borderRadius: 6, padding: "4px 10px", fontSize: 10, fontWeight: 600, border: "none", cursor: "pointer" }}>
+                                    <iconify-icon icon="mdi:handshake-outline" style={{ fontSize: 32, marginBottom: 8, color: "var(--theme-accent)" }}></iconify-icon>
+                                    <p style={{ fontSize: 14, fontWeight: 800, color: "var(--theme-surface-text)", marginBottom: 2 }}>Saldo Bersama</p>
+                                    <p style={{ fontSize: 11, color: "var(--theme-surface-muted)", marginBottom: 12 }}>Kelola Bersama</p>
+                                    <button style={{ background: "var(--theme-accent)", color: "var(--theme-accent-contrast)", borderRadius: 6, padding: "4px 10px", fontSize: 10, fontWeight: 600, border: "none", cursor: "pointer" }}>
                                         Click
                                     </button>
                                 </div>
 
                                 {/* Tabungan Bersama */}
-                                <div style={{ background: "white", borderRadius: 16, padding: "16px", border: "2px solid #d1d5db", cursor: "pointer", transition: "all 0.2s" }}
+                                <div style={{ background: "var(--theme-surface)", borderRadius: 16, padding: "16px", border: "2px solid var(--theme-card-border)", cursor: "pointer", transition: "all 0.2s" }}
                                     onClick={() => navigate("/shared-tabungan")}
                                     onMouseEnter={e => {
-                                        e.currentTarget.style.borderColor = "#9FF782";
-                                        e.currentTarget.style.boxShadow = "0 8px 16px rgba(159, 247, 130, 0.1)";
+                                        e.currentTarget.style.borderColor = "var(--theme-accent)";
+                                        e.currentTarget.style.boxShadow = "var(--theme-shadow)";
                                     }}
                                     onMouseLeave={e => {
-                                        e.currentTarget.style.borderColor = "#d1d5db";
+                                        e.currentTarget.style.borderColor = "var(--theme-card-border)";
                                         e.currentTarget.style.boxShadow = "none";
                                     }}>
-                                    <iconify-icon icon="mdi:wallet-outline" style={{ fontSize: 32, marginBottom: 8, color: "#1a3a1f" }}></iconify-icon>
-                                    <p style={{ fontSize: 14, fontWeight: 800, color: "#1a3a1f", marginBottom: 2 }}>Tabungan Bersama</p>
-                                    <p style={{ fontSize: 11, color: "#9ca3af", marginBottom: 12 }}>Nabung Bareng</p>
-                                    <button style={{ background: "#1a3a1f", color: "white", borderRadius: 6, padding: "4px 10px", fontSize: 10, fontWeight: 600, border: "none", cursor: "pointer" }}>
+                                    <iconify-icon icon="mdi:wallet-outline" style={{ fontSize: 32, marginBottom: 8, color: "var(--theme-accent)" }}></iconify-icon>
+                                    <p style={{ fontSize: 14, fontWeight: 800, color: "var(--theme-surface-text)", marginBottom: 2 }}>Tabungan Bersama</p>
+                                    <p style={{ fontSize: 11, color: "var(--theme-surface-muted)", marginBottom: 12 }}>Nabung Bareng</p>
+                                    <button style={{ background: "var(--theme-accent)", color: "var(--theme-accent-contrast)", borderRadius: 6, padding: "4px 10px", fontSize: 10, fontWeight: 600, border: "none", cursor: "pointer" }}>
                                         Click
                                     </button>
                                 </div>
 
                                 {/* Tabungan Target */}
-                                <div style={{ background: "white", borderRadius: 16, padding: "16px", border: "2px solid #d1d5db", cursor: "pointer", transition: "all 0.2s" }}
+                                <div style={{ background: "var(--theme-surface)", borderRadius: 16, padding: "16px", border: "2px solid var(--theme-card-border)", cursor: "pointer", transition: "all 0.2s" }}
                                     onClick={() => navigate("/tabungan")}
                                     onMouseEnter={e => {
-                                        e.currentTarget.style.borderColor = "#9FF782";
-                                        e.currentTarget.style.boxShadow = "0 8px 16px rgba(159, 247, 130, 0.1)";
+                                        e.currentTarget.style.borderColor = "var(--theme-accent)";
+                                        e.currentTarget.style.boxShadow = "var(--theme-shadow)";
                                     }}
                                     onMouseLeave={e => {
-                                        e.currentTarget.style.borderColor = "#d1d5db";
+                                        e.currentTarget.style.borderColor = "var(--theme-card-border)";
                                         e.currentTarget.style.boxShadow = "none";
                                     }}>
-                                    <iconify-icon icon="mdi:bullseye" style={{ fontSize: 32, marginBottom: 8, color: "#1a3a1f" }}></iconify-icon>
-                                    <p style={{ fontSize: 14, fontWeight: 800, color: "#1a3a1f", marginBottom: 2 }}>Tabungan Saya</p>
-                                    <p style={{ fontSize: 11, color: "#9ca3af", marginBottom: 12 }}>Kelola Target</p>
-                                    <button style={{ background: "#1a3a1f", color: "white", borderRadius: 6, padding: "4px 10px", fontSize: 10, fontWeight: 600, border: "none", cursor: "pointer" }}>
+                                    <iconify-icon icon="mdi:bullseye" style={{ fontSize: 32, marginBottom: 8, color: "var(--theme-accent)" }}></iconify-icon>
+                                    <p style={{ fontSize: 14, fontWeight: 800, color: "var(--theme-surface-text)", marginBottom: 2 }}>Tabungan Saya</p>
+                                    <p style={{ fontSize: 11, color: "var(--theme-surface-muted)", marginBottom: 12 }}>Kelola Target</p>
+                                    <button style={{ background: "var(--theme-accent)", color: "var(--theme-accent-contrast)", borderRadius: 6, padding: "4px 10px", fontSize: 10, fontWeight: 600, border: "none", cursor: "pointer" }}>
                                         Click
                                     </button>
                                 </div>
@@ -664,10 +663,10 @@ export default function Dashboard() {
                             {/* Recap Card */}
                             <div
                                 style={{
-                                    background: "white",
+                                    background: "var(--theme-surface)",
                                     borderRadius: 16,
                                     padding: "20px",
-                                    border: "2px solid #d1d5db",
+                                    border: "2px solid var(--theme-card-border)",
                                     cursor: "pointer",
                                     transition: "all 0.2s",
                                     display: "flex",
@@ -680,17 +679,17 @@ export default function Dashboard() {
                                 }}
                                 onClick={() => navigate("/rekap")}
                                 onMouseEnter={e => {
-                                    e.currentTarget.style.borderColor = "#9FF782";
-                                    e.currentTarget.style.boxShadow = "0 8px 16px rgba(159, 247, 130, 0.1)";
+                                    e.currentTarget.style.borderColor = "var(--theme-accent)";
+                                    e.currentTarget.style.boxShadow = "var(--theme-shadow)";
                                 }}
                                 onMouseLeave={e => {
-                                    e.currentTarget.style.borderColor = "#d1d5db";
+                                    e.currentTarget.style.borderColor = "var(--theme-card-border)";
                                     e.currentTarget.style.boxShadow = "none";
                                 }}>
-                                <iconify-icon icon="mdi:chart-box-outline" style={{ fontSize: 40, marginBottom: 12, color: "#1a3a1f" }}></iconify-icon>
-                                <p style={{ fontSize: 16, fontWeight: 800, color: "#1a3a1f", marginBottom: 4 }}>Rekap</p>
-                                <p style={{ fontSize: 12, color: "#9ca3af", marginBottom: 14 }}>Lihat Rekap Bulanan</p>
-                                <button style={{ background: "#1a3a1f", color: "white", borderRadius: 8, padding: "6px 14px", fontSize: 11, fontWeight: 600, border: "none", cursor: "pointer" }}>
+                                <iconify-icon icon="mdi:chart-box-outline" style={{ fontSize: 40, marginBottom: 12, color: "var(--theme-accent)" }}></iconify-icon>
+                                <p style={{ fontSize: 16, fontWeight: 800, color: "var(--theme-surface-text)", marginBottom: 4 }}>Rekap</p>
+                                <p style={{ fontSize: 12, color: "var(--theme-surface-muted)", marginBottom: 14 }}>Lihat Rekap Bulanan</p>
+                                <button style={{ background: "var(--theme-accent)", color: "var(--theme-accent-contrast)", borderRadius: 8, padding: "6px 14px", fontSize: 11, fontWeight: 600, border: "none", cursor: "pointer" }}>
                                     Click
                                 </button>
                             </div>
@@ -704,17 +703,17 @@ export default function Dashboard() {
                                 }}
                             >
                                 {/* XP History */}
-                                <div style={{ background: "#fff8e6", borderRadius: 16, padding: "16px", border: "2px solid #fde68a", cursor: "pointer", transition: "all 0.2s", minHeight: 180 }}
+                                <div style={{ background: "var(--theme-page-bg-alt)", borderRadius: 16, padding: "16px", border: "2px solid var(--theme-card-border)", cursor: "pointer", transition: "all 0.2s", minHeight: 180 }}
                                     onClick={() => navigate("/quiz")}
                                     onMouseEnter={e => {
-                                        e.currentTarget.style.borderColor = "#f59e0b";
-                                        e.currentTarget.style.boxShadow = "0 8px 16px rgba(245, 158, 11, 0.1)";
+                                        e.currentTarget.style.borderColor = "var(--theme-accent)";
+                                        e.currentTarget.style.boxShadow = "var(--theme-shadow)";
                                     }}
                                     onMouseLeave={e => {
-                                        e.currentTarget.style.borderColor = "#fde68a";
+                                        e.currentTarget.style.borderColor = "var(--theme-card-border)";
                                         e.currentTarget.style.boxShadow = "none";
                                     }}>
-                                    <p style={{ fontSize: 12, fontWeight: 700, color: "#b45309", marginBottom: 10 }}>📊 Riwayat XP Terakhir</p>
+                                    <p style={{ fontSize: 12, fontWeight: 700, color: "var(--theme-accent)", marginBottom: 10 }}>📊 Riwayat XP Terakhir</p>
                                     <div style={{ display: "flex", flexDirection: "column", gap: 6, maxHeight: 180, overflowY: "auto" }}>
                                         {xpHistory.length > 0 ? (
                                             xpHistory.slice(0, 5).map((item, idx) => (
@@ -739,20 +738,20 @@ export default function Dashboard() {
                         <div style={{ marginBottom: 24 }}>
                             <p style={{ fontSize: 11, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 12 }}>STATISTIK</p>
                             <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
-                                <div style={{ background: "white", borderRadius: 12, padding: "16px", textAlign: "center", border: "2px solid #fed7aa" }}>
-                                    <iconify-icon icon="mdi:lightning-bolt" style={{ fontSize: 24, marginBottom: 8, color: "#1a3a1f" }}></iconify-icon>
-                                    <p style={{ fontSize: 16, fontWeight: 800, color: "#1a3a1f" }}>Level {quizStats?.level || 1}</p>
-                                    <p style={{ fontSize: 11, color: "#9ca3af" }}>level</p>
+                                <div style={{ background: "var(--theme-surface)", borderRadius: 12, padding: "16px", textAlign: "center", border: "2px solid var(--theme-card-border)" }}>
+                                    <iconify-icon icon="mdi:lightning-bolt" style={{ fontSize: 24, marginBottom: 8, color: "var(--theme-accent)" }}></iconify-icon>
+                                    <p style={{ fontSize: 16, fontWeight: 800, color: "var(--theme-surface-text)" }}>Level {quizStats?.level || 1}</p>
+                                    <p style={{ fontSize: 11, color: "var(--theme-surface-muted)" }}>level</p>
                                 </div>
-                                <div style={{ background: "white", borderRadius: 12, padding: "16px", textAlign: "center", border: "2px solid #fed7aa" }}>
-                                    <iconify-icon icon="mdi:fire" style={{ fontSize: 24, marginBottom: 8, color: "#1a3a1f" }}></iconify-icon>
-                                    <p style={{ fontSize: 16, fontWeight: 800, color: "#1a3a1f" }}>{quizStats?.streak || 0} hari</p>
-                                    <p style={{ fontSize: 11, color: "#9ca3af" }}>streak</p>
+                                <div style={{ background: "var(--theme-surface)", borderRadius: 12, padding: "16px", textAlign: "center", border: "2px solid var(--theme-card-border)" }}>
+                                    <iconify-icon icon="mdi:fire" style={{ fontSize: 24, marginBottom: 8, color: "var(--theme-accent)" }}></iconify-icon>
+                                    <p style={{ fontSize: 16, fontWeight: 800, color: "var(--theme-surface-text)" }}>{quizStats?.streak || 0} hari</p>
+                                    <p style={{ fontSize: 11, color: "var(--theme-surface-muted)" }}>streak</p>
                                 </div>
-                                <div style={{ background: "white", borderRadius: 12, padding: "16px", textAlign: "center", border: "2px solid #fed7aa" }}>
-                                    <iconify-icon icon="mdi:trophy-outline" style={{ fontSize: 24, marginBottom: 8, color: "#1a3a1f" }}></iconify-icon>
-                                    <p style={{ fontSize: 16, fontWeight: 800, color: "#1a3a1f" }}>{quizStats?.maxStreak || 0}</p>
-                                    <p style={{ fontSize: 11, color: "#9ca3af" }}>champion</p>
+                                <div style={{ background: "var(--theme-surface)", borderRadius: 12, padding: "16px", textAlign: "center", border: "2px solid var(--theme-card-border)" }}>
+                                    <iconify-icon icon="mdi:trophy-outline" style={{ fontSize: 24, marginBottom: 8, color: "var(--theme-accent)" }}></iconify-icon>
+                                    <p style={{ fontSize: 16, fontWeight: 800, color: "var(--theme-surface-text)" }}>{quizStats?.maxStreak || 0}</p>
+                                    <p style={{ fontSize: 11, color: "var(--theme-surface-muted)" }}>champion</p>
                                 </div>
                             </div>
                         </div>
